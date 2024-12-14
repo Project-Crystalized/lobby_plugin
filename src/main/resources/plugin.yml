@@ -1,0 +1,9 @@
+name: Lobby_plugin
+version: 0.0.1
+main: gg.crystalized.lobby.Lobby_plugin
+api-version: '1.21.1'
+load: POSTWORLD
+
+depend: [Citizens]
+
+commands:
