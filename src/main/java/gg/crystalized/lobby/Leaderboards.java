@@ -46,7 +46,9 @@ class LsWinLeaderboard {
 					display.setBillboard(Billboard.CENTER);
 					display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
 				} catch (NoSuchElementException e) {
-					Bukkit.getLogger().info("couldnt find a leaderboard?");
+					if (loc.getChunk().isLoaded()) {
+						Bukkit.getLogger().info("A leaderboards Display ENtity might be missing");
+					}
 				}
 			}
 		}.runTaskTimer(Lobby_plugin.getInstance(), (20 * 5), (20 * 10));
