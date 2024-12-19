@@ -47,7 +47,9 @@ class LsWinLeaderboard {
 					display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
 				} catch (NoSuchElementException e) {
 					if (loc.getChunk().isLoaded()) {
-						Bukkit.getLogger().info("A leaderboards Display ENtity might be missing");
+						Bukkit.getLogger().warning("A leaderboards Display entity might be missing");
+						Bukkit.getLogger().warning("spawning a new leaderboard");
+						w.spawn(loc, TextDisplay.class);
 					}
 				}
 			}
@@ -72,7 +74,7 @@ class LsWinLeaderboard {
 			}
 			return leaderbaord_rows;
 		} catch (SQLException e) {
-			Bukkit.getLogger().severe("error opening database: " + e);
+			Bukkit.getLogger().warning("error opening database: " + e);
 			return null;
 		}
 	}
