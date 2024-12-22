@@ -11,6 +11,7 @@ repositories {
 		maven("https://repo.dmulloy2.net/repository/public/")
 		maven("https://maven.citizensnpcs.co/repo")
     maven {url = uri("https://repo.opencollab.dev/main/") }
+    maven {url = uri("https://jitpack.io")}
 }
 
 dependencies {
@@ -21,6 +22,7 @@ dependencies {
         exclude(group = "*", module = "*")
     }
     compileOnly("org.geysermc.floodgate:api:2.2.3-SNAPSHOT")
+    implementation("io.github.colonelparrot:jchessify:1.0.2")
 }
 
 java {

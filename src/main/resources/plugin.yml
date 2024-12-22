@@ -5,5 +5,12 @@ api-version: '1.21.1'
 load: POSTWORLD
 
 depend: [Citizens]
+softdepend: [Floodgate]
 
 commands:
+  chess:
+    description: "Start a game of Chess!"
+    usage: "/chess [opponent player]"
+    aliases: []
+    permission: crystalized.lobby.chess
+    premission: "[!] You don't have permission to run this command, this is probably a bug"
