@@ -1,11 +1,15 @@
 package gg.crystalized.lobby;
 
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -16,6 +20,12 @@ import com.google.common.io.ByteStreams;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import net.kyori.adventure.text.Component;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scoreboard.Score;
+
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
 
 public final class PlayerListener implements Listener {
 
@@ -27,12 +37,28 @@ public final class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {
-		e.joinMessage(Component.text(""));
+		Player p = e.getPlayer();
+		e.joinMessage(text(""));
+		Location spawn = new Location(Bukkit.getWorld("world"), 0, -60, 0, 180, 0);
+
+		ScoreboardManager.SetScoreboard(p);
+		p.teleport(spawn);
+		p.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, PotionEffect.INFINITE_DURATION, 1, false, false, true));
+		p.setGameMode(GameMode.ADVENTURE);
+		p.getInventory().clear();
+
+		p.sendPlayerListHeaderAndFooter(
+				//Header
+				text("\nProject Crystalized Lobby\n").color(NamedTextColor.LIGHT_PURPLE),
+
+				//Footer
+				text("\ncrystalized.cc\n").color(NamedTextColor.DARK_GRAY)
+		);
 	}
 
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent e) {
-		e.quitMessage(Component.text(""));
+		e.quitMessage(text(""));
 	}
 
 	@EventHandler
@@ -50,5 +76,10 @@ public final class PlayerListener implements Listener {
 			out.writeUTF("litestrike");
 			((Player) e.getDamager()).sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
 		}
+	}
+
+	@EventHandler
+	public void onHunger(FoodLevelChangeEvent event) {
+		event.setCancelled(true);
 	}
 }

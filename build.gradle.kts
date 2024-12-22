@@ -10,6 +10,7 @@ repositories {
     maven("https://papermc.io/repo/repository/maven-public/")
 		maven("https://repo.dmulloy2.net/repository/public/")
 		maven("https://maven.citizensnpcs.co/repo")
+    maven {url = uri("https://repo.opencollab.dev/main/") }
 }
 
 dependencies {
@@ -19,6 +20,7 @@ dependencies {
     compileOnly("net.citizensnpcs:citizens-main:2.0.37-SNAPSHOT") {
         exclude(group = "*", module = "*")
     }
+    compileOnly("org.geysermc.floodgate:api:2.2.3-SNAPSHOT")
 }
 
 java {
