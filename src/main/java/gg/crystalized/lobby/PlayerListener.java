@@ -46,6 +46,7 @@ public final class PlayerListener implements Listener {
 		p.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, PotionEffect.INFINITE_DURATION, 1, false, false, true));
 		p.setGameMode(GameMode.ADVENTURE);
 		p.getInventory().clear();
+		GivePlayerSpawnItems(p);
 
 		p.sendPlayerListHeaderAndFooter(
 				//Header
@@ -81,5 +82,10 @@ public final class PlayerListener implements Listener {
 	@EventHandler
 	public void onHunger(FoodLevelChangeEvent event) {
 		event.setCancelled(true);
+	}
+
+	public void GivePlayerSpawnItems(Player p) {
+		p.getInventory().clear();
+		//This is the method to give players items like the shardcore nexus
 	}
 }
