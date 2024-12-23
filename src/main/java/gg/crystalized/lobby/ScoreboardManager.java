@@ -84,7 +84,7 @@ public class ScoreboardManager {
                     );
 
                     obj.getScore("2").customName(text("Players: ").color(NamedTextColor.GREEN)
-                            .append(text("" + Bukkit.getOnlinePlayers().size()))
+                            .append(text("" + Bukkit.getOnlinePlayers().size()).color(NamedTextColor.WHITE))
                     );
 
                     obj.getScore("5").customName(text("Currency: ")
