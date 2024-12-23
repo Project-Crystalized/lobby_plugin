@@ -46,16 +46,10 @@ class LsWinLeaderboard {
 					display.setBillboard(Billboard.CENTER);
 					display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
 				} catch (NoSuchElementException e) {
-					if (loc.getChunk().isLoaded()) {
-						Bukkit.getLogger().warning("A leaderboards Display entity might be missing");
-						Bukkit.getLogger().warning("spawning a new leaderboard");
-						w.spawn(loc, TextDisplay.class);
-					}
 				}
 			}
 		}.runTaskTimer(Lobby_plugin.getInstance(), (20 * 5), (20 * 10));
 	}
-
 
 	private Component generate_text() {
 		String query = "SELECT player_uuid, SUM(was_winner) FROM LsGamesPlayers GROUP BY player_uuid ORDER BY SUM(was_winner) DESC LIMIT 10;";
