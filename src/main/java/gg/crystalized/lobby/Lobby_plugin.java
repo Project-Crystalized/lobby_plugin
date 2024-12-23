@@ -9,6 +9,9 @@ public final class Lobby_plugin extends JavaPlugin {
 		this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "crystalized:main");
 		new Leaderboards();
+
+		Commands dc = new Commands();
+		this.getCommand("chess").setExecutor(dc);
 	}
 
 	@Override
