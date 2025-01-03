@@ -8,7 +8,7 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    maven("https://papermc.io/repo/repository/maven-public/")
+    maven("https://repo.papermc.io/repository/maven-public/")
 		maven("https://repo.dmulloy2.net/repository/public/")
 		maven("https://maven.citizensnpcs.co/repo")
     maven {url = uri("https://repo.opencollab.dev/main/") }

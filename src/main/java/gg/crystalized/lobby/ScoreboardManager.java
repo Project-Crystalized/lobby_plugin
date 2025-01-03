@@ -88,7 +88,7 @@ public class ScoreboardManager {
                     );
 
                     obj.getScore("5").customName(text("Currency: ")
-                            .append(text("TODO"))
+                            .append(text("0"))
                     );
                 } else {
                     //Java
