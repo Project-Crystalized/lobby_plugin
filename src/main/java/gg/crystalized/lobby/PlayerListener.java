@@ -85,6 +85,11 @@ public final class PlayerListener implements Listener {
 			out.writeUTF("Connect");
 			out.writeUTF("litestrike");
 			((Player) e.getDamager()).sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
+		} else if (npc.getName().equals("Knockoff")) {
+			ByteArrayDataOutput out = ByteStreams.newDataOutput();
+			out.writeUTF("Connect");
+			out.writeUTF("knockoff");
+			((Player) e.getDamager()).sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
 		}
 	}
 

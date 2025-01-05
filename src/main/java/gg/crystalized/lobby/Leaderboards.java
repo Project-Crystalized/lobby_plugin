@@ -37,7 +37,7 @@ public class Leaderboards {
 
 class WinLeaderboard {
 	public WinLeaderboard(World w, String type) {
-		Location loc = new Location(w, 0, 0, 0); //placeholder values
+		Location loc = null;
 
 		//FYI, pitch and yaw doesn't matter when the leaderboard rotates automatically based on how the client looks at it
 		switch (type) {
