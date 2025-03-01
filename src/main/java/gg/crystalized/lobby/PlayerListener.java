@@ -30,7 +30,8 @@ public final class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onPlayerLogin(PlayerLoginEvent event) {
-		// NPC npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.PLAYER, "Litestrike!");
+		// NPC npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.PLAYER,
+		// "Litestrike!");
 		// npc.spawn(new Location(Bukkit.getWorld("world"), -10.5, -60, -20.5, -90, 0));
 	}
 
@@ -46,14 +47,14 @@ public final class PlayerListener implements Listener {
 		p.setGameMode(GameMode.ADVENTURE);
 		p.getInventory().clear();
 		GivePlayerSpawnItems(p);
+		RankDisplay.update_display();
 
 		p.sendPlayerListHeaderAndFooter(
-				//Header
+				// Header
 				text("\nProject Crystalized Lobby\n").color(NamedTextColor.LIGHT_PURPLE),
 
-				//Footer
-				text("\ncrystalized.cc\n").color(NamedTextColor.DARK_GRAY)
-		);
+				// Footer
+				text("\ncrystalized.cc\n").color(NamedTextColor.DARK_GRAY));
 	}
 
 	@EventHandler
@@ -100,6 +101,6 @@ public final class PlayerListener implements Listener {
 
 	public void GivePlayerSpawnItems(Player p) {
 		p.getInventory().clear();
-		//This is the method to give players items like the shardcore nexus
+		// This is the method to give players items like the shardcore nexus
 	}
 }
