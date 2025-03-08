@@ -47,7 +47,6 @@ public final class PlayerListener implements Listener {
 		p.setGameMode(GameMode.ADVENTURE);
 		p.getInventory().clear();
 		GivePlayerSpawnItems(p);
-		RankDisplay.update_display();
 
 		p.sendPlayerListHeaderAndFooter(
 				// Header

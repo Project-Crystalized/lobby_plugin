@@ -43,8 +43,10 @@ public class RankDisplay {
 				display.setBillboard(Billboard.VERTICAL);
 				display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
 				display.text(get_leaderboard_text());
+
+				update_display();
 			}
-		}.runTaskTimer(Lobby_plugin.getInstance(), 15, (20 * 20));
+		}.runTaskTimer(Lobby_plugin.getInstance(), 15, (20 * 10));
 	}
 
 	private static Component get_leaderboard_text() {
