@@ -76,8 +76,10 @@ public class RankDisplay {
 	public static void update_display() {
 		World w = Bukkit.getWorld("world");
 		try (Connection conn = DriverManager.getConnection(Leaderboards.LS_URL)) {
-			String query = "SELECT * FROM LsRanks WHERE player_uuid = ?";
+			String query = "SELECT * FROM LsRanks WHERE player_uuid = ?;";
+			String query2 = "SELECT row_nr FROM (SELECT ROW_NUMBER() OVER (ORDER BY rp DESC) AS row_nr, player_uuid FROM LsRanks) sub WHERE sub.player_uuid = ?;";
 			PreparedStatement ps = conn.prepareStatement(query);
+			PreparedStatement ps2 = conn.prepareStatement(query2);
 			display_loc.getNearbyEntitiesByType(TextDisplay.class, 2.0).forEach(entity -> entity.remove());
 			for (Player p : Bukkit.getOnlinePlayers()) {
 				TextDisplay display = (TextDisplay) w.spawnEntity(display_loc, EntityType.TEXT_DISPLAY);
@@ -86,10 +88,13 @@ public class RankDisplay {
 				display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
 
 				ps.setBytes(1, uuid_to_bytes(p.getUniqueId()));
+				ps2.setBytes(1, uuid_to_bytes(p.getUniqueId()));
 				ResultSet rs = ps.executeQuery();
+				ResultSet rs2 = ps2.executeQuery();
 				PlayerRankedData prd = new PlayerRankedData(rs, p.getUniqueId());
 
 				Component text = Component.text(p.getName() + " is\n\n").append(get_rank(prd.rank)).append(Component.text("\n\nwith " + prd.rp + " rank points."));
+				text = text.append(Component.text("\nYou are number "+ rs2.getInt("row_nr") + " in rp."));
 				display.text(text);
 				for (Player player : Bukkit.getOnlinePlayers()) {
 					player.hideEntity(Lobby_plugin.getInstance(), display);
