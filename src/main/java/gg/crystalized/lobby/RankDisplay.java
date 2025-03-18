@@ -134,7 +134,7 @@ public class RankDisplay {
 			case 9:
 				return Component.text("\uE148 Diamond \uE148");
 			case 10:
-				return Component.text("\uE149 Netherrite \uE149");
+				return Component.text("\uE149 Netherite \uE149");
 			default:
 				return Component.text("error");
 		}
