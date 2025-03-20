@@ -14,3 +14,10 @@ commands:
     aliases: []
     permission: crystalized.lobby.chess
     premission: "[!] You don't have permission to run this command, this is probably a bug"
+  pig_hunt:
+    description: "Spawn pig"
+    usage: "/pig_hunt"
+    aliases: ["ph"]
+    permission: crystalized.lobby.pig_hunt
+    premission: "[!] You don't have permission to run this command, this is probably a bug"
+

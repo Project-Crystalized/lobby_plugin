@@ -12,7 +12,7 @@ public final class Lobby_plugin extends JavaPlugin {
 
 		Commands dc = new Commands();
 		this.getCommand("chess").setExecutor(dc);
-
+		this.getCommand("pig_hunt").setExecutor(dc);
 		new RankDisplay();
 	}
 
