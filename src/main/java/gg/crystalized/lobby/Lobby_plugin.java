@@ -14,6 +14,8 @@ public final class Lobby_plugin extends JavaPlugin {
 		this.getCommand("chess").setExecutor(dc);
 		this.getCommand("pig_hunt").setExecutor(dc);
 		new RankDisplay();
+
+		LobbyDatabase.setup_databases();
 	}
 
 	@Override
