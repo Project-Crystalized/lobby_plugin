@@ -4,7 +4,7 @@ main: gg.crystalized.lobby.Lobby_plugin
 api-version: '1.21.1'
 load: POSTWORLD
 
-depend: [Citizens]
+#depend: [Citizens]
 softdepend: [Floodgate]
 
 commands:
@@ -20,4 +20,9 @@ commands:
     aliases: ["ph"]
     permission: crystalized.lobby.pig_hunt
     premission: "[!] You don't have permission to run this command, this is probably a bug"
+  give_xp:
+    description: "gives xp"
+    usage: "/give_xp"
+    aliases: []
+    permission: crystalized.lobby.command
 

@@ -34,6 +34,8 @@ import org.bukkit.potion.PotionEffectType;
 import static net.kyori.adventure.text.Component.text;
 
 import java.awt.image.ImageFilter;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,6 +61,20 @@ public final class PlayerListener implements Listener {
 		p.setGameMode(GameMode.ADVENTURE);
 		p.getInventory().clear();
 		GivePlayerSpawnItems(p);
+
+		if(!LobbyDatabase.isPlayerInDatabase(p)){
+			LobbyDatabase.makeNewLobbyPlayersEntry(p);
+			//TODO Tutorial here
+		}
+
+		try {
+			ResultSet set = LobbyDatabase.fetchPlayerData(p);
+			set.next();
+			p.setLevel(set.getInt("level"));
+			p.setExp(set.getInt("exp_to_next_lvl"));
+		}catch(SQLException exept){
+			Bukkit.getLogger().warning(exept.getMessage());
+		}
 
 		p.sendPlayerListHeaderAndFooter(
 				// Header

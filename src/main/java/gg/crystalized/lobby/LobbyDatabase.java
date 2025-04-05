@@ -11,9 +11,11 @@ public class LobbyDatabase {
     public static void setup_databases(){
     String createLobbyPlayerTable = "CREATE TABLE IF NOT EXISTS LobbyPlayers ("
             + "player_uuid 			BLOB UNIQUE,"
+            + "exp_to_next_lvl       INTEGER,"
             + "level 	INTEGER,"
             + "money     INTEGER,"
-            + "skin_url    STRING"
+            + "skin_url    STRING,"
+            + "shardcore_id     INTEGER"
             + ");";
 
     String createFriendsTable = "CREATE TABLE IF NOT EXISTS Friends ("
@@ -57,7 +59,7 @@ public class LobbyDatabase {
             return prep.executeQuery();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get friend data for " + p.getName() + "UUID: " + p.getUniqueId());
+            Bukkit.getLogger().warning("couldn't get friend data for " + p.getName() + " UUID: " + p.getUniqueId());
             return null;
         }
     }
@@ -73,7 +75,35 @@ public class LobbyDatabase {
             return null;
         }
     }
-    private static byte[] uuid_to_bytes(Player p) {
+
+    public static boolean isPlayerInDatabase(Player p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT COUNT(*) AS count FROM LobbyPlayers WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            if(prep.executeQuery().getInt("count") > 0){
+                return true;
+            }
+            return false;
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't check excistence in database for " + p.getName() + " UUID: " + p.getUniqueId());
+            return false;
+        }
+    }
+
+    public static void makeNewLobbyPlayersEntry(Player p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, exp_to_next_lvl, level, money, skin_url, shardcore_id)"
+                    + "VALUES (?, 0, 0, 0, ?, 1)";
+            PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
+            prepared.setBytes(1, uuid_to_bytes(p));
+            prepared.setString(2, p.getPlayerProfile().getTextures().getSkin().toString());
+        }catch(SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());
+        }
+    }
+    public static byte[] uuid_to_bytes(Player p) {
         ByteBuffer bb = ByteBuffer.allocate(16);
         UUID uuid = p.getUniqueId();
         bb.putLong(uuid.getMostSignificantBits());

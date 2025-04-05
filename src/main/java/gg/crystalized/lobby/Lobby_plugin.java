@@ -2,6 +2,8 @@ package gg.crystalized.lobby;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
+
 public final class Lobby_plugin extends JavaPlugin {
 
 	@Override
@@ -13,6 +15,7 @@ public final class Lobby_plugin extends JavaPlugin {
 		Commands dc = new Commands();
 		this.getCommand("chess").setExecutor(dc);
 		this.getCommand("pig_hunt").setExecutor(dc);
+		this.getCommand("give_xp").setExecutor(dc);
 		new RankDisplay();
 
 		LobbyDatabase.setup_databases();

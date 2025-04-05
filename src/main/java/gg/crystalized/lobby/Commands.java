@@ -2,6 +2,8 @@ package gg.crystalized.lobby;
 
 import gg.crystalized.lobby.minigames.CrystalizedChess;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +34,8 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
             case "pig_hunt":
             case "ph":
                 return run_pig_hunt(args, commandSender);
-
+            case "give_xp":
+                return give_xp(args, commandSender);
             default:
                 return false;
 
@@ -72,5 +75,13 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
             commandSender.sendMessage("Chess game cannot be started by console. Please run this command in-game.");
         }
         return true;
+    }
+
+    private boolean give_xp(String[] args, CommandSender sender){
+        if(sender instanceof Player){
+            LevelManager.giveExperience((Player) sender, Float.parseFloat(args[0]));
+            return true;
+        }
+        return false;
     }
 }
