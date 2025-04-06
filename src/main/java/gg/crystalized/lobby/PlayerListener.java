@@ -67,15 +67,7 @@ public final class PlayerListener implements Listener {
 			//TODO Tutorial here
 		}
 
-		try {
-			ResultSet set = LobbyDatabase.fetchPlayerData(p);
-			set.next();
-			p.setLevel(set.getInt("level"));
-			p.setExp(set.getInt("exp_to_next_lvl"));
-		}catch(SQLException exept){
-			Bukkit.getLogger().warning(exept.getMessage());
-		}
-
+		LevelManager.updateLevel(p);
 		p.sendPlayerListHeaderAndFooter(
 				// Header
 				text("\nProject Crystalized Lobby\n").color(NamedTextColor.LIGHT_PURPLE),

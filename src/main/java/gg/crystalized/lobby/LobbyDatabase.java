@@ -34,6 +34,7 @@ public class LobbyDatabase {
             Statement stmt = conn.createStatement();
             stmt.execute(createLobbyPlayerTable);
             stmt.execute(createFriendsTable);
+            stmt.execute(createCosmeticsTable);
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("continueing without database");
