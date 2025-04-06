@@ -79,7 +79,7 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
 
     private boolean give_xp(String[] args, CommandSender sender){
         if(sender instanceof Player){
-            LevelManager.giveExperience((Player) sender, Float.parseFloat(args[0]));
+            LevelManager.giveExperience((Player) sender, Integer.parseInt(args[0]));
             return true;
         }
         return false;

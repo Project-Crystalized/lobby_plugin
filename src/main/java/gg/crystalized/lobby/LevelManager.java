@@ -1,19 +1,21 @@
 package gg.crystalized.lobby;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.player.PlayerLevelChangeEvent;
 
 import java.sql.*;
 
-public class LevelManager {
-    public static void giveExperience(Player p, float exp){
-        float exp2 = p.getExp() + exp - 1;
-        if(p.getExp() + exp >= 1){
-            p.setLevel(p.getLevel() + 1);
-            p.setExp(exp2);
-        }else {
-            p.setExp(p.getExp() + exp);
-        }
+import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
+import static net.kyori.adventure.text.format.TextDecoration.BOLD;
+
+public class LevelManager{
+    public static void giveExperience(Player p, int exp){
+        p.giveExp(exp);
         try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)){
             String insertData = "UPDATE LobbyPlayers SET exp_to_next_lvl = ?, level = ? WHERE player_uuid = ?";
             PreparedStatement prep = conn.prepareStatement(insertData);
@@ -38,5 +40,15 @@ public class LevelManager {
             Bukkit.getLogger().warning(exept.getMessage());
             Bukkit.getLogger().warning("couldn't update level for " + p.getName());
         }
+    }
+    @EventHandler
+    private static void levelUp(PlayerLevelChangeEvent event){
+        Player p = event.getPlayer();
+        if(!(event.getOldLevel() < event.getNewLevel())){
+            return;
+        }
+        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, SoundCategory.AMBIENT, 1, 1); //TODO add better soundeffect
+        p.sendActionBar(Component.text("LEVEL UP!").color(AQUA).decoration(BOLD, true));
+        //TODO add more cosmetics and then some back to this
     }
 }
