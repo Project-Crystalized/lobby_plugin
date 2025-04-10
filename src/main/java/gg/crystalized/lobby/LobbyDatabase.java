@@ -30,11 +30,18 @@ public class LobbyDatabase {
             + "cosmetic_id        INTEGER"
             +");";
 
+    String createTemporaryData = "CREATE TABLE IF NOT EXISTS TemporaryData ("
+            + "player_uuid        BLOB UNIQUE,"
+            + "xp_amount        INTEGER,"
+            + "money_amount      INTEGER"
+            +");";
+
         try (Connection conn = DriverManager.getConnection(URL)) {
             Statement stmt = conn.createStatement();
             stmt.execute(createLobbyPlayerTable);
             stmt.execute(createFriendsTable);
             stmt.execute(createCosmeticsTable);
+            stmt.execute(createTemporaryData);
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("continueing without database");
@@ -70,6 +77,23 @@ public class LobbyDatabase {
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Cosmetics WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             return prep.executeQuery();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't get cosmetic data for " + p.getName() + "UUID: " + p.getUniqueId());
+            return null;
+        }
+    }
+
+    public static ResultSet fetchAndDeleteTemporaryData(Player p){
+        //CAREFUL: This makes it so the temporary data can only be retrieved once -> handle with care!!
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT * FROM TemporaryData WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            ResultSet set =  prep.executeQuery();
+            PreparedStatement prepared = conn.prepareStatement("DELETE FROM TemporaryData WHERE player_uuid = ?;");
+            prepared.setBytes(1, uuid_to_bytes(p));
+            prepared.executeUpdate();
+            return set;
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't get cosmetic data for " + p.getName() + "UUID: " + p.getUniqueId());

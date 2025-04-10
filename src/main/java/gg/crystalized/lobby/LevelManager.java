@@ -14,6 +14,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
 import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 
 public class LevelManager{
+
     public static void giveExperience(Player p, int exp){
         p.giveExp(exp);
         try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)){

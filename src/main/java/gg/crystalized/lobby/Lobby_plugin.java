@@ -9,13 +9,12 @@ import org.bukkit.plugin.messaging.PluginMessageListener;
 
 import java.util.ArrayList;
 
-public final class Lobby_plugin extends JavaPlugin implements PluginMessageListener {
+public final class Lobby_plugin extends JavaPlugin{
 
 	@Override
 	public void onEnable() {
 		this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "crystalized:main");
-		this.getServer().getMessenger().registerIncomingPluginChannel(this, "crystalized:main", this);
 		new Leaderboards();
 
 		Commands dc = new Commands();
@@ -25,28 +24,6 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		new RankDisplay();
 
 		LobbyDatabase.setup_databases();
-	}
-
-	@Override
-	public void onPluginMessageReceived(String channel, Player player, byte[] message) {
-		if (!channel.equals("crystalized:main")) {
-			return;
-		}
-		ByteArrayDataInput in = ByteStreams.newDataInput(message);
-		String messageText = in.readUTF();
-		if(messageText.contains("add_xp")){
-			LevelManager.giveExperience(player, filterNumbers(messageText));
-		}
-	}
-
-	public int filterNumbers(String s){
-		String number = "";
-		for(int i = 0; i < s.length(); i++){
-			if(NumberUtils.isCreatable(String.valueOf(s.charAt(i)))){
-				number = number.concat(String.valueOf(s.charAt(i)));
-			}
-		}
-		return Integer.parseInt(number);
 	}
 
 	@Override
