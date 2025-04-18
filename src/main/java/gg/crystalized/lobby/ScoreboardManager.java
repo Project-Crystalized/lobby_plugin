@@ -9,6 +9,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.*;
 import org.geysermc.floodgate.api.FloodgateApi;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import static net.kyori.adventure.text.Component.text;
 
 public class ScoreboardManager {
@@ -74,6 +77,7 @@ public class ScoreboardManager {
 
          */
 
+
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -88,13 +92,13 @@ public class ScoreboardManager {
                     );
 
                     obj.getScore("5").customName(text("Currency: ")
-                            .append(text("0"))
+                            .append(text("" + LevelManager.getMoney(p)))
                     );
                 } else {
                     //Java
                     LobbyNumber.suffix(text("1"));
                     PlayerCounter.suffix(text("" + Bukkit.getOnlinePlayers().size()));
-                    CurrencyCounter.suffix(text("0"));
+                    CurrencyCounter.suffix(text("" + LevelManager.getMoney(p)));
                 }
             }
         }.runTaskTimer(Lobby_plugin.getInstance(), 2, 5);

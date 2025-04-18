@@ -1,6 +1,7 @@
 package gg.crystalized.lobby;
 import java.nio.ByteBuffer;
 import java.sql.*;
+import java.util.HashMap;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -44,15 +45,22 @@ public class LobbyDatabase {
             stmt.execute(createTemporaryData);
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("continueing without database");
+            Bukkit.getLogger().warning("continuing without database");
         }
     }
 
-    public static ResultSet fetchPlayerData(Player p){
+    public static HashMap<String, Object> fetchPlayerData(Player p){
         try(Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
-            return prep.executeQuery();
+            ResultSet set = prep.executeQuery();
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("exp_to_next_lvl", set.getInt("exp_to_next_lvl"));
+            map.put("level", set.getInt("level"));
+            map.put("money", set.getInt("money"));
+            map.put("skin_url", set.getString("skin_url"));
+            map.put("shardcore_id", set.getInt("shardcore_id"));
+            return map;
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
@@ -123,6 +131,7 @@ public class LobbyDatabase {
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.setString(2, p.getPlayerProfile().getTextures().getSkin().toString());
+            prepared.executeUpdate();
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());

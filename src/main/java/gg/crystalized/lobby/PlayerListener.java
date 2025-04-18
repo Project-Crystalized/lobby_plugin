@@ -66,12 +66,16 @@ public final class PlayerListener implements Listener {
 			LobbyDatabase.makeNewLobbyPlayersEntry(p);
 			//TODO Tutorial here
 		}
+
+
 		LevelManager.updateLevel(p);
+
+
 		try {
 			ResultSet set = LobbyDatabase.fetchAndDeleteTemporaryData(p);
 			while (set.next()) {
 				LevelManager.giveExperience(p, set.getInt("xp_amount"));
-				//TODO money method here
+				LevelManager.giveMoney(p, set.getInt("money_amount"));
 			}
 		}catch(SQLException exc){
 			Bukkit.getLogger().warning(exc.getMessage());

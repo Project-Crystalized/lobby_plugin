@@ -14,6 +14,7 @@ public final class Lobby_plugin extends JavaPlugin{
 	@Override
 	public void onEnable() {
 		this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
+		this.getServer().getPluginManager().registerEvents(new LevelManager(), this);
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "crystalized:main");
 		new Leaderboards();
 
@@ -21,6 +22,7 @@ public final class Lobby_plugin extends JavaPlugin{
 		this.getCommand("chess").setExecutor(dc);
 		this.getCommand("pig_hunt").setExecutor(dc);
 		this.getCommand("give_xp").setExecutor(dc);
+		this.getCommand("give_money").setExecutor(dc);
 		new RankDisplay();
 
 		LobbyDatabase.setup_databases();

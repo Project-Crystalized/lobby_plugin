@@ -25,4 +25,9 @@ commands:
     usage: "/give_xp"
     aliases: []
     permission: crystalized.lobby.command
+  give_money:
+    description: "gives money"
+    usage: "/give_money"
+    aliases: []
+    permission: crystalized.lobby.command
 

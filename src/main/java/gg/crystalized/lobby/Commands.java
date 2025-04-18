@@ -36,6 +36,8 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
                 return run_pig_hunt(args, commandSender);
             case "give_xp":
                 return give_xp(args, commandSender);
+            case "give_money":
+                return give_money(args, commandSender);
             default:
                 return false;
 
@@ -80,6 +82,14 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
     private boolean give_xp(String[] args, CommandSender sender){
         if(sender instanceof Player){
             LevelManager.giveExperience((Player) sender, Integer.parseInt(args[0]));
+            return true;
+        }
+        return false;
+    }
+
+    private boolean give_money(String[] args, CommandSender sender){
+        if(sender instanceof Player){
+            LevelManager.giveMoney((Player) sender, Integer.parseInt(args[0]));
             return true;
         }
         return false;
