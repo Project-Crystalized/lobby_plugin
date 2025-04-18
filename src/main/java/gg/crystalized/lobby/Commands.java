@@ -66,10 +66,9 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
                 commandSender
                         .sendMessage("Chess isn't a singleplayer game, choose someone else who is online currently.");
             } else if (!(Bukkit.getPlayer(args[0]) == null)) {
-                // TODO function to ask players if they want to player chess (they can accept or
-                // decline)
+                // TODO function to ask players if they want to player chess (they can accept or decline)
                 // TODO check if player is already in a chess game or another game
-                CrystalizedChess chess = new CrystalizedChess((Player) commandSender, Bukkit.getPlayer(args[0]));
+                Lobby_plugin.getInstance().newChessGame((Player) commandSender, Bukkit.getPlayer(args[0]));
             } else {
                 commandSender.sendMessage("This player isn't online");
             }

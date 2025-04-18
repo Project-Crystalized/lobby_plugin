@@ -2,12 +2,7 @@ package gg.crystalized.lobby;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.FireworkEffect;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
@@ -21,6 +16,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 
 import com.google.common.io.ByteArrayDataOutput;
@@ -28,6 +24,7 @@ import com.google.common.io.ByteStreams;
 
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -60,7 +57,7 @@ public final class PlayerListener implements Listener {
 				new PotionEffect(PotionEffectType.HUNGER, PotionEffect.INFINITE_DURATION, 1, false, false, true));
 		p.setGameMode(GameMode.ADVENTURE);
 		p.getInventory().clear();
-		GivePlayerSpawnItems(p);
+		Lobby_plugin.getInstance().GivePlayerSpawnItems(p);
 
 		if(!LobbyDatabase.isPlayerInDatabase(p)){
 			LobbyDatabase.makeNewLobbyPlayersEntry(p);
@@ -159,10 +156,5 @@ public final class PlayerListener implements Listener {
 	@EventHandler
 	public void onHunger(FoodLevelChangeEvent event) {
 		event.setCancelled(true);
-	}
-
-	public void GivePlayerSpawnItems(Player p) {
-		p.getInventory().clear();
-		// This is the method to give players items like the shardcore nexus
 	}
 }
