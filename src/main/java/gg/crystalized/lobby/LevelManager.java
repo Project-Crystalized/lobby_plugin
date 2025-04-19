@@ -47,7 +47,15 @@ public class LevelManager implements Listener {
         }
         p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, SoundCategory.AMBIENT, 1, 1); //TODO add better soundeffect
         p.sendActionBar(Component.text("LEVEL UP!").color(AQUA).decoration(BOLD, true));
-        //TODO add more cosmetics and then some back to this
+
+        for(Cosmetics c : Cosmetics.values()){
+            if(c.obtainableLevel == null){
+                continue;
+            }
+            if(c.obtainableLevel <= event.getNewLevel()){
+                LobbyDatabase.addCosmetic(p, c);
+            }
+        }
     }
 
     public static int getMoney(Player p){

@@ -54,12 +54,13 @@ public class LobbyDatabase {
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
+            set.next();
+            ResultSetMetaData data = set.getMetaData();
+            int count = data.getColumnCount();
             HashMap<String, Object> map = new HashMap<>();
-            map.put("exp_to_next_lvl", set.getInt("exp_to_next_lvl"));
-            map.put("level", set.getInt("level"));
-            map.put("money", set.getInt("money"));
-            map.put("skin_url", set.getString("skin_url"));
-            map.put("shardcore_id", set.getInt("shardcore_id"));
+            for(int i = 1; i <= count; i++){
+                map.put(data.getColumnLabel(i), set.getObject(data.getColumnLabel(i)));
+            }
             return map;
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
@@ -68,11 +69,19 @@ public class LobbyDatabase {
         }
     }
 
-    public static ResultSet fetchFriends(Player p){
+    public static HashMap<String, Object> fetchFriends(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Friends WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
-            return prep.executeQuery();
+            ResultSet set = prep.executeQuery();
+            set.next();
+            ResultSetMetaData data = set.getMetaData();
+            int count = data.getColumnCount();
+            HashMap<String, Object> map = new HashMap<>();
+            for(int i = 1; i <= count; i++){
+                map.put(data.getColumnLabel(i), set.getObject(data.getColumnLabel(i)));
+            }
+            return map;
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't get friend data for " + p.getName() + " UUID: " + p.getUniqueId());
@@ -80,11 +89,19 @@ public class LobbyDatabase {
         }
     }
 
-    public static ResultSet fetchCosmetics(Player p){
+    public static HashMap<String, Object> fetchCosmetics(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Cosmetics WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
-            return prep.executeQuery();
+            ResultSet set = prep.executeQuery();
+            set.next();
+            ResultSetMetaData data = set.getMetaData();
+            int count = data.getColumnCount();
+            HashMap<String, Object> map = new HashMap<>();
+            for(int i = 1; i <= count; i++){
+                map.put(data.getColumnLabel(i), set.getObject(data.getColumnLabel(i)));
+            }
+            return map;
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't get cosmetic data for " + p.getName() + "UUID: " + p.getUniqueId());
@@ -92,7 +109,19 @@ public class LobbyDatabase {
         }
     }
 
-    public static ResultSet fetchAndDeleteTemporaryData(Player p){
+    public static void addCosmetic(Player p, Cosmetics c){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("INSERT INTO Cosmetics(player_uuid, cosmetic_id) VALUES(?, ?)");
+            prep.setBytes(1, uuid_to_bytes(p));
+            prep.setInt(2, c.ordinal());
+            prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("failed adding cosmetic to database");
+        }
+    }
+
+    public static HashMap<String, Object> fetchAndDeleteTemporaryData(Player p){
         //CAREFUL: This makes it so the temporary data can only be retrieved once -> handle with care!!
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM TemporaryData WHERE player_uuid = ?;");
@@ -101,7 +130,14 @@ public class LobbyDatabase {
             PreparedStatement prepared = conn.prepareStatement("DELETE FROM TemporaryData WHERE player_uuid = ?;");
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.executeUpdate();
-            return set;
+            set.next();
+            ResultSetMetaData data = set.getMetaData();
+            int count = data.getColumnCount();
+            HashMap<String, Object> map = new HashMap<>();
+            for(int i = 1; i <= count; i++){
+                map.put(data.getColumnLabel(i), set.getObject(data.getColumnLabel(i)));
+            }
+            return map;
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't get cosmetic data for " + p.getName() + "UUID: " + p.getUniqueId());
