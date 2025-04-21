@@ -1,6 +1,7 @@
 package gg.crystalized.lobby;
 import java.nio.ByteBuffer;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -28,7 +29,8 @@ public class LobbyDatabase {
     //cosmetics will have an id
     String createCosmeticsTable = "CREATE TABLE IF NOT EXISTS Cosmetics ("
             + "player_uuid        BLOB,"
-            + "cosmetic_id        INTEGER"
+            + "cosmetic_id        INTEGER,"
+            + "currently_wearing   BOOLEAN"
             +");";
 
     String createTemporaryData = "CREATE TABLE IF NOT EXISTS TemporaryData ("
@@ -69,19 +71,23 @@ public class LobbyDatabase {
         }
     }
 
-    public static HashMap<String, Object> fetchFriends(Player p){
+    public static ArrayList<Object[]> fetchFriends(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Friends WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
-            set.next();
             ResultSetMetaData data = set.getMetaData();
             int count = data.getColumnCount();
-            HashMap<String, Object> map = new HashMap<>();
-            for(int i = 1; i <= count; i++){
-                map.put(data.getColumnLabel(i), set.getObject(data.getColumnLabel(i)));
+            ArrayList<Object[]> list = new ArrayList<>();
+            while(set.next()) {
+                for (int i = 1; i <= count; i++) {
+                    Object[] o = new Object[2];
+                    o[0] = data.getColumnLabel(i);
+                    o[1] = set.getObject(data.getColumnLabel(i));
+                    list.add(o);
+                }
             }
-            return map;
+            return list;
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't get friend data for " + p.getName() + " UUID: " + p.getUniqueId());
@@ -89,19 +95,23 @@ public class LobbyDatabase {
         }
     }
 
-    public static HashMap<String, Object> fetchCosmetics(Player p){
+    public static ArrayList<Object[]> fetchCosmetics(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Cosmetics WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
-            set.next();
             ResultSetMetaData data = set.getMetaData();
             int count = data.getColumnCount();
-            HashMap<String, Object> map = new HashMap<>();
-            for(int i = 1; i <= count; i++){
-                map.put(data.getColumnLabel(i), set.getObject(data.getColumnLabel(i)));
+            ArrayList<Object[]> list = new ArrayList<>();
+            while(set.next()) {
+                for (int i = 1; i <= count; i++) {
+                    Object[] o = new Object[2];
+                    o[0] = data.getColumnLabel(i);
+                    o[1] = set.getObject(data.getColumnLabel(i));
+                    list.add(o);
+                }
             }
-            return map;
+            return list;
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't get cosmetic data for " + p.getName() + "UUID: " + p.getUniqueId());
@@ -163,7 +173,7 @@ public class LobbyDatabase {
     public static void makeNewLobbyPlayersEntry(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
             String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, exp_to_next_lvl, level, money, skin_url, shardcore_id)"
-                    + "VALUES (?, 0, 0, 0, ?, 1)";
+                    + "VALUES (?, 0, 0, 0, ?, 0)";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.setString(2, p.getPlayerProfile().getTextures().getSkin().toString());

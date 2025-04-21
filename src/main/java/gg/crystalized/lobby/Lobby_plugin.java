@@ -48,6 +48,7 @@ public final class Lobby_plugin extends JavaPlugin{
 
 
 	//This will be called in this class *and* when a minigames.CrystalizedChess game ends
+	/*
 	public void GivePlayerSpawnItems(Player p) {
 		p.getInventory().clear();
 
@@ -58,6 +59,8 @@ public final class Lobby_plugin extends JavaPlugin{
 		item.setItemMeta(meta);
 		p.getInventory().setItem(4, item);
 	}
+
+	 */
 
 	public void newChessGame(Player white, Player black) {
 		CrystalizedChess chess = new CrystalizedChess(white, black);

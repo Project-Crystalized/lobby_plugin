@@ -57,20 +57,22 @@ public final class PlayerListener implements Listener {
 				new PotionEffect(PotionEffectType.HUNGER, PotionEffect.INFINITE_DURATION, 1, false, false, true));
 		p.setGameMode(GameMode.ADVENTURE);
 		p.getInventory().clear();
-		Lobby_plugin.getInstance().GivePlayerSpawnItems(p);
 
 		if(!LobbyDatabase.isPlayerInDatabase(p)){
 			LobbyDatabase.makeNewLobbyPlayersEntry(p);
 			//TODO Tutorial here maybe?
 		}
 
-		LevelManager.updateLevel(p);
-
 		HashMap<String, Object> map = LobbyDatabase.fetchAndDeleteTemporaryData(p);
-
-		LevelManager.giveExperience(p, (Integer) map.get("xp_amount"));
-		LevelManager.giveMoney(p, (Integer) map.get("money_amount"));
-
+		if(map.get("xp_amount") != null) {
+			LevelManager.giveExperience(p, (Integer) map.get("xp_amount"));
+		}
+		if(map.get("money_amount") != null) {
+			LevelManager.giveMoney(p, (Integer) map.get("money_amount"));
+		}
+		LevelManager.updateLevel(p);
+		LobbyItem.giveLobbyItems(p);
+		//TODO check what cosmetics the player is wearing
 
 		p.sendPlayerListHeaderAndFooter(
 				// Header

@@ -4,6 +4,7 @@ import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
+import gg.crystalized.lobby.LobbyItem;
 import gg.crystalized.lobby.Lobby_plugin;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -99,8 +100,8 @@ public class CrystalizedChess implements Listener {
                     white.closeInventory();
                     black.closeInventory();
                     Bukkit.getServer().sendMessage(text("[Chess] TODO: broadcast results here")); //TODO
-                    Lobby_plugin.getInstance().GivePlayerSpawnItems(white);
-                    Lobby_plugin.getInstance().GivePlayerSpawnItems(black);
+                    LobbyItem.giveLobbyItems(white);
+                    LobbyItem.giveLobbyItems(black);
                     Lobby_plugin.getInstance().removeChessGame(ChessID);
                     cancel();
                 }
