@@ -63,6 +63,7 @@ public final class PlayerListener implements Listener {
 			//TODO Tutorial here maybe?
 		}
 
+		LevelManager.updateLevel(p);
 		HashMap<String, Object> map = LobbyDatabase.fetchAndDeleteTemporaryData(p);
 		if(map.get("xp_amount") != null) {
 			LevelManager.giveExperience(p, (Integer) map.get("xp_amount"));
@@ -70,7 +71,6 @@ public final class PlayerListener implements Listener {
 		if(map.get("money_amount") != null) {
 			LevelManager.giveMoney(p, (Integer) map.get("money_amount"));
 		}
-		LevelManager.updateLevel(p);
 		LobbyItem.giveLobbyItems(p);
 		//TODO check what cosmetics the player is wearing
 

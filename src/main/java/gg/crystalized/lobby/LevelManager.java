@@ -23,7 +23,7 @@ public class LevelManager implements Listener {
         try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)){
             String insertData = "UPDATE LobbyPlayers SET exp_to_next_lvl = ?, level = ? WHERE player_uuid = ?";
             PreparedStatement prep = conn.prepareStatement(insertData);
-            prep.setInt(1, (int) p.getExp());
+            prep.setFloat(1, p.getExp());
             prep.setInt(2, p.getLevel());
             prep.setBytes(3, LobbyDatabase.uuid_to_bytes(p));
             prep.executeUpdate();
@@ -35,9 +35,9 @@ public class LevelManager implements Listener {
 
     public static void updateLevel(Player p){
         HashMap<String, Object> map = LobbyDatabase.fetchPlayerData(p);
-           if(map == null) return;
-           p.setLevel((Integer)map.get("level"));
-           p.setExp((Integer)map.get("exp_to_next_lvl"));
+        if(map == null) return;
+        p.setLevel((Integer)map.get("level"));
+        p.setExp(((Double)map.get("exp_to_next_lvl")).floatValue());
     }
     @EventHandler
     public static void levelUp(PlayerLevelChangeEvent event){
