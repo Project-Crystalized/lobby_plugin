@@ -25,6 +25,7 @@ public final class Lobby_plugin extends JavaPlugin{
 		this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
 		this.getServer().getPluginManager().registerEvents(new LevelManager(), this);
 		this.getServer().getPluginManager().registerEvents(new CrystalizedChessListener(), this);
+		this.getServer().getPluginManager().registerEvents(new InvListener(), this);
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "crystalized:main");
 		new Leaderboards();
 
