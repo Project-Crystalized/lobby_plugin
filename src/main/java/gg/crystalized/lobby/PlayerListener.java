@@ -71,7 +71,7 @@ public final class PlayerListener implements Listener {
 		if(map.get("money_amount") != null) {
 			LevelManager.giveMoney(p, (Integer) map.get("money_amount"));
 		}
-		LobbyItem.giveLobbyItems(p);
+		InventoryManager.giveLobbyItems(p);
 		//TODO check what cosmetics the player is wearing
 
 		p.sendPlayerListHeaderAndFooter(
