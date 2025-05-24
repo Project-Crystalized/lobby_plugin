@@ -36,7 +36,18 @@ public class InventoryManager implements Listener {
     }
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event){
-
+        event.setCancelled(true);
+        if(event.getCurrentItem() == null) return;
+        ItemStack item = event.getCurrentItem();
+        App app = null;
+        for(App a : App.values()){
+            if(item.equals(a.build())){
+                app = a;
+                break;
+            }
+        }
+        if(app == null) return;
+        //TODO add file reader
     }
 
     public Inventory getView(Material m){

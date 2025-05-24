@@ -37,6 +37,7 @@ public final class Lobby_plugin extends JavaPlugin{
 		new RankDisplay();
 
 		LobbyDatabase.setup_databases();
+		new LobbyConfig();
 	}
 
 	@Override
