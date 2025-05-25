@@ -7,7 +7,6 @@ import com.google.gson.JsonParser;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.logging.Level;

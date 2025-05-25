@@ -1,7 +1,6 @@
 package gg.crystalized.lobby;
 
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -32,39 +31,16 @@ public class InventoryManager implements Listener {
             return;
         }
         if(event.getItem() == null) return;
-        event.getPlayer().openInventory(getView(event.getMaterial()));
+        App.identifyApp(event.getItem()).op.action(event.getPlayer());
     }
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event){
         event.setCancelled(true);
         if(event.getCurrentItem() == null) return;
         ItemStack item = event.getCurrentItem();
-        App app = null;
-        for(App a : App.values()){
-            if(item.equals(a.build())){
-                app = a;
-                break;
-            }
-        }
+        App app = App.identifyApp(item);
         if(app == null) return;
-        //TODO add file reader
-    }
-
-    public Inventory getView(Material m){
-        Inventory inv = null;
-        App.useCases use = null;
-        if(m == Material.EMERALD){
-            inv = Bukkit.getServer().createInventory(null, 54, "\uA000\uA002");
-            use = App.useCases.Menu;
-        }else if(m == Material.COMPASS){
-            inv = Bukkit.getServer().createInventory(null, 54, "\uA000\uA006");
-            use = App.useCases.Games;
-        }
-        if(inv == null){
-            return null;
-        }
-        App.buildApps(inv, use);
-        return inv;
+        app.op.action((Player)event.getWhoClicked());
     }
 
     public static void giveLobbyItems(Player p){
