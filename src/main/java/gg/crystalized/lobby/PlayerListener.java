@@ -127,7 +127,7 @@ public final class PlayerListener implements Listener {
 		NPC npc = CitizensAPI.getNPCRegistry().getNPC(e.getEntity());
 		World w = e.getDamager().getWorld();
 		if (npc.getName().equals("Litestrike!")) {
-			e.getDamager().teleport(LobbyConfig.litestrike_hub/*new Location(w, -29, -61, -112, -144, 0)*/);
+			e.getDamager().teleport(LobbyConfig.litestrike_hub);
 		} else if (npc.getName().equals("Litestrike")) {
 			ByteArrayDataOutput out = ByteStreams.newDataOutput();
 			out.writeUTF("Connect");

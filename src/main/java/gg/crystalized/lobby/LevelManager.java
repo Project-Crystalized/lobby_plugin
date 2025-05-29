@@ -10,7 +10,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
@@ -56,7 +55,7 @@ public class LevelManager implements Listener {
         p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, SoundCategory.AMBIENT, 1, 1); //TODO add better soundeffect
         p.sendActionBar(Component.text("LEVEL UP!").color(AQUA).decoration(BOLD, true)); //TODO make a better like thing for this idk how to call it
 
-        for(Cosmetics c : Cosmetics.values()){
+        for(Cosmetic c : Cosmetic.values()){
             if(c.obtainableLevel == null){
                 continue;
             }

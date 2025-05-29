@@ -95,21 +95,20 @@ public class LobbyDatabase {
         }
     }
 
-    public static ArrayList<Object[]> fetchCosmetics(Player p){
+    public static ArrayList<HashMap<String, Object>> fetchCosmetics(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Cosmetics WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
             ResultSetMetaData data = set.getMetaData();
             int count = data.getColumnCount();
-            ArrayList<Object[]> list = new ArrayList<>();
+            ArrayList<HashMap<String, Object>> list = new ArrayList<>();
             while(set.next()) {
+                HashMap<String, Object> obj = new HashMap<>();
                 for (int i = 1; i <= count; i++) {
-                    Object[] o = new Object[2];
-                    o[0] = data.getColumnLabel(i);
-                    o[1] = set.getObject(data.getColumnLabel(i));
-                    list.add(o);
+                    obj.put(data.getColumnLabel(i), set.getObject(data.getColumnLabel(i)));
                 }
+                list.add(obj);
             }
             return list;
         }catch(SQLException e){
@@ -119,7 +118,7 @@ public class LobbyDatabase {
         }
     }
 
-    public static void addCosmetic(Player p, Cosmetics c){
+    public static void addCosmetic(Player p, Cosmetic c){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("INSERT INTO Cosmetics(player_uuid, cosmetic_id) VALUES(?, ?)");
             prep.setBytes(1, uuid_to_bytes(p));
