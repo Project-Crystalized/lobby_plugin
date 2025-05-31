@@ -53,13 +53,27 @@ public enum Cosmetic {
    //TODO save what shardcores the player has
 
     public static void placeCosmetics(Inventory inv, Player p){
-        ArrayList<HashMap<String, Object>> cosmetics = LobbyDatabase.fetchCosmetics(p);
+        ArrayList<Object[]> cosmetics = LobbyDatabase.fetchCosmetics(p);
         int i = 0;
-        for(HashMap<String, Object> h : cosmetics){
-            if((Boolean)h.get("currently_wearing")){
-                inv.setItem(i, Cosmetic.values()[(Integer)h.get("cosmetic_id")].build());
-                cosmetics.remove(h);
+        ArrayList<Integer> list = new ArrayList<>();
+        byte[] b = {0};
+        for(Object[] o : cosmetics){
+            if(o[0] != b){
+                if(InventoryManager.placeOnRightSlot(i, 16) == null){
+                    return;
+                }
+                inv.setItem(InventoryManager.placeOnRightSlot(i, 16), Cosmetic.values()[(Integer)o[1]].build());
+                list.add(cosmetics.indexOf(o));
+                i++;
             }
+        }
+
+        for(Object[] o : cosmetics){
+            if(list.contains(cosmetics.indexOf(o))) continue;
+            if(InventoryManager.placeOnRightSlot(i, 16) == null){
+                return;
+            }
+            inv.setItem(InventoryManager.placeOnRightSlot(i, 16), Cosmetic.values()[(Integer)o[1]].build());
             i++;
         }
     }

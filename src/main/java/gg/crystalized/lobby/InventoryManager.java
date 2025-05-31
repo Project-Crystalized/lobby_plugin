@@ -72,4 +72,36 @@ public class InventoryManager implements Listener {
         item.setItemMeta(meta);
         return item;
     }
+
+    public static Integer placeOnRightSlot(int iterator, int end){
+        int[] border = {7,8, 16, 17, 26, 26, 34, 35, 43, 44, 52, 53};
+        int[] nextLine = {2, 11, 20, 29, 38, 47};
+        int fin = iterator + 2;
+        boolean isInBorder = false;
+
+        for(int i : border){
+            if(iterator + 2 == i){
+                isInBorder = true;
+                break;
+            }
+        }
+
+        boolean isOnNextLine = false;
+        if(!isInBorder) return fin;
+        while(!isOnNextLine){
+            fin++;
+            for(int i : nextLine){
+                if(iterator + 2 == i){
+                    isOnNextLine = true;
+                    break;
+                }
+            }
+        }
+
+        if(fin < end){
+            return null;
+        }
+
+        return fin;
+    }
 }

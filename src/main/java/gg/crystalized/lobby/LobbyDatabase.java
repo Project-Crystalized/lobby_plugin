@@ -95,20 +95,20 @@ public class LobbyDatabase {
         }
     }
 
-    public static ArrayList<HashMap<String, Object>> fetchCosmetics(Player p){
+    public static ArrayList<Object[]> fetchCosmetics(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Cosmetics WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
             ResultSetMetaData data = set.getMetaData();
             int count = data.getColumnCount();
-            ArrayList<HashMap<String, Object>> list = new ArrayList<>();
+            ArrayList<Object[]> list = new ArrayList<>();
             while(set.next()) {
-                HashMap<String, Object> obj = new HashMap<>();
+                Object[] o = new Object[2];
                 for (int i = 1; i <= count; i++) {
-                    obj.put(data.getColumnLabel(i), set.getObject(data.getColumnLabel(i)));
+                    o[i-1] = set.getObject(data.getColumnLabel(i));
                 }
-                list.add(obj);
+                list.add(o);
             }
             return list;
         }catch(SQLException e){
