@@ -49,8 +49,11 @@ public class InventoryManager implements Listener {
             event.getWhoClicked().openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu, p));
             return;
         }
-        if(app == null) return;
-        app.op.action((Player)event.getWhoClicked());
+        if(app != null) {
+            app.op.action((Player) event.getWhoClicked());
+        }else if(Cosmetic.identifyCosmetic(item) != null){
+            Cosmetic.identifyCosmetic(item).clicked(event.getClick(), p);
+        }
     }
 
     public static void giveLobbyItems(Player p){

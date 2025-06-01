@@ -130,6 +130,19 @@ public class LobbyDatabase {
         }
     }
 
+    public static void cosmeticSetWearing(Player p, Cosmetic c, boolean wearing){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("UPDATE Cosmetics SET currently_wearing = ? WHERE player_uuid = ? AND cosmetic_id = ?");
+            prep.setBoolean(1, wearing);
+            prep.setBytes(2, uuid_to_bytes(p));
+            prep.setInt(3, c.ordinal());
+            prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("failed adding cosmetic to database");
+        }
+    }
+
     public static HashMap<String, Object> fetchAndDeleteTemporaryData(Player p){
         //CAREFUL: This makes it so the temporary data can only be retrieved once -> handle with care!!
         try(Connection conn = DriverManager.getConnection(URL)){
