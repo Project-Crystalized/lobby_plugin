@@ -22,7 +22,11 @@ public enum Cosmetic {
     // ATTENTION!!!!
     // The order of the cosmetics here MUST NOT BE CHANGED.
     // otherwise it will mess up the database
-    HEADPHONES("cosmetic/head/headphones", 1, null, EquipmentSlot.HEAD, "Headphones");
+    HEADPHONES("cosmetic/head/headphones", 1, null, EquipmentSlot.HEAD, "Headphones"),
+    BEANIE("cosmetic/head/beanie", 10, null, EquipmentSlot.HEAD, "Beanie"),
+    FOX_BERET("cosmetic/head/fox_beret", null, 50, EquipmentSlot.HEAD, "Fox Beret"),
+    COWBOY_HAT("cosmetic/head/merica", null, 150, EquipmentSlot.HEAD, "Cowboy Hat"),
+    HANDBAG("cosmetic/handheld/handbag", null, 200, EquipmentSlot.OFF_HAND, "Handbag");
     final String itemModel;
     final Integer obtainableLevel;
     final Integer price;
@@ -36,36 +40,41 @@ public enum Cosmetic {
         this.name = name;
     }
 
-    public ItemStack build(boolean wearing){
+    public ItemStack build(Boolean wearing){
         ItemStack item = new ItemStack(Material.COAL);
         ItemMeta meta = item.getItemMeta();
         meta.setItemModel(new NamespacedKey("crystalized", itemModel));
         meta.displayName(Component.text(name).color(WHITE).decoration(ITALIC, false));
-        ArrayList<Component> desc = new ArrayList<>();
-        if(wearing){
-            desc.add(Component.text("[Right-click] take off").color(WHITE).decoration(ITALIC, false));
-        }else{
-            desc.add(Component.text("[Right-click] equip").color(WHITE).decoration(ITALIC, false));
-        }
-        desc.add(Component.text("[Left-click] view").color(WHITE).decoration(ITALIC, false));
-        desc.add(Component.text(slot.toString()).color(BLUE).decoration(ITALIC, false));
-        meta.lore(desc);
-        EquippableComponent e = meta.getEquippable();
-        e.setSlot(slot);
-        meta.setEquippable(e);
+        meta.lore(getDescription(wearing));
         item.setItemMeta(meta);
         return item;
     }
 
-   //TODO save what shardcores the player has
+    public ArrayList<Component> getDescription(Boolean wearing){
+        ArrayList<Component> desc = new ArrayList<>();
+        if(wearing != null && wearing){
+            desc.add(Component.text("[Right-click] take off").color(WHITE).decoration(ITALIC, false));
+        }else if(wearing != null && !wearing){
+            desc.add(Component.text("[Right-click] equip").color(WHITE).decoration(ITALIC, false));
+        }else if(obtainableLevel != null){
+            desc.add(Component.text("[Right-click] unlock at level" + obtainableLevel).color(WHITE).decoration(ITALIC, false));
+        }else{
+            desc.add(Component.text("[Right-click] money: " + price).color(WHITE).decoration(ITALIC, false));
+        }
+        desc.add(Component.text("[Left-click] view").color(WHITE).decoration(ITALIC, false));
+        desc.add(Component.text(slot.toString()).color(BLUE).decoration(ITALIC, false));
+        return desc;
+    }
 
+   //TODO add translatables to everything
+
+   //TODO save what shardcores the player has in database
     public static void placeCosmetics(Inventory inv, Player p){
         ArrayList<Object[]> cosmetics = LobbyDatabase.fetchCosmetics(p);
         int i = 0;
         ArrayList<Integer> list = new ArrayList<>();
-        byte[] b = {0};
         for(Object[] o : cosmetics){
-            if(o[0] != b){
+            if((Integer)o[2] == 1){
                 if(InventoryManager.placeOnRightSlot(i, 16) == null){
                     return;
                 }
@@ -84,7 +93,8 @@ public enum Cosmetic {
             i++;
         }
     }
-
+    // 0 = false
+    // 1 = true
     public static Cosmetic identifyCosmetic(ItemStack item){
         Cosmetic cos = null;
         for(Cosmetic c : Cosmetic.values()){
@@ -114,12 +124,11 @@ public enum Cosmetic {
         }
         ArrayList<Object[]> list = LobbyDatabase.fetchCosmetics(p);
         boolean wear = false;
-        byte[] b = {0};
         for(Object[] o : list){
             if((Integer)o[1] != this.ordinal()){
                 continue;
             }
-            if(o[0] != b){
+            if((Integer)o[2] == 1){
                 wear = true;
                 break;
             }
@@ -145,7 +154,9 @@ public enum Cosmetic {
                 p.sendEquipmentChange(p, this.slot, null);
             }else {
                 p.sendEquipmentChange(p, this.slot, this.build(true));
-            } //TODO database
+            }
+            LobbyDatabase.cosmeticSetWearing(p, this, !this.isWearing(p));
         }
+        //TODO add view feature
     }
 }

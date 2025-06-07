@@ -52,6 +52,7 @@ public class InventoryManager implements Listener {
         if(app != null) {
             app.op.action((Player) event.getWhoClicked());
         }else if(Cosmetic.identifyCosmetic(item) != null){
+            event.getInventory().setItem(event.getSlot(), Cosmetic.identifyCosmetic(item).build(!Cosmetic.identifyCosmetic(item).isWearing(p)));
             Cosmetic.identifyCosmetic(item).clicked(event.getClick(), p);
         }
     }

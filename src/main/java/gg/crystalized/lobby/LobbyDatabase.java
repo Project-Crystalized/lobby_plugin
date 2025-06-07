@@ -30,7 +30,7 @@ public class LobbyDatabase {
     String createCosmeticsTable = "CREATE TABLE IF NOT EXISTS Cosmetics ("
             + "player_uuid        BLOB,"
             + "cosmetic_id        INTEGER,"
-            + "currently_wearing   BOOLEAN"
+            + "currently_wearing   INTEGER"
             +");";
 
     String createTemporaryData = "CREATE TABLE IF NOT EXISTS TemporaryData ("
@@ -104,7 +104,7 @@ public class LobbyDatabase {
             int count = data.getColumnCount();
             ArrayList<Object[]> list = new ArrayList<>();
             while(set.next()) {
-                Object[] o = new Object[2];
+                Object[] o = new Object[3];
                 for (int i = 1; i <= count; i++) {
                     o[i-1] = set.getObject(data.getColumnLabel(i));
                 }
@@ -120,26 +120,32 @@ public class LobbyDatabase {
 
     public static void addCosmetic(Player p, Cosmetic c){
         try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("INSERT INTO Cosmetics(player_uuid, cosmetic_id) VALUES(?, ?)");
+            PreparedStatement prep = conn.prepareStatement("INSERT INTO Cosmetics(player_uuid, cosmetic_id) VALUES(?, ?, ?)");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setInt(2, c.ordinal());
+            prep.setInt(3, 0);
             prep.executeUpdate();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("failed adding cosmetic to database");
         }
     }
-
+    // 0 = false
+    // 1 = true
     public static void cosmeticSetWearing(Player p, Cosmetic c, boolean wearing){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("UPDATE Cosmetics SET currently_wearing = ? WHERE player_uuid = ? AND cosmetic_id = ?");
-            prep.setBoolean(1, wearing);
+            int i = 0;
+            if(wearing){
+               i = 1;
+            }
+            prep.setInt(1, i);
             prep.setBytes(2, uuid_to_bytes(p));
             prep.setInt(3, c.ordinal());
             prep.executeUpdate();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("failed adding cosmetic to database");
+            Bukkit.getLogger().warning("failed set wearing of cosmetic in database");
         }
     }
 
