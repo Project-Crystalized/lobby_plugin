@@ -14,6 +14,7 @@ import java.util.logging.Level;
 public class LobbyConfig {
     public static Location spawn;
     public static Location litestrike_hub;
+    public static Location clothing_room;
 
     public LobbyConfig(){
         try {
@@ -22,7 +23,7 @@ public class LobbyConfig {
 
             JsonElement v = json.get("version");
             if(v.getAsInt() != 1){
-                throw new Exception("incorrect lobby_config.json file version, please update your map_config.json");
+                throw new Exception("incorrect lobby_config.json file version, please update your lobby_config.json");
             }
 
             JsonArray spa = json.get("spawn").getAsJsonArray();
@@ -30,6 +31,9 @@ public class LobbyConfig {
 
             JsonArray lite = json.get("litestrike_hub").getAsJsonArray();
             litestrike_hub = new Location(Bukkit.getWorld("world"), lite.get(0).getAsDouble(), lite.get(1).getAsDouble(), lite.get(2).getAsDouble(), lite.get(3).getAsFloat(), lite.get(4).getAsFloat());
+
+            JsonArray cloth = json.get("litestrike_hub").getAsJsonArray();
+            clothing_room = new Location(Bukkit.getWorld("world"), cloth.get(0).getAsDouble(), cloth.get(1).getAsDouble(), cloth.get(2).getAsDouble(), cloth.get(3).getAsFloat(), cloth.get(4).getAsFloat());
 
         }catch(Exception e){
             Bukkit.getLogger().log(Level.SEVERE, "Could not load the lobby configuration file!\n Error: " + e);

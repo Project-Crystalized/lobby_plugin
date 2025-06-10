@@ -27,6 +27,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import static net.kyori.adventure.text.Component.text;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 
@@ -66,8 +67,14 @@ public final class PlayerListener implements Listener {
 			LevelManager.giveMoney(p, (Integer) map.get("money_amount"));
 		}
 		InventoryManager.giveLobbyItems(p);
-		//TODO check what cosmetics the player is wearing
-
+		ArrayList<Object[]> cos = LobbyDatabase.fetchCosmetics(p);
+		for(Object[] o : cos){
+			if((Integer)o[2] == 1){
+				Cosmetic c = Cosmetic.values()[(Integer)o[1]];
+				p.sendEquipmentChange(p, c.slot, c.build(true));
+			}
+		}
+		LobbyDatabase.addShardcore(p, 0);
 		p.sendPlayerListHeaderAndFooter(
 				// Header
 				text("\nProject Crystalized Lobby\n").color(NamedTextColor.LIGHT_PURPLE),

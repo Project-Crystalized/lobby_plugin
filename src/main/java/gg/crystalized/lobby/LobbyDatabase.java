@@ -33,6 +33,11 @@ public class LobbyDatabase {
             + "currently_wearing   INTEGER"
             +");";
 
+    String createShardcoreTable = "CREATE TABLE IF NOT EXISTS Shardcores ("
+            + "player_uuid        BLOB,"
+            + "shardcore_id        INTEGER"
+            +");";
+
     String createTemporaryData = "CREATE TABLE IF NOT EXISTS TemporaryData ("
             + "player_uuid        BLOB UNIQUE,"
             + "xp_amount        INTEGER,"
@@ -44,6 +49,7 @@ public class LobbyDatabase {
             stmt.execute(createLobbyPlayerTable);
             stmt.execute(createFriendsTable);
             stmt.execute(createCosmeticsTable);
+            stmt.execute(createShardcoreTable);
             stmt.execute(createTemporaryData);
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
@@ -120,7 +126,7 @@ public class LobbyDatabase {
 
     public static void addCosmetic(Player p, Cosmetic c){
         try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("INSERT INTO Cosmetics(player_uuid, cosmetic_id) VALUES(?, ?, ?)");
+            PreparedStatement prep = conn.prepareStatement("INSERT INTO Cosmetics(player_uuid, cosmetic_id, currently_wearing) VALUES(?, ?, ?)");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setInt(2, c.ordinal());
             prep.setInt(3, 0);
@@ -146,6 +152,41 @@ public class LobbyDatabase {
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("failed set wearing of cosmetic in database");
+        }
+    }
+
+    public static ArrayList<Object[]> fetchShardcores(Player p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT * FROM Shardcores WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            ResultSet set = prep.executeQuery();
+            ResultSetMetaData data = set.getMetaData();
+            int count = data.getColumnCount();
+            ArrayList<Object[]> list = new ArrayList<>();
+            while(set.next()) {
+                Object[] o = new Object[2];
+                for (int i = 1; i <= count; i++) {
+                    o[i-1] = set.getObject(data.getColumnLabel(i));
+                }
+                list.add(o);
+            }
+            return list;
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't get shardcore data for " + p.getName() + "UUID: " + p.getUniqueId());
+            return null;
+        }
+    }
+
+    public static void addShardcore(Player p, int i){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("INSERT INTO Shardcores(player_uuid, shardcore_id) VALUES(?, ?)");
+            prep.setBytes(1, uuid_to_bytes(p));
+            prep.setInt(2, i);
+            prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("failed adding cosmetic to database");
         }
     }
 

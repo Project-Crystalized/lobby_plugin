@@ -59,7 +59,7 @@ public enum Cosmetic {
         }else if(obtainableLevel != null){
             desc.add(Component.text("[Right-click] unlock at level" + obtainableLevel).color(WHITE).decoration(ITALIC, false));
         }else{
-            desc.add(Component.text("[Right-click] money: " + price).color(WHITE).decoration(ITALIC, false));
+            desc.add(Component.text("[Right-click] price: " + price).color(WHITE).decoration(ITALIC, false));
         }
         desc.add(Component.text("[Left-click] view").color(WHITE).decoration(ITALIC, false));
         desc.add(Component.text(slot.toString()).color(BLUE).decoration(ITALIC, false));
@@ -68,17 +68,16 @@ public enum Cosmetic {
 
    //TODO add translatables to everything
 
-   //TODO save what shardcores the player has in database
     public static void placeCosmetics(Inventory inv, Player p){
         ArrayList<Object[]> cosmetics = LobbyDatabase.fetchCosmetics(p);
         int i = 0;
         ArrayList<Integer> list = new ArrayList<>();
         for(Object[] o : cosmetics){
             if((Integer)o[2] == 1){
-                if(InventoryManager.placeOnRightSlot(i, 16) == null){
-                    return;
+                if(InventoryManager.placeOnRightSlot(i, 16, 0, 1, 0) == null){
+                    break;
                 }
-                inv.setItem(InventoryManager.placeOnRightSlot(i, 16), Cosmetic.values()[(Integer)o[1]].build(true));
+                inv.setItem(InventoryManager.placeOnRightSlot(i, 16, 0, 1, 0), Cosmetic.values()[(Integer)o[1]].build(true));
                 list.add(cosmetics.indexOf(o));
                 i++;
             }
@@ -86,13 +85,44 @@ public enum Cosmetic {
 
         for(Object[] o : cosmetics){
             if(list.contains(cosmetics.indexOf(o))) continue;
-            if(InventoryManager.placeOnRightSlot(i, 16) == null){
-                return;
+            if(InventoryManager.placeOnRightSlot(i, 16, 0, 1, 0) == null){
+                break;
             }
-            inv.setItem(InventoryManager.placeOnRightSlot(i, 16), Cosmetic.values()[(Integer)o[1]].build(false));
+            inv.setItem(InventoryManager.placeOnRightSlot(i, 16, 0, 1, 0), Cosmetic.values()[(Integer)o[1]].build(false));
             i++;
         }
+
+        int it = 0;
+        int rounds = 0;
+        ArrayList<Cosmetic> cos = new ArrayList<>();
+        while(InventoryManager.placeOnRightSlot(it,50, 4, 2, 0) != null && rounds <= 20) {
+            rounds++;
+            int r = (int) Math.round(Math.random() * (Cosmetic.values().length - 1));
+            Cosmetic c = Cosmetic.values()[r];
+            if(cos.contains(c) || c.ownsCosmetic(p) || c.price == null){
+                continue;
+            }
+            inv.setItem(InventoryManager.placeOnRightSlot(it, 50, 4, 2, 0), c.build(null));
+            cos.add(c);
+            it++;
+        }
+
+        it = 0;
+        rounds = 0;
+        ArrayList<Integer> shard = new ArrayList<>();
+        while(InventoryManager.placeOnRightSlot(it,32, 2, 3, 0) != null && rounds <= 6){
+            rounds++;
+            int r = (int) Math.round(Math.random() * (InventoryManager.shardcores.length - 1));
+            if(shard.contains(r) || InventoryManager.ownsShardcore(r, p)){
+                continue;
+            }
+            inv.setItem(InventoryManager.placeOnRightSlot(it,32, 2, 3, 0), InventoryManager.buildShardcore(r, null));
+            shard.add(r);
+            it++;
+        }
     }
+    //TODO make shardcores equippable
+
     // 0 = false
     // 1 = true
     public static Cosmetic identifyCosmetic(ItemStack item){
@@ -159,4 +189,6 @@ public enum Cosmetic {
         }
         //TODO add view feature
     }
+
+    //TODO make a buy method
 }
