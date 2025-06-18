@@ -1,6 +1,7 @@
 package gg.crystalized.lobby;
 
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -68,59 +69,23 @@ public enum Cosmetic {
 
    //TODO add translatables to everything
 
-    public static void placeCosmetics(Inventory inv, Player p){
-        ArrayList<Object[]> cosmetics = LobbyDatabase.fetchCosmetics(p);
+    public static void placeCosmetics(Player p, int button){
+        EquipmentSlot[] eq = {EquipmentSlot.OFF_HAND, EquipmentSlot.HEAD, null, null};
+        if(button == 2){
+            //TODO set website URL here
+            return;
+        }
+        Inventory inv = Bukkit.getServer().createInventory(null, 54, Component.text("\uA000\uA00A").color(WHITE));
         int i = 0;
-        ArrayList<Integer> list = new ArrayList<>();
-        for(Object[] o : cosmetics){
-            if((Integer)o[2] == 1){
-                if(InventoryManager.placeOnRightSlot(i, 16, 0, 1, 0) == null){
-                    break;
-                }
-                inv.setItem(InventoryManager.placeOnRightSlot(i, 16, 0, 1, 0), Cosmetic.values()[(Integer)o[1]].build(true));
-                list.add(cosmetics.indexOf(o));
-                i++;
-            }
-        }
-
-        for(Object[] o : cosmetics){
-            if(list.contains(cosmetics.indexOf(o))) continue;
-            if(InventoryManager.placeOnRightSlot(i, 16, 0, 1, 0) == null){
-                break;
-            }
-            inv.setItem(InventoryManager.placeOnRightSlot(i, 16, 0, 1, 0), Cosmetic.values()[(Integer)o[1]].build(false));
-            i++;
-        }
-
-        int it = 0;
-        int rounds = 0;
-        ArrayList<Cosmetic> cos = new ArrayList<>();
-        while(InventoryManager.placeOnRightSlot(it,50, 4, 2, 0) != null && rounds <= 20) {
-            rounds++;
-            int r = (int) Math.round(Math.random() * (Cosmetic.values().length - 1));
-            Cosmetic c = Cosmetic.values()[r];
-            if(cos.contains(c) || c.ownsCosmetic(p) || c.price == null){
+        for(Cosmetic c : Cosmetic.values()){
+            if(c.slot != eq[button] || c.ownsCosmetic(p)){
                 continue;
             }
-            inv.setItem(InventoryManager.placeOnRightSlot(it, 50, 4, 2, 0), c.build(null));
-            cos.add(c);
-            it++;
+            inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 4, 1, 1), c.build(null));
         }
-
-        it = 0;
-        rounds = 0;
-        ArrayList<Integer> shard = new ArrayList<>();
-        while(InventoryManager.placeOnRightSlot(it,32, 2, 3, 0) != null && rounds <= 6){
-            rounds++;
-            int r = (int) Math.round(Math.random() * (InventoryManager.shardcores.length - 1));
-            if(shard.contains(r) || InventoryManager.ownsShardcore(r, p)){
-                continue;
-            }
-            inv.setItem(InventoryManager.placeOnRightSlot(it,32, 2, 3, 0), InventoryManager.buildShardcore(r, null));
-            shard.add(r);
-            it++;
-        }
+        p.openInventory(inv);
     }
+    //TODO scrolling
     //TODO make shardcores equippable
 
     // 0 = false

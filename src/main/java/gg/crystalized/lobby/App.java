@@ -11,70 +11,71 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 public enum App {
-    Litestrike("ui/scn3/games/litestrike", useCases.Games, Component.text("Litestrike").color(GREEN).decoration(ITALIC, false), 29,
-            p -> p.teleport(LobbyConfig.litestrike_hub)),
-    Knockoff("ui/scn3/games/knockoff", useCases.Games, Component.text("Knockoff").color(GOLD).decoration(ITALIC, false), 30,
-            p -> {}), //TODO
-    Crystalblitz("ui/scn3/games/crystalblitz", useCases.Games, Component.text("Crystal Blitz").color(LIGHT_PURPLE).decoration(ITALIC, false), 31,
-            p -> {}), //TODO
-    Navigator( "ui/scn3/games", useCases.Menu, Component.text("Games").color(WHITE).decoration(ITALIC, false), 29,
-            p -> p.openInventory(prepareInv("\uA000\uA006", 54, useCases.Games, p))),
-    Navigator_Hotbar("ui/scn3/games", useCases.Hotbar, Component.text("Play!").color(GREEN).decoration(BOLD, true), 0,
-            p -> p.openInventory(prepareInv("\uA000\uA006", 54, useCases.Games, p))),
-    Profile("ui/scn3/profile", useCases.Menu, Component.text("Profile").color(WHITE).decoration(ITALIC, false), 20,
-            p -> p.openInventory(prepareInv("\uA000", 54, useCases.Profile, p))), //TODO
-    Friends("ui/scn3/friends", useCases.Menu, Component.text("Social").color(WHITE).decoration(ITALIC, false), 30,
-            p -> p.openInventory(prepareInv("\uA000\uA005", 54, useCases.Social, p))),
-    Friends_Hotbar("ui/scn3/friends", useCases.Hotbar, Component.text("Social").color(WHITE).decoration(ITALIC, false), 1,
-            p -> p.openInventory(prepareInv("\uA000\uA005", 54, useCases.Social, p))),
-    Maps("ui/scn3/maps", useCases.Menu, Component.text("Map").color(WHITE).decoration(ITALIC, false), 31,
-            p -> p.openInventory(prepareInv("\uA000", 54, useCases.Map, p))), //TODO
-    Maps_Hotbar("ui/scn3/maps", useCases.Hotbar, Component.text("Your Location").color(WHITE).decoration(ITALIC, false), 2,
-            p -> p.openInventory(prepareInv("\uA000", 54, useCases.Map, p))), //TODO
-    Settings("ui/scn3/settings", useCases.Menu, Component.text("Settings").color(WHITE).decoration(ITALIC, false), 24,
-            p -> p.openInventory(prepareInv("\uA000", 54, useCases.Settings, p))), //TODO
-    Achieve("ui/scn3/achivements", useCases.Menu, Component.text("Achievements").color(WHITE).decoration(ITALIC, false), 32,
-            p -> p.openInventory(prepareInv("\uA000", 54, useCases.Achievements, p))),//TODO
-    Achieve_Hotbar("ui/scn3/achivements", useCases.Hotbar, Component.text("Achievements").color(WHITE).decoration(ITALIC, false), 3,
-            p -> p.openInventory(prepareInv("\uA000", 54, useCases.Achievements, p))),//TODO
-    Shop("ui/scn3/shop", useCases.Menu, Component.text("Shop").color(WHITE).decoration(ITALIC, false), 33,
-            p -> p.openInventory(prepareInv("\uA000\uA004", 54, useCases.Shop, p)));
+    Litestrike("ui/scn3/games/litestrike", useCases.Games, new useCases[]{useCases.Navigator},Component.text("Litestrike").color(GREEN).decoration(ITALIC, false), 29, LobbyConfig.litestrike_hub),
+    Knockoff("ui/scn3/games/knockoff", useCases.Games, new useCases[]{useCases.Navigator},Component.text("Knockoff").color(GOLD).decoration(ITALIC, false), 30, null), //TODO
+    Crystalblitz("ui/scn3/games/crystalblitz", useCases.Games, new useCases[]{useCases.Navigator},Component.text("Crystal Blitz").color(LIGHT_PURPLE).decoration(ITALIC, false), 31,  null), //TODO
+    Navigator( "ui/scn3/games", useCases.Navigator, new useCases[]{useCases.Menu, useCases.Hotbar},Component.text("Games").color(WHITE).decoration(ITALIC, false), 29,
+            "\uA000\uA006"),
+    Profile("ui/scn3/profile", useCases.Profile, new useCases[]{useCases.Menu}, Component.text("Profile").color(WHITE).decoration(ITALIC, false), 24,
+            "\uA000\uA008"),
+    Friends("ui/scn3/friends", useCases.Friends, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.text("Social").color(WHITE).decoration(ITALIC, false), 30,
+            "\uA000\uA005"),
+    Maps("ui/scn3/maps", useCases.Map, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.text("Map").color(WHITE).decoration(ITALIC, false), 31,
+            "\uA000"), //TODO
+    Settings("ui/scn3/settings", useCases.Settings, new useCases[]{useCases.Menu}, Component.text("Settings").color(WHITE).decoration(ITALIC, false), 20,
+              "\uA000\uA009"),
+    Achieve("ui/scn3/achivements", useCases.Achievements, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.text("Achievements").color(WHITE).decoration(ITALIC, false), 32,
+            "\uA000"),//TODO
+    Shop("ui/scn3/shop", useCases.Shop, new useCases[]{useCases.Menu}, Component.text("Shop").color(WHITE).decoration(ITALIC, false), 33,
+            "\uA000\uA004");
 
 
     enum useCases{
+        Navigator,
         Games,
         Menu,
         Shop,
         Profile,
-        Social,
+        Friends,
+        Party,
         Map,
         Settings,
         Achievements,
         Hotbar
     }
     final String model;
-    final useCases uses;
+    final useCases self;
+    final useCases[] uses;
     final Component name;
     final Integer slot;
-    final AppOperation op;
-    App(String model, useCases uses, Component name, Integer slot, AppOperation op){
+    final Object extra;
+
+    App(String model,useCases self ,useCases[] uses, Component name, Integer slot, Object extra){
         this.model = model;
+        this.self = self;
         this.uses = uses;
         this.name = name;
         this.slot = slot;
-        this.op = op;
+        this.extra = extra;
     }
 
     public static void buildApps(Inventory inv, useCases use){
+        int i = 0;
         for(App app : App.values()){
-            if(app.uses == use){
-                inv.setItem(app.slot, app.build());
+            if(Arrays.asList(app.uses).contains(use)){
+                if(use == useCases.Menu) {
+                    inv.setItem(app.slot, app.build());
+                }else{
+                    inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 4, 1, 1),app.build());
+                    i++;
+                }
             }
         }
     }
@@ -99,16 +100,17 @@ public enum App {
         return app;
     }
 
-    public static Inventory prepareInv(String name, int slots, useCases use, Player p){
+    public static Inventory prepareInv(String name, int slots, useCases use){
         Inventory inv = Bukkit.getServer().createInventory(null, slots, Component.text(name).color(WHITE));
         App.buildApps(inv, use);
-        if(use == useCases.Shop){
-            Cosmetic.placeCosmetics(inv, p);
-        }
         return inv;
     }
-}
 
-interface AppOperation{
-    void action(Player p);
+    public void action(Player p){
+        if(extra instanceof Location){
+            p.teleport((Location)extra);
+        }else if(extra instanceof String){
+            p.openInventory(prepareInv((String) extra, 54, self));
+        }
+    }
 }
