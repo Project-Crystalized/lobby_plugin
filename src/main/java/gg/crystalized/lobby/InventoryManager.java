@@ -20,9 +20,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.logging.Level;
 
 import static net.kyori.adventure.text.format.NamedTextColor.LIGHT_PURPLE;
 import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
@@ -58,16 +55,10 @@ public class InventoryManager implements Listener {
         event.setCancelled(true);
         ItemStack item = event.getCurrentItem();
         Player p = (Player) event.getWhoClicked();
-        if(item == null){
-            App.useCases use = identifyInv(event.getView());
-            if(use == null){
-                return;
-            }
-            getButtons(use, event.getSlot(), p);
+        App app = App.identifyApp(item);
+        if(event.getCurrentItem() == null){
             return;
         }
-        App app = App.identifyApp(item);
-
         if(event.getCurrentItem().equals(buildShardcore(p))){
             event.getWhoClicked().openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu));
             return;
@@ -77,6 +68,17 @@ public class InventoryManager implements Listener {
         }else if(Cosmetic.identifyCosmetic(item) != null){
             event.getInventory().setItem(event.getSlot(), Cosmetic.identifyCosmetic(item).build(!Cosmetic.identifyCosmetic(item).isWearing(p)));
             Cosmetic.identifyCosmetic(item).clicked(event.getClick(), p);
+        }else{
+            App.useCases use = identifyInv(event.getView());
+            if(use == null){
+                return;
+            }
+            for(App a : App.values()){
+                if(a.use == use && a.slots != null && isSlotInButton(event.getSlot(), a.slots)){
+                    Cosmetic.placeCosmetics(p, a);
+                    break;
+                }
+            }
         }
     }
     //TODO open shardcore when opening inv
@@ -84,43 +86,18 @@ public class InventoryManager implements Listener {
     @EventHandler
     public void onInvOpen(InventoryOpenEvent event){
         App.useCases use = identifyInv(event.getView());
-        int[][] buttons = getButtons(use, null, null);
-        if(buttons == null) return;
-        Component name = null;
-        for(int[] i : buttons){
-            int index = Arrays.asList(buttons).indexOf(i);
-            if(use == App.useCases.Shop){
-                if(index == 0){
-                    name = Component.text("Bags and Handheld");
-                }else if(index == 1){
-                    name = Component.text("Hats");
-                }else if(index == 2){
-                    name = Component.text("Web-store");
-                }else if(index == 3){
-                    name = Component.text("Shardcores");
-                }
-            }
-            fillButtons(i, event.getInventory(), name);
+        if(use == null){
+            return;
         }
-    }
-    public static int[][] getButtons(App.useCases use, Integer slot, Player p){
-        //how buttons work {{top left corner slot, width, height}, {button2}, {and so on}}
-       if(use == App.useCases.Shop) {
-           int[][] shopButtons = new int[][]{{37, 4, 2}, {28, 4, 1}, {32, 3, 1}, {41, 3, 2}};
-           if(slot == null || p == null) return shopButtons;
-           for(int[] i : shopButtons){
-               int button = Arrays.asList(shopButtons).indexOf(i);
-               if(isSlotInButton(slot, i)){
-                   Cosmetic.placeCosmetics(p, button);
-                   break;
-               }
-           }
-       }
-       return null;
+        for(App a : App.values()){
+            if(a.use == use && a.slots != null){
+                fillButtons(a.slots, event.getInventory(), a.name);
+            }
+        }
     }
     public static boolean isSlotInButton(int slot, int[] button){
         for(int i = button[0]; i <= button[0] + button[1] - 1; i++){
-            for(int j = i; j <= i + 9*button[2]; j = j+9){
+            for(int j = i; j <= i + 9*button[2] -1; j = j+9){
                 if(slot == j){
                     return true;
                 }
@@ -157,6 +134,9 @@ public class InventoryManager implements Listener {
         Inventory i = p.getInventory();
         int in = 0;
         for(App a : App.values()){
+            if(a.uses == null){
+                continue;
+            }
             if(Arrays.asList(a.uses).contains(App.useCases.Hotbar)) {
                 i.setItem(in, a.build());
                 in++;

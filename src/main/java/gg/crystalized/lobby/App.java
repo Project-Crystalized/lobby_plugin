@@ -6,10 +6,12 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -34,14 +36,23 @@ public enum App {
     Achieve("ui/scn3/achivements", useCases.Achievements, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.text("Achievements").color(WHITE).decoration(ITALIC, false), 32,
             "\uA000"),//TODO
     Shop("ui/scn3/shop", useCases.Shop, new useCases[]{useCases.Menu}, Component.text("Shop").color(WHITE).decoration(ITALIC, false), 33,
-            "\uA000\uA004");
+            "\uA000\uA004"),
+    HatsButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.text("Hats").color(WHITE).decoration(ITALIC, false), new int[]{28, 4, 1},
+            EquipmentSlot.HEAD),
+    HandButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.text("Bags and Handheld").color(WHITE).decoration(ITALIC, false), new int[]{37, 4, 2},
+            EquipmentSlot.OFF_HAND),
+    WebButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.text("Web-store").color(WHITE).decoration(ITALIC, false), new int[]{32, 3, 1},
+            "put URL to Website here"), //TODO
+    ShardButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.text("Shardcores").color(WHITE).decoration(ITALIC, false), new int[]{41, 3, 2},
+            null);
 
-
+    //how buttons work {top left corner, width, height}
     enum useCases{
         Navigator,
         Games,
         Menu,
         Shop,
+        ShopPage,
         Profile,
         Friends,
         Party,
@@ -52,9 +63,11 @@ public enum App {
     }
     final String model;
     final useCases self;
-    final useCases[] uses;
+    useCases[] uses;
+    useCases use;
     final Component name;
-    final Integer slot;
+    Integer slot;
+    int[] slots;
     final Object extra;
 
     App(String model,useCases self ,useCases[] uses, Component name, Integer slot, Object extra){
@@ -66,9 +79,21 @@ public enum App {
         this.extra = extra;
     }
 
+    App(String model,useCases self ,useCases use, Component name, int[] slots, Object extra){
+        this.model = model;
+        this.self = self;
+        this.use = use;
+        this.name = name;
+        this.slots = slots;
+        this.extra = extra;
+    }
+
     public static void buildApps(Inventory inv, useCases use){
         int i = 0;
         for(App app : App.values()){
+            if(app.uses == null){
+                continue;
+            }
             if(Arrays.asList(app.uses).contains(use)){
                 if(use == useCases.Menu) {
                     inv.setItem(app.slot, app.build());

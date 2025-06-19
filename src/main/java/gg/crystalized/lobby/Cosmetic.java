@@ -69,19 +69,25 @@ public enum Cosmetic {
 
    //TODO add translatables to everything
 
-    public static void placeCosmetics(Player p, int button){
-        EquipmentSlot[] eq = {EquipmentSlot.OFF_HAND, EquipmentSlot.HEAD, null, null};
-        if(button == 2){
+    public static void placeCosmetics(Player p, App a){
+        if(a.extra instanceof String){
             //TODO set website URL here
+            return;
+        }else if(a.extra == null){
+            //TODO set Shardcores
             return;
         }
         Inventory inv = Bukkit.getServer().createInventory(null, 54, Component.text("\uA000\uA00A").color(WHITE));
         int i = 0;
         for(Cosmetic c : Cosmetic.values()){
-            if(c.slot != eq[button] || c.ownsCosmetic(p)){
+            if(c.slot != a.extra || c.ownsCosmetic(p)){
                 continue;
             }
-            inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 4, 1, 1), c.build(null));
+            if(InventoryManager.placeOnRightSlot(i, 51, 2, 1, 1) != null) {
+                inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), c.build(null));
+            }else{
+                break;
+            }
         }
         p.openInventory(inv);
     }
