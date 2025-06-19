@@ -58,7 +58,7 @@ public enum Cosmetic {
         }else if(wearing != null && !wearing){
             desc.add(Component.text("[Right-click] equip").color(WHITE).decoration(ITALIC, false));
         }else if(obtainableLevel != null){
-            desc.add(Component.text("[Right-click] unlock at level" + obtainableLevel).color(WHITE).decoration(ITALIC, false));
+            desc.add(Component.text("[Right-click] unlock at level " + obtainableLevel).color(WHITE).decoration(ITALIC, false));
         }else{
             desc.add(Component.text("[Right-click] price: " + price).color(WHITE).decoration(ITALIC, false));
         }
@@ -70,24 +70,36 @@ public enum Cosmetic {
    //TODO add translatables to everything
 
     public static void placeCosmetics(Player p, App a){
+        Inventory inv = Bukkit.getServer().createInventory(null, 54, Component.text("\uA000\uA00A").color(WHITE));
         if(a.extra instanceof String){
             //TODO set website URL here
             return;
         }else if(a.extra == null){
-            //TODO set Shardcores
+            int slot = 0;
+            for(int i = 0; i < InventoryManager.shardcores.length; i++){
+                if(InventoryManager.ownsShardcore(i, p)) continue;
+                if(InventoryManager.placeOnRightSlot(slot, 51, 3, 1, 0) != null) {
+                    inv.setItem(InventoryManager.placeOnRightSlot(slot, 51, 3, 1, 0), InventoryManager.buildShardcore(i, null));
+                    slot++;
+                }else{
+                    break;
+                }
+            }
+            p.openInventory(inv);
             return;
         }
-        Inventory inv = Bukkit.getServer().createInventory(null, 54, Component.text("\uA000\uA00A").color(WHITE));
         int i = 0;
         for(Cosmetic c : Cosmetic.values()){
             if(c.slot != a.extra || c.ownsCosmetic(p)){
                 continue;
             }
-            if(InventoryManager.placeOnRightSlot(i, 51, 2, 1, 1) != null) {
+
+            if(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0) != null) {
                 inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), c.build(null));
             }else{
                 break;
             }
+            i++;
         }
         p.openInventory(inv);
     }
