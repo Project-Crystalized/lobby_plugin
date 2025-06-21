@@ -69,7 +69,7 @@ public enum Cosmetic {
 
    //TODO add translatables to everything
 
-    public static void placeCosmetics(Player p, App a){
+    public static void placeCosmetics(Player p, App a, int page){
         Inventory inv = Bukkit.getServer().createInventory(null, 54, Component.text("\uA000\uA00A").color(WHITE));
         if(a.extra instanceof String){
             //TODO set website URL here
@@ -88,7 +88,7 @@ public enum Cosmetic {
             p.openInventory(inv);
             return;
         }
-        int i = 0;
+        int i = (page-1)*15;
         for(Cosmetic c : Cosmetic.values()){
             if(c.slot != a.extra || c.ownsCosmetic(p)){
                 continue;

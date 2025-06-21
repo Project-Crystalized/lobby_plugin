@@ -44,7 +44,10 @@ public enum App {
     WebButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.text("Web-store").color(WHITE).decoration(ITALIC, false), new int[]{32, 3, 1},
             "put URL to Website here"), //TODO
     ShardButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.text("Shardcores").color(WHITE).decoration(ITALIC, false), new int[]{41, 3, 2},
-            null);
+            "\uA000\uA00A"),
+    ScrollLeft("ui/invisible", new useCases[]{useCases.ShopPage}, Component.text("Left").color(WHITE).decoration(ITALIC, false), 21),
+    ScrollRight("ui/invisible", new useCases[]{useCases.ShopPage}, Component.text("Right").color(WHITE).decoration(ITALIC, false), 23),
+    Back("ui/invisible", new useCases[]{useCases.ShopPage}, Component.text("Back").color(WHITE).decoration(ITALIC, false), 20);
 
     //how buttons work {top left corner, width, height}
     enum useCases{
@@ -62,13 +65,13 @@ public enum App {
         Hotbar
     }
     final String model;
-    final useCases self;
+    useCases self;
     useCases[] uses;
     useCases use;
     final Component name;
     Integer slot;
     int[] slots;
-    final Object extra;
+    Object extra;
 
     App(String model,useCases self ,useCases[] uses, Component name, Integer slot, Object extra){
         this.model = model;
@@ -88,6 +91,12 @@ public enum App {
         this.extra = extra;
     }
 
+    App(String model, useCases[] uses, Component name, int slot){
+        this.model = model;
+        this.uses = uses;
+        this.name = name;
+        this.slot = slot;
+    }
     public static void buildApps(Inventory inv, useCases use){
         int i = 0;
         for(App app : App.values()){

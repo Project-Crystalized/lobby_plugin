@@ -13,6 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
@@ -54,11 +55,18 @@ public class InventoryManager implements Listener {
     public void onInventoryClick(InventoryClickEvent event){
         event.setCancelled(true);
         ItemStack item = event.getCurrentItem();
-        Player p = (Player) event.getWhoClicked();
-        App app = App.identifyApp(item);
-        if(event.getCurrentItem() == null){
+        if(item == null){
+            App app = null;
+            for(App a : App.values()){
+                if(a.slot != null && event.getSlot() == a.slot && a.self == null){
+                    app = a;
+                    break;
+                }
+            }
             return;
         }
+        Player p = (Player) event.getWhoClicked();
+        App app = App.identifyApp(item);
         if(event.getCurrentItem().equals(buildShardcore(p))){
             event.getWhoClicked().openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu));
             return;
@@ -75,7 +83,7 @@ public class InventoryManager implements Listener {
             }
             for(App a : App.values()){
                 if(a.use == use && a.slots != null && isSlotInButton(event.getSlot(), a.slots)){
-                    Cosmetic.placeCosmetics(p, a);
+                    Cosmetic.placeCosmetics(p, a, 1);
                     break;
                 }
             }
@@ -220,5 +228,35 @@ public class InventoryManager implements Listener {
         }
 
         return fin;
+    }
+
+    //TODO this needs testing v
+    public static void doScrolling(App a, Player p, InventoryView view){
+        App.useCases use = identifyInv(view);
+        if(use == App.useCases.ShopPage){
+            if(view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(0, 51, 3, 1, 0)) == null || view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(15, 51, 3, 1, 0)) == null){
+                return;
+            }
+            EquipmentSlot slot = Cosmetic.identifyCosmetic(view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(0, 51, 3, 1, 0))).slot;
+            if(slot == null){
+                return;
+            }
+            int i = 1;
+            for(Cosmetic c : Cosmetic.values()){
+                if(Cosmetic.identifyCosmetic(view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(15, 51, 3, 1, 0))).equals(c)){
+                    break;
+                }
+                if(c.slot == slot){
+                    i++;
+                }
+            }
+
+            int page = i/15;
+            if(a == App.ScrollRight) {
+                Cosmetic.placeCosmetics(p, a, page++);
+            }else if(page != 1){
+                Cosmetic.placeCosmetics(p, a, page--);
+            }
+        }
     }
 }
