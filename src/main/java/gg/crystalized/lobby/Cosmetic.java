@@ -13,7 +13,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.components.EquippableComponent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
 
 import static net.kyori.adventure.text.format.NamedTextColor.BLUE;
 import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
@@ -71,10 +73,10 @@ public enum Cosmetic {
 
     public static void placeCosmetics(Player p, App a, int page){
         Inventory inv = Bukkit.getServer().createInventory(null, 54, Component.text("\uA000\uA00A").color(WHITE));
-        if(a.extra instanceof String){
+        if(a == App.WebButton){
             //TODO set website URL here
             return;
-        }else if(a.extra == null){
+        }else if(a == App.ShardButton){
             int slot = 0;
             for(int i = 0; i < InventoryManager.shardcores.length; i++){
                 if(InventoryManager.ownsShardcore(i, p)) continue;
@@ -103,7 +105,6 @@ public enum Cosmetic {
         }
         p.openInventory(inv);
     }
-    //TODO scrolling
     //TODO make shardcores equippable
 
     // 0 = false

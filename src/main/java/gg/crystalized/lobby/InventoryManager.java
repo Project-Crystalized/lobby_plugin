@@ -55,6 +55,7 @@ public class InventoryManager implements Listener {
     public void onInventoryClick(InventoryClickEvent event){
         event.setCancelled(true);
         ItemStack item = event.getCurrentItem();
+        Player p = (Player) event.getWhoClicked();
         if(item == null){
             App app = null;
             for(App a : App.values()){
@@ -63,9 +64,13 @@ public class InventoryManager implements Listener {
                     break;
                 }
             }
+            if(app.slot != 20) {
+                doScrolling(app, p, event.getView());
+                return;
+            }
+            goBack(identifyInv(event.getView()), p);
             return;
         }
-        Player p = (Player) event.getWhoClicked();
         App app = App.identifyApp(item);
         if(event.getCurrentItem().equals(buildShardcore(p))){
             event.getWhoClicked().openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu));
@@ -75,7 +80,7 @@ public class InventoryManager implements Listener {
             app.action((Player) event.getWhoClicked());
         }else if(Cosmetic.identifyCosmetic(item) != null){
             event.getInventory().setItem(event.getSlot(), Cosmetic.identifyCosmetic(item).build(!Cosmetic.identifyCosmetic(item).isWearing(p)));
-            Cosmetic.identifyCosmetic(item).clicked(event.getClick(), p);
+            Cosmetic.identifyCosmetic(item).clicked(event.getClick(), p); //TODO
         }else{
             App.useCases use = identifyInv(event.getView());
             if(use == null){
@@ -234,10 +239,10 @@ public class InventoryManager implements Listener {
     public static void doScrolling(App a, Player p, InventoryView view){
         App.useCases use = identifyInv(view);
         if(use == App.useCases.ShopPage){
-            if(view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(0, 51, 3, 1, 0)) == null || view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(15, 51, 3, 1, 0)) == null){
+            if(view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(0, 51, 4, 1, 0)) == null || view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(15, 51, 3, 1, 0)) == null){
                 return;
             }
-            EquipmentSlot slot = Cosmetic.identifyCosmetic(view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(0, 51, 3, 1, 0))).slot;
+            EquipmentSlot slot = Cosmetic.identifyCosmetic(view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(0, 51, 4, 1, 0))).slot;
             if(slot == null){
                 return;
             }
@@ -257,6 +262,12 @@ public class InventoryManager implements Listener {
             }else if(page != 1){
                 Cosmetic.placeCosmetics(p, a, page--);
             }
+        }
+    }
+
+    public static void goBack(App.useCases use, Player p){
+        if(use == App.useCases.ShopPage){
+            App.Shop.action(p);
         }
     }
 }
