@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -21,6 +22,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 import static net.kyori.adventure.text.format.NamedTextColor.LIGHT_PURPLE;
 import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
@@ -44,8 +46,16 @@ public class InventoryManager implements Listener {
         }
         if(event.getItem() == null) return;
         Player p = event.getPlayer();
-        if(event.getItem().equals(buildShardcore(p))){
+        if(event.getItem().equals(buildShardcore(p, false))){
             p.openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu));
+            for(int i = 0; i <= 54; i++){
+                if(p.getInventory().getItem(i) == null){
+                    continue;
+                }
+                if(Objects.equals(p.getInventory().getItem(i), buildShardcore(p, false))){
+                    p.getInventory().setItem(i, buildShardcore(p, true));
+                }
+            }
             return;
         }
         if(App.identifyApp(event.getItem()) == null) return;
@@ -64,6 +74,7 @@ public class InventoryManager implements Listener {
                     break;
                 }
             }
+            if(app == null) return;
             if(app.slot != 20) {
                 doScrolling(app, p, event.getView());
                 return;
@@ -72,8 +83,16 @@ public class InventoryManager implements Listener {
             return;
         }
         App app = App.identifyApp(item);
-        if(event.getCurrentItem().equals(buildShardcore(p))){
+        if(event.getCurrentItem().equals(buildShardcore(p, false)) || event.getCurrentItem().equals(buildShardcore(p, true))){
             event.getWhoClicked().openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu));
+            for(int i = 0; i <= 54; i++){
+                if(p.getInventory().getItem(i) == null){
+                    continue;
+                }
+                if(Objects.equals(p.getInventory().getItem(i), buildShardcore(p, false))){
+                    p.getInventory().setItem(i, buildShardcore(p, true));
+                }
+            }
             return;
         }
         if(app != null) {
@@ -94,17 +113,38 @@ public class InventoryManager implements Listener {
             }
         }
     }
-    //TODO open shardcore when opening inv
 
     @EventHandler
     public void onInvOpen(InventoryOpenEvent event){
         App.useCases use = identifyInv(event.getView());
+        Player p = (Player) event.getPlayer();
         if(use == null){
             return;
         }
         for(App a : App.values()){
             if(a.use == use && a.slots != null){
                 fillButtons(a.slots, event.getInventory(), a.name);
+            }
+        }
+        for(int i = 0; i <= 54; i++){
+            if(p.getInventory().getItem(i) == null){
+                continue;
+            }
+            if(Objects.equals(p.getInventory().getItem(i), buildShardcore(p, false))){
+                p.getInventory().setItem(i, buildShardcore(p, true));
+            }
+        }
+    }
+
+    @EventHandler
+    public void onInvClose(InventoryCloseEvent event){
+        Player p = (Player)event.getPlayer();
+        for(int i = 0; i <= 54; i++){
+            if(p.getInventory().getItem(i) == null){
+                continue;
+            }
+            if(Objects.equals(p.getInventory().getItem(i), buildShardcore(p, true))){
+                p.getInventory().setItem(i, buildShardcore(p, false));
             }
         }
     }
@@ -155,14 +195,17 @@ public class InventoryManager implements Listener {
                 in++;
             }
         }
-        p.getInventory().setItem(4, buildShardcore(p));
+        p.getInventory().setItem(4, buildShardcore(p, false));
     }
 
-    public static ItemStack buildShardcore(Player p){
+    public static ItemStack buildShardcore(Player p, boolean open){
         int id = (Integer) LobbyDatabase.fetchPlayerData(p).get("shardcore_id");
         ItemStack item = new ItemStack(Material.EMERALD);
         ItemMeta meta = item.getItemMeta();
         meta.displayName(Component.text("Menu").color(LIGHT_PURPLE).decoration(BOLD, true));
+        if(open){
+            meta.setCustomModelData(1);
+        }
         meta.setItemModel(new NamespacedKey("crystalized",shardcores[id]));
         item.setItemMeta(meta);
         return item;
