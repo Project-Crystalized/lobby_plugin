@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.components.EquippableComponent;
@@ -17,8 +18,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
 
-import static net.kyori.adventure.text.format.NamedTextColor.BLUE;
-import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
+import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 public enum Cosmetic {
@@ -29,7 +30,13 @@ public enum Cosmetic {
     BEANIE("cosmetic/head/beanie", 10, null, EquipmentSlot.HEAD, "Beanie"),
     FOX_BERET("cosmetic/head/fox_beret", null, 50, EquipmentSlot.HEAD, "Fox Beret"),
     COWBOY_HAT("cosmetic/head/merica", null, 150, EquipmentSlot.HEAD, "Cowboy Hat"),
-    HANDBAG("cosmetic/handheld/handbag", null, 200, EquipmentSlot.OFF_HAND, "Handbag");
+    HANDBAG("cosmetic/handheld/handbag", null, 200, EquipmentSlot.OFF_HAND, "Handbag"),
+    BLUE_SHARDCORE("shardcorenexus3/blue", null, 200, EquipmentSlot.HAND, "Shardcore 1"),
+    GRAY_SHARDCORE("shardcorenexus3/gray", null, 200, EquipmentSlot.HAND, "Shardcore 2"),
+    PURPLE_SHARDCORE("shardcorenexus3/purple", null, 200, EquipmentSlot.HAND, "Shardcore 3"),
+    AUGUST_SHARDCORE("shardcorenexus3/augustify", null, 200, EquipmentSlot.HAND, "Shardcore 4"),
+    ABBY1_SHARDCORE("shardcorenexus3/abby1", null, 200, EquipmentSlot.HAND, "Shardcore 5"),
+    SHADOW1_SHARDCORE("shardcorenexus3/shadow1", null, 200, EquipmentSlot.HAND, "Shardcore 6");
     final String itemModel;
     final Integer obtainableLevel;
     final Integer price;
@@ -43,12 +50,19 @@ public enum Cosmetic {
         this.name = name;
     }
 
-    public ItemStack build(Boolean wearing){
+    public ItemStack build(Boolean wearing, Boolean open){
         ItemStack item = new ItemStack(Material.COAL);
         ItemMeta meta = item.getItemMeta();
         meta.setItemModel(new NamespacedKey("crystalized", itemModel));
-        meta.displayName(Component.text(name).color(WHITE).decoration(ITALIC, false));
-        meta.lore(getDescription(wearing));
+        if(wearing != null && wearing && slot == EquipmentSlot.HAND){
+            meta.displayName(Component.text("Menu").color(LIGHT_PURPLE).decoration(BOLD, true));
+            if(open){
+                meta.setCustomModelData(1);
+            }
+        }else {
+            meta.displayName(Component.text(name).color(WHITE).decoration(ITALIC, false));
+            meta.lore(getDescription(wearing));
+        }
         item.setItemMeta(meta);
         return item;
     }
@@ -76,19 +90,6 @@ public enum Cosmetic {
         if(a == App.WebButton){
             //TODO set website URL here
             return;
-        }else if(a == App.ShardButton){
-            int slot = 0;
-            for(int i = 0; i < InventoryManager.shardcores.length; i++){
-                if(InventoryManager.ownsShardcore(i, p)) continue;
-                if(InventoryManager.placeOnRightSlot(slot, 51, 3, 1, 0) != null) {
-                    inv.setItem(InventoryManager.placeOnRightSlot(slot, 51, 3, 1, 0), InventoryManager.buildShardcore(i, null));
-                    slot++;
-                }else{
-                    break;
-                }
-            }
-            p.openInventory(inv);
-            return;
         }
         int i = (page-1)*15;
         for(Cosmetic c : Cosmetic.values()){
@@ -97,7 +98,7 @@ public enum Cosmetic {
             }
 
             if(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0) != null) {
-                inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), c.build(null));
+                inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), c.build(null, false));
             }else{
                 break;
             }
@@ -112,7 +113,7 @@ public enum Cosmetic {
     public static Cosmetic identifyCosmetic(ItemStack item){
         Cosmetic cos = null;
         for(Cosmetic c : Cosmetic.values()){
-            if(c.build(false).equals(item)){
+            if(c.build(false, false).equals(item)){
                 cos = c;
                 break;
             }
@@ -123,7 +124,7 @@ public enum Cosmetic {
         }
 
         for(Cosmetic c : Cosmetic.values()){
-            if(c.build(true).equals(item)){
+            if(c.build(true, false).equals(item)){
                 cos = c;
                 break;
             }
@@ -162,17 +163,60 @@ public enum Cosmetic {
         return own;
     }
 
-    public void clicked(ClickType click, Player p){
-        if(click.isRightClick()){
-            if(this.isWearing(p)){
-                p.sendEquipmentChange(p, this.slot, null);
-            }else {
-                p.sendEquipmentChange(p, this.slot, this.build(true));
+    public static Cosmetic getShardcore(Player p){
+        ArrayList<Object[]> list = LobbyDatabase.fetchCosmetics(p);
+        for(Object[] o : list){
+            if(Cosmetic.values()[(Integer)o[1]].slot == EquipmentSlot.HAND && ((Integer) o[2]) == 1){
+                return Cosmetic.values()[(Integer)o[1]];
             }
-            LobbyDatabase.cosmeticSetWearing(p, this, !this.isWearing(p));
+        }
+        return null;
+    }
+
+    public void clicked(ClickType click, Player p, InventoryView view){
+        if(click.isRightClick()){
+            if(!this.ownsCosmetic(p)){ //TODO test buying
+              if(price == null){
+                  return;
+              }
+
+              if(((Integer)LobbyDatabase.fetchPlayerData(p).get("money")) < price){
+                  p.sendMessage(Component.text("You can't afford this cosmetic :(").color(RED));
+                  return;
+              }
+
+              LobbyDatabase.addCosmetic(p, this, false);
+
+              for(App a : App.values()){
+                  if(a.extra instanceof EquipmentSlot && slot == a.extra){
+                      int i = 1;
+                      for(Cosmetic c : Cosmetic.values()){
+                          if(Cosmetic.identifyCosmetic(view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(15, 51, 3, 1, 0))).equals(c)){
+                              break;
+                          }
+                          if(c.slot == slot){
+                              i++;
+                          }
+                      }
+
+                      int page = i/15;
+                      placeCosmetics(p, a, page);
+                  }
+              }
+            }
+            if(this.isWearing(p)){
+                p.sendEquipmentChange(p, slot, null);
+            }else {
+                if(slot != EquipmentSlot.HAND) {
+                    p.sendEquipmentChange(p, slot, build(true, false));
+                }else{
+                    p.sendEquipmentChange(p, slot, build(true, true));
+                }
+            }
+            LobbyDatabase.cosmeticSetWearing(p, this, !isWearing(p));
         }
         //TODO add view feature
     }
 
-    //TODO make a buy method
+    //TODO make shardcores buyable
 }

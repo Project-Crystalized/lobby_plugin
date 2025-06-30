@@ -44,7 +44,7 @@ public enum App {
     WebButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.text("Web-store").color(WHITE).decoration(ITALIC, false), new int[]{32, 3, 1},
             "put URL to Website here"), //TODO
     ShardButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.text("Shardcores").color(WHITE).decoration(ITALIC, false), new int[]{41, 3, 2},
-            "\uA000\uA00A"),
+            EquipmentSlot.HAND),
     ScrollLeft("ui/invisible", new useCases[]{useCases.ShopPage}, Component.text("Left").color(WHITE).decoration(ITALIC, false), 21),
     ScrollRight("ui/invisible", new useCases[]{useCases.ShopPage}, Component.text("Right").color(WHITE).decoration(ITALIC, false), 23),
     Back("ui/invisible", new useCases[]{useCases.ShopPage}, Component.text("Back").color(WHITE).decoration(ITALIC, false), 20);

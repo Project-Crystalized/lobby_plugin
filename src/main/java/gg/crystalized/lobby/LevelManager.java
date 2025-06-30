@@ -60,7 +60,7 @@ public class LevelManager implements Listener {
                 continue;
             }
             if(c.obtainableLevel <= event.getNewLevel()){
-                LobbyDatabase.addCosmetic(p, c);
+                LobbyDatabase.addCosmetic(p, c, false);
             }
         }
     }

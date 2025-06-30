@@ -55,6 +55,7 @@ public final class PlayerListener implements Listener {
 
 		if(!LobbyDatabase.isPlayerInDatabase(p)){
 			LobbyDatabase.makeNewLobbyPlayersEntry(p);
+			LobbyDatabase.addCosmetic(p, Cosmetic.BLUE_SHARDCORE, true);
 			//TODO Tutorial here maybe?
 		}
 
@@ -71,10 +72,9 @@ public final class PlayerListener implements Listener {
 		for(Object[] o : cos){
 			if((Integer)o[2] == 1){
 				Cosmetic c = Cosmetic.values()[(Integer)o[1]];
-				p.sendEquipmentChange(p, c.slot, c.build(true));
+				p.sendEquipmentChange(p, c.slot, c.build(true,false));
 			}
 		}
-		LobbyDatabase.addShardcore(p, 0);
 		p.sendPlayerListHeaderAndFooter(
 				// Header
 				text("\nProject Crystalized Lobby\n").color(NamedTextColor.LIGHT_PURPLE),

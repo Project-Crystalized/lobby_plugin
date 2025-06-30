@@ -2,9 +2,6 @@ package gg.crystalized.lobby;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -24,20 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static net.kyori.adventure.text.format.NamedTextColor.LIGHT_PURPLE;
-import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
-import static net.kyori.adventure.text.format.TextDecoration.BOLD;
-import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 public class InventoryManager implements Listener {
-    static final String[] shardcores = {
-            "shardcorenexus3/blue",
-            "shardcorenexus3/gray",
-            "shardcorenexus3/purple",
-            "shardcorenexus3/augustify",
-            "shardcorenexus3/abby1",
-            "shardcorenexus3/shadow1"};
-
 
     @EventHandler
     public void onRightClick(PlayerInteractEvent event){
@@ -46,14 +31,14 @@ public class InventoryManager implements Listener {
         }
         if(event.getItem() == null) return;
         Player p = event.getPlayer();
-        if(event.getItem().equals(buildShardcore(p, false))){
+        if(event.getItem().equals(Cosmetic.getShardcore(p).build(true, false))){
             p.openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu));
             for(int i = 0; i <= 54; i++){
                 if(p.getInventory().getItem(i) == null){
                     continue;
                 }
-                if(Objects.equals(p.getInventory().getItem(i), buildShardcore(p, false))){
-                    p.getInventory().setItem(i, buildShardcore(p, true));
+                if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(true, false))){
+                    p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(true, true));
                 }
             }
             return;
@@ -83,23 +68,24 @@ public class InventoryManager implements Listener {
             return;
         }
         App app = App.identifyApp(item);
-        if(event.getCurrentItem().equals(buildShardcore(p, false)) || event.getCurrentItem().equals(buildShardcore(p, true))){
+        if(event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(true, false)) || event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(true, true))){
             event.getWhoClicked().openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu));
             for(int i = 0; i <= 54; i++){
                 if(p.getInventory().getItem(i) == null){
                     continue;
                 }
-                if(Objects.equals(p.getInventory().getItem(i), buildShardcore(p, false))){
-                    p.getInventory().setItem(i, buildShardcore(p, true));
+                if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(true, false))){
+                    p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(true, true));
                 }
             }
             return;
         }
+
         if(app != null) {
             app.action((Player) event.getWhoClicked());
         }else if(Cosmetic.identifyCosmetic(item) != null){
-            event.getInventory().setItem(event.getSlot(), Cosmetic.identifyCosmetic(item).build(!Cosmetic.identifyCosmetic(item).isWearing(p)));
-            Cosmetic.identifyCosmetic(item).clicked(event.getClick(), p); //TODO
+            event.getInventory().setItem(event.getSlot(), Cosmetic.identifyCosmetic(item).build(!Cosmetic.identifyCosmetic(item).isWearing(p), false));
+            Cosmetic.identifyCosmetic(item).clicked(event.getClick(), p, event.getView()); //TODO
         }else{
             App.useCases use = identifyInv(event.getView());
             if(use == null){
@@ -130,8 +116,8 @@ public class InventoryManager implements Listener {
             if(p.getInventory().getItem(i) == null){
                 continue;
             }
-            if(Objects.equals(p.getInventory().getItem(i), buildShardcore(p, false))){
-                p.getInventory().setItem(i, buildShardcore(p, true));
+            if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(true, false))){
+                p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(true, true));
             }
         }
     }
@@ -143,8 +129,8 @@ public class InventoryManager implements Listener {
             if(p.getInventory().getItem(i) == null){
                 continue;
             }
-            if(Objects.equals(p.getInventory().getItem(i), buildShardcore(p, true))){
-                p.getInventory().setItem(i, buildShardcore(p, false));
+            if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(true, true))){
+                p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(true, false));
             }
         }
     }
@@ -174,6 +160,9 @@ public class InventoryManager implements Listener {
 
     public static App.useCases identifyInv(InventoryView inv){
         for(App a : App.values()){
+            if(((TextComponent) inv.title()).content().equals("\uA000\uA00A")){
+                return App.useCases.ShopPage;
+            }
             if(!(a.extra instanceof String)){
                 continue;
             }
@@ -195,50 +184,7 @@ public class InventoryManager implements Listener {
                 in++;
             }
         }
-        p.getInventory().setItem(4, buildShardcore(p, false));
-    }
-
-    public static ItemStack buildShardcore(Player p, boolean open){
-        int id = (Integer) LobbyDatabase.fetchPlayerData(p).get("shardcore_id");
-        ItemStack item = new ItemStack(Material.EMERALD);
-        ItemMeta meta = item.getItemMeta();
-        meta.displayName(Component.text("Menu").color(LIGHT_PURPLE).decoration(BOLD, true));
-        if(open){
-            meta.setCustomModelData(1);
-        }
-        meta.setItemModel(new NamespacedKey("crystalized",shardcores[id]));
-        item.setItemMeta(meta);
-        return item;
-    }
-
-    public static ItemStack buildShardcore(int id, Boolean wearing){
-        ItemStack item = new ItemStack(Material.EMERALD);
-        ItemMeta meta = item.getItemMeta();
-        meta.displayName(Component.text("Shardcore: " +id).color(WHITE).decoration(ITALIC, false));
-        ArrayList<Component> lore = new ArrayList<>();
-        if(wearing == null){
-            lore.add(Component.text("[Right-click] price: 200").color(WHITE).decoration(ITALIC, false));
-        }else if(wearing){
-            lore.add(Component.text(""));
-        }else{
-            lore.add(Component.text("[Right-click] equip").color(WHITE).decoration(ITALIC, false));
-        }
-        meta.lore(lore);
-        meta.setItemModel(new NamespacedKey("crystalized",shardcores[id]));
-        item.setItemMeta(meta);
-        return item;
-    }
-
-    public static boolean ownsShardcore(int id, Player p){
-        ArrayList<Object[]> list = LobbyDatabase.fetchShardcores(p);
-        boolean own = false;
-        for(Object[] o : list){
-            if((Integer)o[1] == id){
-                own = true;
-                break;
-            }
-        }
-        return own;
+        p.getInventory().setItem(4, Cosmetic.getShardcore(p).build(true, false));
     }
 
     public static Integer placeOnRightSlot(int iterator, int end, int line, int borderrw, int borderlw){
@@ -301,9 +247,9 @@ public class InventoryManager implements Listener {
 
             int page = i/15;
             if(a == App.ScrollRight) {
-                Cosmetic.placeCosmetics(p, a, page++);
+                Cosmetic.placeCosmetics(p, a, page+1);
             }else if(page != 1){
-                Cosmetic.placeCosmetics(p, a, page--);
+                Cosmetic.placeCosmetics(p, a, page-1);
             }
         }
     }

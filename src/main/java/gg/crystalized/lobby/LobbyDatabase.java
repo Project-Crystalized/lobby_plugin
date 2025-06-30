@@ -16,8 +16,7 @@ public class LobbyDatabase {
             + "exp_to_next_lvl       INTEGER,"
             + "level 	INTEGER,"
             + "money     INTEGER,"
-            + "skin_url    STRING,"
-            + "shardcore_id     INTEGER"
+            + "skin_url    STRING"
             + ");";
 
     String createFriendsTable = "CREATE TABLE IF NOT EXISTS Friends ("
@@ -33,11 +32,6 @@ public class LobbyDatabase {
             + "currently_wearing   INTEGER"
             +");";
 
-    String createShardcoreTable = "CREATE TABLE IF NOT EXISTS Shardcores ("
-            + "player_uuid        BLOB,"
-            + "shardcore_id        INTEGER"
-            +");";
-
     String createTemporaryData = "CREATE TABLE IF NOT EXISTS TemporaryData ("
             + "player_uuid        BLOB UNIQUE,"
             + "xp_amount        INTEGER,"
@@ -49,7 +43,6 @@ public class LobbyDatabase {
             stmt.execute(createLobbyPlayerTable);
             stmt.execute(createFriendsTable);
             stmt.execute(createCosmeticsTable);
-            stmt.execute(createShardcoreTable);
             stmt.execute(createTemporaryData);
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
@@ -124,12 +117,16 @@ public class LobbyDatabase {
         }
     }
 
-    public static void addCosmetic(Player p, Cosmetic c){
+    public static void addCosmetic(Player p, Cosmetic c, boolean wearing){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("INSERT INTO Cosmetics(player_uuid, cosmetic_id, currently_wearing) VALUES(?, ?, ?)");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setInt(2, c.ordinal());
-            prep.setInt(3, 0);
+            int i = 0;
+            if(wearing){
+                i = 1;
+            }
+            prep.setInt(3, i);
             prep.executeUpdate();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
@@ -152,41 +149,6 @@ public class LobbyDatabase {
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("failed set wearing of cosmetic in database");
-        }
-    }
-
-    public static ArrayList<Object[]> fetchShardcores(Player p){
-        try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("SELECT * FROM Shardcores WHERE player_uuid = ?;");
-            prep.setBytes(1, uuid_to_bytes(p));
-            ResultSet set = prep.executeQuery();
-            ResultSetMetaData data = set.getMetaData();
-            int count = data.getColumnCount();
-            ArrayList<Object[]> list = new ArrayList<>();
-            while(set.next()) {
-                Object[] o = new Object[2];
-                for (int i = 1; i <= count; i++) {
-                    o[i-1] = set.getObject(data.getColumnLabel(i));
-                }
-                list.add(o);
-            }
-            return list;
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get shardcore data for " + p.getName() + "UUID: " + p.getUniqueId());
-            return null;
-        }
-    }
-
-    public static void addShardcore(Player p, int i){
-        try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("INSERT INTO Shardcores(player_uuid, shardcore_id) VALUES(?, ?)");
-            prep.setBytes(1, uuid_to_bytes(p));
-            prep.setInt(2, i);
-            prep.executeUpdate();
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("failed adding cosmetic to database");
         }
     }
 
@@ -231,8 +193,8 @@ public class LobbyDatabase {
 
     public static void makeNewLobbyPlayersEntry(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
-            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, exp_to_next_lvl, level, money, skin_url, shardcore_id)"
-                    + "VALUES (?, 0, 0, 0, ?, 0)";
+            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, exp_to_next_lvl, level, money, skin_url)"
+                    + "VALUES (?, 0, 0, 0, ?)";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.setString(2, p.getPlayerProfile().getTextures().getSkin().toString());
