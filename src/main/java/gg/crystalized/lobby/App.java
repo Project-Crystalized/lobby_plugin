@@ -20,33 +20,33 @@ import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 public enum App {
-    Litestrike("ui/scn3/games/litestrike", useCases.Games, new useCases[]{useCases.Navigator},Component.text("Litestrike").color(GREEN).decoration(ITALIC, false), 29, LobbyConfig.litestrike_hub),
-    Knockoff("ui/scn3/games/knockoff", useCases.Games, new useCases[]{useCases.Navigator},Component.text("Knockoff").color(GOLD).decoration(ITALIC, false), 30, null), //TODO
-    Crystalblitz("ui/scn3/games/crystalblitz", useCases.Games, new useCases[]{useCases.Navigator},Component.text("Crystal Blitz").color(LIGHT_PURPLE).decoration(ITALIC, false), 31,  null), //TODO
-    Navigator( "ui/scn3/games", useCases.Navigator, new useCases[]{useCases.Menu, useCases.Hotbar},Component.text("Games").color(WHITE).decoration(ITALIC, false), 29,
+    Litestrike("ui/scn3/games/litestrike", useCases.Games, new useCases[]{useCases.Navigator},Component.translatable("crystalized.game.litestrike.name").color(GREEN).decoration(ITALIC, false), 29, LobbyConfig.litestrike_hub),
+    Knockoff("ui/scn3/games/knockoff", useCases.Games, new useCases[]{useCases.Navigator},Component.translatable("crystalized.game.knockoff.name").color(GOLD).decoration(ITALIC, false), 30, null), //TODO
+    Crystalblitz("ui/scn3/games/crystalblitz", useCases.Games, new useCases[]{useCases.Navigator},Component.translatable("crystalized.game.crystalblitz.name").color(LIGHT_PURPLE).decoration(ITALIC, false), 31,  null), //TODO
+    Navigator( "ui/scn3/games", useCases.Navigator, new useCases[]{useCases.Menu, useCases.Hotbar},Component.translatable("crystalized.shardcore.games.name").color(WHITE).decoration(ITALIC, false), 29,
             "\uA000\uA006"),
-    Profile("ui/scn3/profile", useCases.Profile, new useCases[]{useCases.Menu}, Component.text("Profile").color(WHITE).decoration(ITALIC, false), 24,
+    Profile("ui/scn3/profile", useCases.Profile, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.profile.name").color(WHITE).decoration(ITALIC, false), 24,
             "\uA000\uA008"),
-    Friends("ui/scn3/friends", useCases.Friends, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.text("Social").color(WHITE).decoration(ITALIC, false), 30,
+    Friends("ui/scn3/friends", useCases.Friends, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.translatable("crystalized.shardcore.party.name").color(WHITE).decoration(ITALIC, false), 30,
             "\uA000\uA005"),
-    Maps("ui/scn3/maps", useCases.Map, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.text("Map").color(WHITE).decoration(ITALIC, false), 31,
+    Maps("ui/scn3/maps", useCases.Map, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.translatable("crystalized.shardcore.maps.name").color(WHITE).decoration(ITALIC, false), 31,
             "\uA000"), //TODO
-    Settings("ui/scn3/settings", useCases.Settings, new useCases[]{useCases.Menu}, Component.text("Settings").color(WHITE).decoration(ITALIC, false), 20,
+    Settings("ui/scn3/settings", useCases.Settings, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.settings.name").color(WHITE).decoration(ITALIC, false), 20,
               "\uA000\uA009"),
-    Achieve("ui/scn3/achivements", useCases.Achievements, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.text("Achievements").color(WHITE).decoration(ITALIC, false), 32,
+    Achieve("ui/scn3/achivements", useCases.Achievements, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.translatable("crystalized.shardcore.achivements.name").color(WHITE).decoration(ITALIC, false), 32,
             "\uA000"),//TODO
-    Shop("ui/scn3/shop", useCases.Shop, new useCases[]{useCases.Menu}, Component.text("Shop").color(WHITE).decoration(ITALIC, false), 33,
+    Shop("ui/scn3/shop", useCases.Shop, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.shop.name").color(WHITE).decoration(ITALIC, false), 33,
             "\uA000\uA004"),
-    HatsButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.text("Hats").color(WHITE).decoration(ITALIC, false), new int[]{28, 4, 1},
+    HatsButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.translatable("crystalized.shardcore.shop.hats").color(WHITE).decoration(ITALIC, false), new int[]{28, 4, 1},
             EquipmentSlot.HEAD),
-    HandButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.text("Bags and Handheld").color(WHITE).decoration(ITALIC, false), new int[]{37, 4, 2},
+    HandButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.translatable("crystalized.shardcore.shop.handheld").color(WHITE).decoration(ITALIC, false), new int[]{37, 4, 2},
             EquipmentSlot.OFF_HAND),
     WebButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.text("Web-store").color(WHITE).decoration(ITALIC, false), new int[]{32, 3, 1},
             "put URL to Website here"), //TODO
-    ShardButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.text("Shardcores").color(WHITE).decoration(ITALIC, false), new int[]{41, 3, 2},
+    ShardButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.translatable("crystalized.shardcore.shop.scn3").color(WHITE).decoration(ITALIC, false), new int[]{41, 3, 2},
             EquipmentSlot.HAND),
-    ScrollLeft("ui/invisible", new useCases[]{useCases.ShopPage}, Component.text("Left").color(WHITE).decoration(ITALIC, false), 21),
-    ScrollRight("ui/invisible", new useCases[]{useCases.ShopPage}, Component.text("Right").color(WHITE).decoration(ITALIC, false), 23),
+    ScrollLeft("ui/invisible", new useCases[]{useCases.ShopPage}, Component.translatable("crystalized.shardcore.generic.scrollleft").color(WHITE).decoration(ITALIC, false), 21),
+    ScrollRight("ui/invisible", new useCases[]{useCases.ShopPage}, Component.translatable("crystalized.shardcore.generic.scrollright").color(WHITE).decoration(ITALIC, false), 23),
     Back("ui/invisible", new useCases[]{useCases.ShopPage}, Component.text("Back").color(WHITE).decoration(ITALIC, false), 20);
 
     //how buttons work {top left corner, width, height}
