@@ -22,7 +22,7 @@ public class LobbyDatabase {
     String createFriendsTable = "CREATE TABLE IF NOT EXISTS Friends ("
             + "player_uuid 			BLOB,"
             + "friend_uuid 	BLOB,"
-            + "date   INTEGER"
+            + "date   STRING"
             + ");";
 
     //cosmetics will have an id
@@ -79,10 +79,11 @@ public class LobbyDatabase {
             int count = data.getColumnCount();
             ArrayList<Object[]> list = new ArrayList<>();
             while(set.next()) {
-                for (int i = 1; i <= count; i++) {
-                    Object[] o = new Object[2];
-                    o[0] = data.getColumnLabel(i);
-                    o[1] = set.getObject(data.getColumnLabel(i));
+                while(set.next()) {
+                    Object[] o = new Object[3];
+                    for (int i = 1; i <= count; i++) {
+                        o[i-1] = set.getObject(data.getColumnLabel(i));
+                    }
                     list.add(o);
                 }
             }

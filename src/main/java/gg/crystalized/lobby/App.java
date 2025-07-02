@@ -11,12 +11,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.net.URL;
-import java.util.ArrayList;
+
 import java.util.Arrays;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
-import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 public enum App {

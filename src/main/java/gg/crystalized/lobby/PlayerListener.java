@@ -15,6 +15,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.meta.FireworkMeta;
 
 import com.google.common.io.ByteArrayDataOutput;
@@ -68,11 +69,9 @@ public final class PlayerListener implements Listener {
 			LevelManager.giveMoney(p, (Integer) map.get("money_amount"));
 		}
 		InventoryManager.giveLobbyItems(p);
-		ArrayList<Object[]> cos = LobbyDatabase.fetchCosmetics(p);
-		for(Object[] o : cos){
-			if((Integer)o[2] == 1){
-				Cosmetic c = Cosmetic.values()[(Integer)o[1]];
-				p.sendEquipmentChange(p, c.slot, c.build(true,false));
+		for(Cosmetic c : Cosmetic.values()){
+			if(c.isWearing(p) && c.slot != EquipmentSlot.HAND){
+				p.sendEquipmentChange(p, c.slot, c.build(true, false));
 			}
 		}
 		p.sendPlayerListHeaderAndFooter(
