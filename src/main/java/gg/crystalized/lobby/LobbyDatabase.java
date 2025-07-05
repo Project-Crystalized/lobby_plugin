@@ -13,6 +13,7 @@ public class LobbyDatabase {
     public static void setup_databases(){
     String createLobbyPlayerTable = "CREATE TABLE IF NOT EXISTS LobbyPlayers ("
             + "player_uuid 			BLOB UNIQUE,"
+            + "player_name 			STRING,"
             + "exp_to_next_lvl       INTEGER,"
             + "level 	INTEGER,"
             + "money     INTEGER,"
@@ -31,6 +32,7 @@ public class LobbyDatabase {
             + "cosmetic_id        INTEGER,"
             + "currently_wearing   INTEGER"
             +");";
+
 
     String createTemporaryData = "CREATE TABLE IF NOT EXISTS TemporaryData ("
             + "player_uuid        BLOB UNIQUE,"
@@ -194,11 +196,25 @@ public class LobbyDatabase {
 
     public static void makeNewLobbyPlayersEntry(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
-            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, exp_to_next_lvl, level, money, skin_url)"
-                    + "VALUES (?, 0, 0, 0, ?)";
+            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, skin_url)"
+                    + "VALUES (?, ?, 0, 0, 0, ?)";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, uuid_to_bytes(p));
-            prepared.setString(2, p.getPlayerProfile().getTextures().getSkin().toString());
+            prepared.setString(2, p.getName());
+            prepared.setString(3, p.getPlayerProfile().getTextures().getSkin().toString());
+            prepared.executeUpdate();
+        }catch(SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());
+        }
+    }
+
+    public static void updatePlayerNames(Player p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            String makeNewEntry = "UPDATE LobbyPlayers SET player_name = ? WHERE player_uuid = ?";
+            PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
+            prepared.setString(1, p.getName());
+            prepared.setBytes(2, uuid_to_bytes(p));
             prepared.executeUpdate();
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());

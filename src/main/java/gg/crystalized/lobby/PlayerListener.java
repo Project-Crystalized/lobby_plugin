@@ -53,6 +53,7 @@ public final class PlayerListener implements Listener {
 				new PotionEffect(PotionEffectType.HUNGER, PotionEffect.INFINITE_DURATION, 1, false, false, true));
 		p.setGameMode(GameMode.ADVENTURE);
 		p.getInventory().clear();
+		LobbyDatabase.updatePlayerNames(p);
 
 		if(!LobbyDatabase.isPlayerInDatabase(p)){
 			LobbyDatabase.makeNewLobbyPlayersEntry(p);
