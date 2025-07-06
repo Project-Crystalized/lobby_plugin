@@ -142,7 +142,11 @@ public enum App {
         if(extra instanceof Location){
             p.teleport((Location)extra);
         }else if(extra instanceof String){
-            p.openInventory(prepareInv((String) extra, 54, self));
+            Inventory inv = prepareInv((String) extra, 54, self);
+            if(this == App.Friends){
+                FriendsMenu.placeFriends(p, inv);
+            }
+            p.openInventory(inv);
         }
     }
 }

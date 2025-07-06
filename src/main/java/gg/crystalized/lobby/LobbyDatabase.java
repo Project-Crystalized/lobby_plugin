@@ -72,6 +72,26 @@ public class LobbyDatabase {
         }
     }
 
+    public static HashMap<String, Object> fetchPlayerData(byte[] p){
+        try(Connection conn = DriverManager.getConnection(URL)) {
+            PreparedStatement prep = conn.prepareStatement("SELECT * FROM LobbyPlayers WHERE player_uuid = ?;");
+            prep.setBytes(1, p);
+            ResultSet set = prep.executeQuery();
+            set.next();
+            ResultSetMetaData data = set.getMetaData();
+            int count = data.getColumnCount();
+            HashMap<String, Object> map = new HashMap<>();
+            for(int i = 1; i <= count; i++){
+                map.put(data.getColumnLabel(i), set.getObject(data.getColumnLabel(i)));
+            }
+            return map;
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            //Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
+            return null;
+        }
+    }
+
     public static ArrayList<Object[]> fetchFriends(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Friends WHERE player_uuid = ?;");
