@@ -54,6 +54,7 @@ public final class PlayerListener implements Listener {
 		p.setGameMode(GameMode.ADVENTURE);
 		p.getInventory().clear();
 		LobbyDatabase.updatePlayerNames(p);
+		LobbyDatabase.updateSkin(p);
 
 		if(!LobbyDatabase.isPlayerInDatabase(p)){
 			LobbyDatabase.makeNewLobbyPlayersEntry(p);

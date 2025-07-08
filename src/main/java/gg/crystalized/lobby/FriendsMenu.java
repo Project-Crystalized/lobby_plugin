@@ -17,11 +17,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
-import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 public class FriendsMenu {
-    public static ItemStack buildFriend(String name, String skin, String date){
+    public static ItemStack buildFriend(String name, String skin, String date, int online){
         try {
             URL skinURL = new URL(skin);
             ItemStack friend = new ItemStack(Material.PLAYER_HEAD, 1);
@@ -36,7 +36,13 @@ public class FriendsMenu {
             meta.displayName(Component.text(name).decoration(ITALIC, false));
             ArrayList<Component> lore = new ArrayList<>();
             lore.add(Component.text("Friends since: " + date).color(GRAY).decoration(ITALIC, false));
-            //TODO add if they are online to the lore
+            lore.add(Component.text(""));
+            if(online == 1) {
+                lore.add(Component.text("online").color(GREEN));
+            }else if(online == 0){
+                lore.add(Component.text("offline").color(RED));
+            }
+            //TODO add functions for friends
             meta.lore(lore);
             friend.setItemMeta(meta);
             return friend;
@@ -52,7 +58,7 @@ public class FriendsMenu {
         int i = 0;
         for(Object[] o : list){
             HashMap<String, Object> data = LobbyDatabase.fetchPlayerData((byte[]) o[1]);
-            ItemStack stack = buildFriend((String)data.get("player_name"), (String)data.get("skin_url"), (String) o[2]);
+            ItemStack stack = buildFriend((String)data.get("player_name"), (String)data.get("skin_url"), (String) o[2], (Integer) data.get("online"));
             if(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0) != null) {
                 inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), stack);
             }

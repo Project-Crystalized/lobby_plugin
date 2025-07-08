@@ -17,6 +17,7 @@ public class LobbyDatabase {
             + "exp_to_next_lvl       INTEGER,"
             + "level 	INTEGER,"
             + "money     INTEGER,"
+            + "online     INTEGER,"
             + "skin_url    STRING"
             + ");";
 
@@ -216,8 +217,8 @@ public class LobbyDatabase {
 
     public static void makeNewLobbyPlayersEntry(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
-            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, skin_url)"
-                    + "VALUES (?, ?, 0, 0, 0, ?)";
+            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online,skin_url)"
+                    + "VALUES (?, ?, 0, 0, 0, 0,?)";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.setString(2, p.getName());
@@ -234,6 +235,34 @@ public class LobbyDatabase {
             String makeNewEntry = "UPDATE LobbyPlayers SET player_name = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setString(1, p.getName());
+            prepared.setBytes(2, uuid_to_bytes(p));
+            prepared.executeUpdate();
+        }catch(SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());
+        }
+    }
+
+    public static void updateSkin(Player p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            String makeNewEntry = "UPDATE LobbyPlayers SET skin_url = ? WHERE player_uuid = ?";
+            PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
+            prepared.setString(1, p.getPlayerProfile().getTextures().getSkin().toString());
+            prepared.setBytes(2, uuid_to_bytes(p));
+            prepared.executeUpdate();
+        }catch(SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());
+        }
+    }
+
+    public static void setOnline(Player p, boolean online){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            String makeNewEntry = "UPDATE LobbyPlayers SET online = ? WHERE player_uuid = ?";
+            PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
+            int on = 0;
+            if(online) on = 1;
+            prepared.setInt(1, on);
             prepared.setBytes(2, uuid_to_bytes(p));
             prepared.executeUpdate();
         }catch(SQLException e) {
