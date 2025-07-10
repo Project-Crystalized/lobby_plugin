@@ -47,6 +47,9 @@ public class InventoryManager implements Listener {
     }
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event){
+        if(Lobby_plugin.getInstance().passive_mode && !isLobbyInv(event.getView())){
+            return;
+        }
         event.setCancelled(true);
         ItemStack item = event.getCurrentItem();
         Player p = (Player) event.getWhoClicked();
@@ -64,6 +67,10 @@ public class InventoryManager implements Listener {
                 return;
             }
             goBack(identifyInv(event.getView()), p);
+            return;
+        }
+        if(item.getType() == Material.PLAYER_HEAD){
+            FriendsMenu.clickedFriend(item, p, event.getClick());
             return;
         }
         App app = App.identifyApp(item);
@@ -101,6 +108,9 @@ public class InventoryManager implements Listener {
 
     @EventHandler
     public void onInvOpen(InventoryOpenEvent event){
+        if(Lobby_plugin.getInstance().passive_mode && !isLobbyInv(event.getView())){
+            return;
+        }
         App.useCases use = identifyInv(event.getView());
         Player p = (Player) event.getPlayer();
         if(use == null){
@@ -123,6 +133,9 @@ public class InventoryManager implements Listener {
 
     @EventHandler
     public void onInvClose(InventoryCloseEvent event){
+        if(Lobby_plugin.getInstance().passive_mode && !isLobbyInv(event.getView())){
+            return;
+        }
         Player p = (Player)event.getPlayer();
         for(int i = 0; i <= 54; i++){
             if(p.getInventory().getItem(i) == null){
@@ -257,5 +270,17 @@ public class InventoryManager implements Listener {
         if(use == App.useCases.ShopPage){
             App.Shop.action(p);
         }
+    }
+
+    public static boolean isLobbyInv(InventoryView view){
+        for(App a : App.values()){
+            if(a.extra instanceof String && view.getTopInventory().getHolder() == null &&((TextComponent) view.title()).content() == a.extra){
+                return true;
+            }
+        }
+        if(view.getTopInventory().getHolder() == null && ((TextComponent) view.title()).content().equals("\uA000\uA002")){
+            return true;
+        }
+        return false;
     }
 }

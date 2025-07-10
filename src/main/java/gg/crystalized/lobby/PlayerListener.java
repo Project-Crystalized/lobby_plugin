@@ -2,6 +2,7 @@ package gg.crystalized.lobby;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.*;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
@@ -46,7 +47,9 @@ public final class PlayerListener implements Listener {
 		Player p = e.getPlayer();
 		e.joinMessage(text(""));
 		//Location spawn = new Location(Bukkit.getWorld("world"), 0, -60, 0, 180, 0);
-
+		if(Lobby_plugin.getInstance().passive_mode){
+			return;
+		}
 		ScoreboardManager.SetScoreboard(p);
 		p.teleport(LobbyConfig.spawn);
 		p.addPotionEffect(
@@ -60,6 +63,14 @@ public final class PlayerListener implements Listener {
 			LobbyDatabase.makeNewLobbyPlayersEntry(p);
 			LobbyDatabase.addCosmetic(p, Cosmetic.BLUE_SHARDCORE, true);
 			//TODO Tutorial here maybe?
+		}
+		LobbyDatabase.updatePlayerNames(p);
+		LobbyDatabase.updateSkin(p);
+		HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
+
+		if(!((Integer)data.get("rank_id") == 0)){
+			updateDisplayName(p);
+			e.joinMessage(text(p.displayName() + "joined the game"));
 		}
 
 		LevelManager.updateLevel(p);
@@ -91,17 +102,26 @@ public final class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onInteractBlock(PlayerInteractEvent e) {
+		if(Lobby_plugin.getInstance().passive_mode){
+			return;
+		}
 		e.setCancelled(true);
 	}
 
 	@EventHandler
 	public void onDamage(EntityDamageEvent e) {
+		if(Lobby_plugin.getInstance().passive_mode){
+			return;
+		}
 		e.setCancelled(true);
 	}
 
 	@EventHandler
 	public void onRightclick(PlayerInteractEntityEvent e) {
 	Player player = e.getPlayer();
+		if(Lobby_plugin.getInstance().passive_mode){
+			return;
+		}
 		if (Commands.player_pig_counters.get(player) == null) {
 		Commands.player_pig_counters.put(player, 0);
 		}
@@ -129,6 +149,9 @@ public final class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onPlayerHit(EntityDamageByEntityEvent e) {
+		if(Lobby_plugin.getInstance().passive_mode){
+			return;
+		}
 		if (!CitizensAPI.getNPCRegistry().isNPC(e.getEntity())) {
 			return;
 		}
@@ -153,6 +176,17 @@ public final class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onHunger(FoodLevelChangeEvent event) {
+		if(Lobby_plugin.getInstance().passive_mode){
+			return;
+		}
 		event.setCancelled(true);
+	}
+
+	public static void updateDisplayName(Player p){
+		HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
+		String name = p.getName();
+		if((Integer)data.get("rank_id") == 1){
+			p.displayName(Component.text("\uE301").append(Component.text(name).color(TextColor.color(148, 3, 75))));
+		}
 	}
 }

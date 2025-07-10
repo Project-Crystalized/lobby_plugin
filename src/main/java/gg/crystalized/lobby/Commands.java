@@ -38,6 +38,8 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
                 return give_xp(args, commandSender);
             case "give_money":
                 return give_money(args, commandSender);
+            //case "set_rank":
+                //return set_rank(args, commandSender); //TODO
             default:
                 return false;
 
@@ -45,7 +47,9 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
     }
 
     private boolean run_pig_hunt(String[] args, CommandSender commandSender) {
-
+        if(Lobby_plugin.getInstance().passive_mode){
+            return false;
+        }
         if (commandSender instanceof Player) {
             Location spawn_location = ((Player)commandSender).getLocation();
             Pig pig = spawn_location.getWorld().createEntity(spawn_location, Pig.class);
@@ -61,6 +65,9 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
     }
 
     private boolean run_chess(String[] args, CommandSender commandSender) {
+        if(Lobby_plugin.getInstance().passive_mode){
+            return false;
+        }
         if (commandSender instanceof Player) {
             if (commandSender == Bukkit.getPlayer(args[0])) {
                 commandSender
@@ -79,6 +86,9 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
     }
 
     private boolean give_xp(String[] args, CommandSender sender){
+        if(Lobby_plugin.getInstance().passive_mode){
+            return false;
+        }
         if(sender instanceof Player){
             LevelManager.giveExperience((Player) sender, Integer.parseInt(args[0]));
             return true;
@@ -87,6 +97,9 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
     }
 
     private boolean give_money(String[] args, CommandSender sender){
+        if(Lobby_plugin.getInstance().passive_mode){
+            return false;
+        }
         if(sender instanceof Player){
             LevelManager.giveMoney((Player) sender, Integer.parseInt(args[0]));
             return true;

@@ -2,9 +2,11 @@ package gg.crystalized.lobby;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -33,16 +35,17 @@ public class FriendsMenu {
             skull.setPlayerProfile(profile);
             friend.setItemMeta(skull);
             ItemMeta meta = friend.getItemMeta();
-            meta.displayName(Component.text(name).decoration(ITALIC, false));
+            meta.displayName(Component.text(name).color(WHITE).decoration(ITALIC, false));
             ArrayList<Component> lore = new ArrayList<>();
             lore.add(Component.text("Friends since: " + date).color(GRAY).decoration(ITALIC, false));
-            lore.add(Component.text(""));
+            lore.add(Component.text("[Left-click] View Profile").color(YELLOW).decoration(ITALIC, false));
+            lore.add(Component.text("[Right-click] Invite to party").color(YELLOW).decoration(ITALIC, false));
+            lore.add(Component.text("[Shift-click] Remove from friends").color(YELLOW).decoration(ITALIC, false));
             if(online == 1) {
                 lore.add(Component.text("online").color(GREEN));
             }else if(online == 0){
                 lore.add(Component.text("offline").color(RED));
             }
-            //TODO add functions for friends
             meta.lore(lore);
             friend.setItemMeta(meta);
             return friend;
@@ -64,6 +67,17 @@ public class FriendsMenu {
             }
             i++;
         }
+    }
 
+    public static void clickedFriend(ItemStack item, Player p, ClickType click){
+        if(click.isLeftClick()) {
+            String name = ((TextComponent)item.getItemMeta().displayName()).content();
+            HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(name);
+            if(data == null){
+                return;
+            }
+            //TODO make Profile first
+        }
+        //TODO do everything here (party invs, friend removing)
     }
 }

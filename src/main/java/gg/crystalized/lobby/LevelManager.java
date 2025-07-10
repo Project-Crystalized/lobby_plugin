@@ -48,6 +48,9 @@ public class LevelManager implements Listener {
     }
     @EventHandler
     public static void levelUp(PlayerLevelChangeEvent event){
+        if(Lobby_plugin.getInstance().passive_mode){
+            return;
+        }
         Player p = event.getPlayer();
         if(!(event.getOldLevel() < event.getNewLevel())){
             return;

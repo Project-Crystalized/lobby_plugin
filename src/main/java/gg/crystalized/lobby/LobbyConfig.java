@@ -7,7 +7,9 @@ import com.google.gson.JsonParser;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
+import java.io.FileNotFoundException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.logging.Level;
 
@@ -36,6 +38,10 @@ public class LobbyConfig {
             clothing_room = new Location(Bukkit.getWorld("world"), cloth.get(0).getAsDouble(), cloth.get(1).getAsDouble(), cloth.get(2).getAsDouble(), cloth.get(3).getAsFloat(), cloth.get(4).getAsFloat());
 
         }catch(Exception e){
+            if(e instanceof NoSuchFileException){
+                Lobby_plugin.getInstance().passive_mode = true;
+                return;
+            }
             Bukkit.getLogger().log(Level.SEVERE, "Could not load the lobby configuration file!\n Error: " + e);
             e.printStackTrace();
             Bukkit.getLogger().log(Level.SEVERE, "The Plugin will be disabled!");

@@ -14,14 +14,21 @@ import java.util.logging.Level;
 public final class Lobby_plugin extends JavaPlugin{
 
 	List<CrystalizedChess> ChessGames = new ArrayList<>();
-
+	public boolean passive_mode = false;
 	@Override
 	public void onEnable() {
+		LobbyDatabase.setup_databases();
+		new LobbyConfig();
 		this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
 		this.getServer().getPluginManager().registerEvents(new LevelManager(), this);
 		this.getServer().getPluginManager().registerEvents(new CrystalizedChessListener(), this);
 		this.getServer().getPluginManager().registerEvents(new InventoryManager(), this);
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "crystalized:main");
+
+		if(Lobby_plugin.getInstance().passive_mode){
+			return;
+		}
+
 		new Leaderboards();
 
 		Commands dc = new Commands();
@@ -31,8 +38,7 @@ public final class Lobby_plugin extends JavaPlugin{
 		this.getCommand("give_money").setExecutor(dc);
 		new RankDisplay();
 
-		LobbyDatabase.setup_databases();
-		new LobbyConfig();
+
 	}
 
 	@Override
@@ -42,7 +48,6 @@ public final class Lobby_plugin extends JavaPlugin{
 	public static Lobby_plugin getInstance() {
 		return getPlugin(Lobby_plugin.class);
 	}
-
 
 	//This will be called in this class *and* when a minigames.CrystalizedChess game ends
 	/*

@@ -18,6 +18,7 @@ public class LobbyDatabase {
             + "level 	INTEGER,"
             + "money     INTEGER,"
             + "online     INTEGER,"
+            + "rank_id     INTEGER,"
             + "skin_url    STRING"
             + ");";
 
@@ -77,6 +78,26 @@ public class LobbyDatabase {
         try(Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, p);
+            ResultSet set = prep.executeQuery();
+            set.next();
+            ResultSetMetaData data = set.getMetaData();
+            int count = data.getColumnCount();
+            HashMap<String, Object> map = new HashMap<>();
+            for(int i = 1; i <= count; i++){
+                map.put(data.getColumnLabel(i), set.getObject(data.getColumnLabel(i)));
+            }
+            return map;
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            //Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
+            return null;
+        }
+    }
+
+    public static HashMap<String, Object> fetchPlayerData(String p){
+        try(Connection conn = DriverManager.getConnection(URL)) {
+            PreparedStatement prep = conn.prepareStatement("SELECT * FROM LobbyPlayers WHERE player_name = ?;");
+            prep.setString(1, p);
             ResultSet set = prep.executeQuery();
             set.next();
             ResultSetMetaData data = set.getMetaData();
@@ -217,8 +238,8 @@ public class LobbyDatabase {
 
     public static void makeNewLobbyPlayersEntry(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
-            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online,skin_url)"
-                    + "VALUES (?, ?, 0, 0, 0, 0,?)";
+            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id,skin_url)"
+                    + "VALUES (?, ?, 0, 0, 0, 0, 0,?)";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.setString(2, p.getName());
