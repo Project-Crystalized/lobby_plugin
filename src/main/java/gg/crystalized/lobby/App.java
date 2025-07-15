@@ -145,6 +145,8 @@ public enum App {
             Inventory inv = prepareInv((String) extra, 54, self);
             if(this == App.Friends){
                 FriendsMenu.placeFriends(p, inv);
+            }else if(this == App.Profile){
+                InventoryManager.prepareProfile(p, inv);
             }
             p.openInventory(inv);
         }

@@ -39,6 +39,7 @@ public class LobbyConfig {
 
         }catch(Exception e){
             if(e instanceof NoSuchFileException){
+                Bukkit.getLogger().warning("[Lobby_plugin] Couldn't find lobby_config.json. Starting Lobby_plugin in passive mode.");
                 Lobby_plugin.getInstance().passive_mode = true;
                 return;
             }

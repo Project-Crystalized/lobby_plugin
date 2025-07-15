@@ -1,10 +1,23 @@
 plugins {
+    `maven-publish`
     id ("com.gradleup.shadow") version ("8.3.3")
     id("java")
 }
 
 group = "gg.crystalized.lobby"
 version = "1.0-SNAPSHOT"
+
+publishing {
+    publications {
+        create<MavenPublication>("local") {
+            groupId = "gg.crystalized.lobby"
+            artifactId = project.name
+            version = "1.0-SNAPSHOT"
+
+            from(components["java"])
+        }
+    }
+}
 
 repositories {
     mavenCentral()
@@ -45,4 +58,3 @@ tasks {
         dependsOn("shadowJar")
     }
 }
-

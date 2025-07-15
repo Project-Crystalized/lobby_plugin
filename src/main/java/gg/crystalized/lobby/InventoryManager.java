@@ -1,7 +1,9 @@
 package gg.crystalized.lobby;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -16,9 +18,15 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.profile.PlayerTextures;
 
-import java.util.Arrays;
-import java.util.Objects;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+
+import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
+import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 
 public class InventoryManager implements Listener {
@@ -282,5 +290,29 @@ public class InventoryManager implements Listener {
             return true;
         }
         return false;
+    }
+
+    public static void prepareProfile(Player p, Inventory inv){
+        try {
+            HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
+            ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+            SkullMeta meta = (SkullMeta) head.getItemMeta();
+            PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID());
+            PlayerTextures textures = profile.getTextures();
+            textures.setSkin(new URL((String)data.get("skin_url")));
+            profile.setTextures(textures);
+            meta.setPlayerProfile(profile);
+            meta.displayName(p.displayName());
+            ArrayList<Component> lore = new ArrayList<>();
+            lore.add(Component.text("Level: " + data.get("level")).color(WHITE).decoration(ITALIC, false));
+            meta.lore(lore);
+            head.setItemMeta(meta);
+            inv.setItem(3, head);
+        }catch(MalformedURLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't set head in player profile");
+        }
+
+        //TODO place more stuff in the profile
     }
 }

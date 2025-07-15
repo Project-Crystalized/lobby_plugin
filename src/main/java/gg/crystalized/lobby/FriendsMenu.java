@@ -72,11 +72,9 @@ public class FriendsMenu {
     public static void clickedFriend(ItemStack item, Player p, ClickType click){
         if(click.isLeftClick()) {
             String name = ((TextComponent)item.getItemMeta().displayName()).content();
-            HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(name);
-            if(data == null){
-                return;
-            }
-            //TODO make Profile first
+            App.Profile.action((Player)Bukkit.getOfflinePlayer(name));
+        }else if(click.isRightClick()){
+
         }
         //TODO do everything here (party invs, friend removing)
     }
