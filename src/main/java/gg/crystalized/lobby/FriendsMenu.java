@@ -1,10 +1,13 @@
 package gg.crystalized.lobby;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -70,12 +73,21 @@ public class FriendsMenu {
     }
 
     public static void clickedFriend(ItemStack item, Player p, ClickType click){
-        if(click.isLeftClick()) {
-            String name = ((TextComponent)item.getItemMeta().displayName()).content();
+        String name = ((TextComponent)item.getItemMeta().displayName()).content();
+        if(click.isShiftClick()){
+            ByteArrayDataOutput out = ByteStreams.newDataOutput();
+            out.writeUTF("Friend");
+            out.writeUTF("remove");
+            out.writeUTF(name);
+            p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
+        }else if(click.isLeftClick()) {
             App.Profile.action((Player)Bukkit.getOfflinePlayer(name));
         }else if(click.isRightClick()){
-
+            ByteArrayDataOutput out = ByteStreams.newDataOutput();
+            out.writeUTF("Party");
+            out.writeUTF("invite");
+            out.writeUTF(name);
+            p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
         }
-        //TODO do everything here (party invs, friend removing)
     }
 }

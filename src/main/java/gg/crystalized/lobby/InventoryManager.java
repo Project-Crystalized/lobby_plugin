@@ -307,7 +307,7 @@ public class InventoryManager implements Listener {
             lore.add(Component.text("Level: " + data.get("level")).color(WHITE).decoration(ITALIC, false));
             meta.lore(lore);
             head.setItemMeta(meta);
-            inv.setItem(3, head);
+            inv.setItem(2, head);
         }catch(MalformedURLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't set head in player profile");
