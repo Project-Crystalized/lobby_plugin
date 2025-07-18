@@ -1,5 +1,7 @@
 package gg.crystalized.lobby;
 
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -10,10 +12,14 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.Plugin;
 
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
+import static java.util.Arrays.stream;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
@@ -43,10 +49,11 @@ public enum App {
             "put URL to Website here"), //TODO
     ShardButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.translatable("crystalized.shardcore.shop.scn3").color(WHITE).decoration(ITALIC, false), new int[]{41, 3, 2},
             EquipmentSlot.HAND),
-    ScrollLeft("ui/invisible", new useCases[]{useCases.ShopPage}, Component.translatable("crystalized.shardcore.generic.scrollleft").color(WHITE).decoration(ITALIC, false), 21),
-    ScrollRight("ui/invisible", new useCases[]{useCases.ShopPage}, Component.translatable("crystalized.shardcore.generic.scrollright").color(WHITE).decoration(ITALIC, false), 23),
-    Back("ui/invisible", new useCases[]{useCases.ShopPage}, Component.text("Back").color(WHITE).decoration(ITALIC, false), 20);
-
+    ScrollLeft("ui/invisible", new useCases[]{useCases.ShopPage, useCases.Friends}, Component.translatable("crystalized.shardcore.generic.scrollleft").color(WHITE).decoration(ITALIC, false), 21),
+    ScrollRight("ui/invisible", new useCases[]{useCases.ShopPage, useCases.Friends}, Component.translatable("crystalized.shardcore.generic.scrollright").color(WHITE).decoration(ITALIC, false), 23),
+    Back("ui/invisible", new useCases[]{useCases.ShopPage}, Component.text("Back").color(WHITE).decoration(ITALIC, false), 20),
+    Requeue("ui/replay", useCases.Demand, Component.text("Requeue").color(WHITE).decoration(ITALIC, false), 7),
+    BackToHub("ui/leave", useCases.Demand, Component.text("Return to Lobby").color(WHITE).decoration(ITALIC, false), 8);
     //how buttons work {top left corner, width, height}
     enum useCases{
         Navigator,
@@ -60,14 +67,15 @@ public enum App {
         Map,
         Settings,
         Achievements,
-        Hotbar
+        Hotbar,
+        Demand
     }
     final String model;
     useCases self;
     useCases[] uses;
     useCases use;
     final Component name;
-    Integer slot;
+    public Integer slot;
     int[] slots;
     Object extra;
 
@@ -92,6 +100,13 @@ public enum App {
     App(String model, useCases[] uses, Component name, int slot){
         this.model = model;
         this.uses = uses;
+        this.name = name;
+        this.slot = slot;
+    }
+
+    App(String model, useCases use, Component name, int slot){
+        this.model = model;
+        this.use = use;
         this.name = name;
         this.slot = slot;
     }
@@ -139,7 +154,45 @@ public enum App {
     }
 
     public void action(Player p){
+        if(this == Requeue){
+            ArrayList<String> plugins = new ArrayList<>();
+            stream(Bukkit.getServer().getPluginManager().getPlugins()).forEach(pl -> plugins.add(pl.getName()));
+            String queue = null;
+            if(plugins.contains("Litestrike")){
+                queue = "litestrike";
+            }else if(plugins.contains("Knockoff")){
+                queue = "knockoff";
+            }
+
+            if(queue == null){
+                return;
+            }
+
+            ByteArrayDataOutput out = ByteStreams.newDataOutput();
+            out.writeUTF("Connect");
+            out.writeUTF(queue);
+            out.writeUTF("false");
+            p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
+            return;
+        }
+
+        if(this == BackToHub){
+            ByteArrayDataOutput out = ByteStreams.newDataOutput();
+            out.writeUTF("Connect");
+            out.writeUTF("lobby");
+            out.writeUTF("false");
+            p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
+        }
+
         if(extra instanceof Location){
+            if(Lobby_plugin.getInstance().passive_mode){
+                ByteArrayDataOutput out = ByteStreams.newDataOutput();
+                out.writeUTF("Connect");
+                out.writeUTF(this.toString().toLowerCase());
+                out.writeUTF("true");
+                p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
+                return;
+            }
             p.teleport((Location)extra);
         }else if(extra instanceof String){
             Inventory inv = prepareInv((String) extra, 54, self);

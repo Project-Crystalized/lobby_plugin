@@ -1,9 +1,12 @@
 package gg.crystalized.lobby;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -58,9 +61,10 @@ public class InventoryManager implements Listener {
         if(Lobby_plugin.getInstance().passive_mode && !isLobbyInv(event.getView())){
             return;
         }
-        event.setCancelled(true);
-        ItemStack item = event.getCurrentItem();
         Player p = (Player) event.getWhoClicked();
+        ItemStack item = event.getCurrentItem();
+        event.setCancelled(true);
+
         if(item == null){
             App app = null;
             for(App a : App.values()){
@@ -81,7 +85,7 @@ public class InventoryManager implements Listener {
             FriendsMenu.clickedFriend(item, p, event.getClick());
             return;
         }
-        App app = App.identifyApp(item);
+
         if(event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(true, false)) || event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(true, true))){
             event.getWhoClicked().openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu));
             for(int i = 0; i <= 54; i++){
@@ -95,7 +99,16 @@ public class InventoryManager implements Listener {
             return;
         }
 
+        App app = App.identifyApp(item);
         if(app != null) {
+            if(event.getClick().isShiftClick() && app.extra instanceof Location){
+                ByteArrayDataOutput out = ByteStreams.newDataOutput();
+                out.writeUTF("Connect");
+                out.writeUTF(app.toString().toLowerCase());
+                out.writeUTF("true");
+                p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
+                return;
+            }
             app.action((Player) event.getWhoClicked());
         }else if(Cosmetic.identifyCosmetic(item) != null){
             event.getInventory().setItem(event.getSlot(), Cosmetic.identifyCosmetic(item).build(!Cosmetic.identifyCosmetic(item).isWearing(p), false));
@@ -282,12 +295,32 @@ public class InventoryManager implements Listener {
 
     public static boolean isLobbyInv(InventoryView view){
         for(App a : App.values()){
-            if(a.extra instanceof String && view.getTopInventory().getHolder() == null &&((TextComponent) view.title()).content() == a.extra){
+            if(a.extra instanceof String && view.title() instanceof TextComponent && ((TextComponent) view.title()).content() == a.extra){
                 return true;
             }
         }
-        if(view.getTopInventory().getHolder() == null && ((TextComponent) view.title()).content().equals("\uA000\uA002")){
+
+        if(!(view.title() instanceof TextComponent)){
+            return false;
+        }
+
+        if(((TextComponent) view.title()).content().equals("\uA000\uA002") || ((TextComponent) view.title()).content().equals("\uA000\uA00A")){
             return true;
+        }
+        return false;
+    }
+
+    public static boolean hasLobbyItems(Player p){
+        for(App a : App.values()){
+            if(a.use == null || a.use != App.useCases.Hotbar){
+                continue;
+            }
+            if(a.uses == null || !Arrays.asList(a.uses).contains(App.useCases.Hotbar)){
+                continue;
+            }
+            if(p.getInventory().contains(a.build())){
+                return true;
+            }
         }
         return false;
     }
