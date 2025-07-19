@@ -89,4 +89,11 @@ public class FriendsMenu {
             p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
         }
     }
+
+    public static void placePartyMembers(String [] members){
+        for(int i = 0; i <= 4; i++){
+            Player p = Bukkit.getPlayer(members[i]);
+
+        }
+    }
 }

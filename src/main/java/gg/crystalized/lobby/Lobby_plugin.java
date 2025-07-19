@@ -30,7 +30,7 @@ import java.util.*;
 import java.util.logging.Level;
 
 
-public final class Lobby_plugin extends JavaPlugin{
+public final class Lobby_plugin extends JavaPlugin implements PluginMessageListener{
 
 	List<CrystalizedChess> ChessGames = new ArrayList<>();
 	public boolean passive_mode = false;
@@ -43,6 +43,7 @@ public final class Lobby_plugin extends JavaPlugin{
 		this.getServer().getPluginManager().registerEvents(new CrystalizedChessListener(), this);
 		this.getServer().getPluginManager().registerEvents(new InventoryManager(), this);
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "crystalized:main");
+		this.getServer().getMessenger().registerIncomingPluginChannel(this, "crystalized:main", this);
 
 		if(Lobby_plugin.getInstance().passive_mode){
 			return;
@@ -132,5 +133,17 @@ public final class Lobby_plugin extends JavaPlugin{
 		//TODO if we implement a debug mode, make this message appear when thats active
 		//getLogger().log(Level.WARNING, "[CrystalizedChess] getChessGame(String) failed with player \"" + player + "\", This may or may not be safe to ignore depending on where this was called. Returning Null.");
 		return null;
+	}
+
+	@Override
+	public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {
+		if (!channel.equals("crystalized:main")) {
+			return;
+		}
+		ByteArrayDataInput in = ByteStreams.newDataInput(message);
+		String message1 = in.readUTF();
+		if (message1.equals("Party")) {
+
+		}
 	}
 }
