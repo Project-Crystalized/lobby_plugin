@@ -291,6 +291,23 @@ public class LobbyDatabase {
             Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());
         }
     }
+
+    public static boolean areFriends(Player p, Player friend){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT COUNT(*) AS count FROM Friends WHERE player_uuid = ? AND friend_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            prep.setBytes(2, uuid_to_bytes(friend));
+            if(prep.executeQuery().getInt("count") > 0){
+                return true;
+            }
+            return false;
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't check excistence in database for " + p.getName() + " UUID: " + p.getUniqueId());
+            return false;
+        }
+    }
+
     public static byte[] uuid_to_bytes(Player p) {
         ByteBuffer bb = ByteBuffer.allocate(16);
         UUID uuid = p.getUniqueId();

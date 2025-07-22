@@ -12,10 +12,7 @@ import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.StandardProtocolFamily;
 import java.net.UnixDomainSocketAddress;
 import java.nio.ByteBuffer;
@@ -137,13 +134,22 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 
 	@Override
 	public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {
+		ArrayList<String> members = new ArrayList<>();
 		if (!channel.equals("crystalized:main")) {
 			return;
 		}
 		ByteArrayDataInput in = ByteStreams.newDataInput(message);
 		String message1 = in.readUTF();
 		if (message1.equals("Party")) {
-
+			while(true){
+				try {
+					members.add(in.readUTF());
+				}catch(Exception e){
+					FriendsMenu.placePartyMembers(members, player, FriendsMenu.waitingForPartyMembers.get(player));
+					FriendsMenu.waitingForPartyMembers.remove(player);
+					return;
+				}
+			}
 		}
 	}
 }

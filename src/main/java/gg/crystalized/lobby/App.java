@@ -198,6 +198,12 @@ public enum App {
             Inventory inv = prepareInv((String) extra, 54, self);
             if(this == App.Friends){
                 FriendsMenu.placeFriends(p, inv);
+                ByteArrayDataOutput out = ByteStreams.newDataOutput();
+                out.writeUTF("Party");
+                out.writeUTF("members");
+                p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
+                FriendsMenu.waitingForPartyMembers.put(p, inv);
+                return;
             }else if(this == App.Profile){
                 InventoryManager.prepareProfile(p, inv);
             }

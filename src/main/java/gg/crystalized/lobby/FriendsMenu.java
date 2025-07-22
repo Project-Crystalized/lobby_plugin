@@ -5,6 +5,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -25,6 +26,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 public class FriendsMenu {
+    public static HashMap<Player, Inventory> waitingForPartyMembers = new HashMap<>();
     public static ItemStack buildFriend(String name, String skin, String date, int online){
         try {
             URL skinURL = new URL(skin);
@@ -79,6 +81,7 @@ public class FriendsMenu {
             out.writeUTF("remove");
             out.writeUTF(name);
             p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
+            App.Friends.action(p);
         }else if(click.isLeftClick()) {
             App.Profile.action((Player)Bukkit.getOfflinePlayer(name));
         }else if(click.isRightClick()){
@@ -87,13 +90,82 @@ public class FriendsMenu {
             out.writeUTF("invite");
             out.writeUTF(name);
             p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
+            App.Friends.action(p);
         }
     }
 
-    public static void placePartyMembers(String [] members){
-        for(int i = 0; i <= 4; i++){
-            Player p = Bukkit.getPlayer(members[i]);
+    public static void placePartyMembers(ArrayList<String> members, Player p, Inventory inv){
+        for(int i = 0; i <= 4 && i < members.size(); i++){
+            Player pl = Bukkit.getPlayer(members.get(i));
+            if(pl.equals(p) && i == 0){
+                pl = null;
+            }
+            ItemStack item = buildPartyMember(pl, p);
+            inv.setItem(i+3, item);
+        }
+        p.openInventory(inv);
+    }
 
+    public static ItemStack buildPartyMember(Player p, Player viewer){
+        boolean forLeader = false;
+        if(p == null){
+            forLeader = true;
+            p = viewer;
+        }
+        try {
+            HashMap<String, Object> data = LobbyDatabase.fetchPlayerData((p));
+            URL skinURL = new URL((String)data.get("skin_url"));
+            ItemStack member = new ItemStack(Material.PLAYER_HEAD, 1);
+            SkullMeta skull = (SkullMeta) member.getItemMeta();
+            PlayerProfile profile = (PlayerProfile) Bukkit.createPlayerProfile(UUID.randomUUID());
+            PlayerTextures texture = profile.getTextures();
+            texture.setSkin(skinURL);
+            profile.setTextures(texture);
+            skull.setPlayerProfile(profile);
+            member.setItemMeta(skull);
+            ItemMeta meta = member.getItemMeta();
+            meta.displayName(p.displayName());
+            ArrayList<Component> lore = new ArrayList<>();
+            lore.add(Component.text("[Left-click] View Profile").color(TextColor.fromHexString("#f299da")).decoration(ITALIC, false));
+            if(!LobbyDatabase.areFriends(p, viewer)) {
+                lore.add(Component.text("[Right-click] Send friend request").color(TextColor.fromHexString("#f299da")).decoration(ITALIC, false));
+            }
+            if(forLeader) {
+                lore.add(Component.text("[Shift-click] Remove from Party").color(TextColor.fromHexString("#f299da")).decoration(ITALIC, false));
+            }
+            if((Integer)data.get("online") == 1) {
+                lore.add(Component.text("online").color(GREEN));
+            }else if((Integer)data.get("online") == 0){
+                lore.add(Component.text("offline").color(RED));
+            }
+            meta.lore(lore);
+            member.setItemMeta(meta);
+            return member;
+        }catch(MalformedURLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("failed to build party member");
+        }
+        return null;
+    }
+
+    public static void clickedPartyMember(Player p, ItemStack item, ClickType click){
+        String name = ((TextComponent)item.getItemMeta().displayName()).content();
+        if(click.isShiftClick()){
+            ByteArrayDataOutput out = ByteStreams.newDataOutput();
+            out.writeUTF("Party");
+            out.writeUTF("remove");
+            out.writeUTF(name);
+            p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
+            App.Friends.action(p);
+        }else if(click.isLeftClick()) {
+            App.Profile.action((Player)Bukkit.getOfflinePlayer(name));
+        }else if(click.isRightClick()){
+            ByteArrayDataOutput out = ByteStreams.newDataOutput();
+            out.writeUTF("Friend");
+            out.writeUTF("add");
+            out.writeUTF(name);
+            p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
+            App.Friends.action(p);
         }
     }
 }

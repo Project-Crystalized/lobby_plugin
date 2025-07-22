@@ -82,6 +82,10 @@ public class InventoryManager implements Listener {
             return;
         }
         if(item.getType() == Material.PLAYER_HEAD){
+            if(event.getSlot() < 7){
+                FriendsMenu.clickedPartyMember(p, item, event.getClick());
+                return;
+            }
             FriendsMenu.clickedFriend(item, p, event.getClick());
             return;
         }
