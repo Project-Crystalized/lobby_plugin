@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 public class LobbyDatabase {
@@ -54,7 +55,7 @@ public class LobbyDatabase {
         }
     }
 
-    public static HashMap<String, Object> fetchPlayerData(Player p){
+    public static HashMap<String, Object> fetchPlayerData(OfflinePlayer p){
         try(Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
@@ -292,6 +293,19 @@ public class LobbyDatabase {
         }
     }
 
+    public static void setRank(OfflinePlayer p, int rankID){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            String makeNewEntry = "UPDATE LobbyPlayers SET rank_id = ? WHERE player_uuid = ?";
+            PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
+            prepared.setInt(1, rankID);
+            prepared.setBytes(2, uuid_to_bytes(p));
+            prepared.executeUpdate();
+        }catch(SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());
+        }
+    }
+
     public static boolean areFriends(Player p, Player friend){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT COUNT(*) AS count FROM Friends WHERE player_uuid = ? AND friend_uuid = ?;");
@@ -309,6 +323,14 @@ public class LobbyDatabase {
     }
 
     public static byte[] uuid_to_bytes(Player p) {
+        ByteBuffer bb = ByteBuffer.allocate(16);
+        UUID uuid = p.getUniqueId();
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+        return bb.array();
+    }
+
+    public static byte[] uuid_to_bytes(OfflinePlayer p) {
         ByteBuffer bb = ByteBuffer.allocate(16);
         UUID uuid = p.getUniqueId();
         bb.putLong(uuid.getMostSignificantBits());

@@ -52,6 +52,7 @@ public class LevelManager implements Listener {
             return;
         }
         Player p = event.getPlayer();
+        Ranks.renderNameTags(p);
         if(!(event.getOldLevel() < event.getNewLevel())){
             return;
         }
@@ -80,6 +81,7 @@ public class LevelManager implements Listener {
             prep.setInt(1, getMoney(p) + amount);
             prep.setBytes(2, LobbyDatabase.uuid_to_bytes(p));
             prep.executeUpdate();
+            Ranks.renderNameTags(p);
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't update xp or level of " + p.getName());

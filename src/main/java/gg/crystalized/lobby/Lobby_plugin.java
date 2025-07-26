@@ -53,6 +53,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		this.getCommand("pig_hunt").setExecutor(dc);
 		this.getCommand("give_xp").setExecutor(dc);
 		this.getCommand("give_money").setExecutor(dc);
+		this.getCommand("set_rank").setExecutor(dc);
 		new RankDisplay();
 
 

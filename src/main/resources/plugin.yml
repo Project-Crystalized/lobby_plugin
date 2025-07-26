@@ -30,4 +30,9 @@ commands:
     usage: "/give_money"
     aliases: []
     permission: crystalized.lobby.command
+  set_rank:
+    description: "sets player rank"
+    usage: "/set_rank"
+    aliases: []
+    permission: crystalized.lobby.command
 

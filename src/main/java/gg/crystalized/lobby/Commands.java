@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -38,8 +39,8 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
                 return give_xp(args, commandSender);
             case "give_money":
                 return give_money(args, commandSender);
-            //case "set_rank":
-                //return set_rank(args, commandSender); //TODO
+            case "set_rank":
+                return set_rank(args, commandSender); //TODO
             default:
                 return false;
 
@@ -105,5 +106,44 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
             return true;
         }
         return false;
+    }
+
+    private boolean set_rank(String[] args, CommandSender sender) {
+        if (sender instanceof Player) {
+            return false;
+        }
+
+        if (args.length < 2) {
+            return false;
+        }
+
+        OfflinePlayer p = Bukkit.getServer().getOfflinePlayer(args[0]);
+
+        if(p == null){
+            return false;
+        }
+
+        int rank = 0;
+        if(args[1].equals("rankless")){
+            rank = 0;
+        }else if(args[1].equals("admin")){
+            rank = 1;
+        } else if(args[1].equals("mod")){
+            rank = 2;
+        } else if(args[1].equals("dev")){
+            rank = 3;
+        } else if(args[1].equals("contrib")){
+            rank = 4;
+        } else if(args[1].equals("sub-project")){
+            rank = 5;
+        }
+
+        //TODO hard code more ranks
+        LobbyDatabase.setRank(p, rank);
+        if(p.isOnline()) {
+            Ranks.renderTabList(p.getPlayer());
+            Ranks.renderNameTags(p.getPlayer());
+        }
+        return true;
     }
 }

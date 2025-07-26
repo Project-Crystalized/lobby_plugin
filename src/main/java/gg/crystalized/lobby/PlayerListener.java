@@ -1,5 +1,6 @@
 package gg.crystalized.lobby;
 
+import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -29,7 +30,6 @@ import org.bukkit.potion.PotionEffectType;
 
 import static net.kyori.adventure.text.Component.text;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 
@@ -45,11 +45,17 @@ public final class PlayerListener implements Listener {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
-		e.joinMessage(text(""));
-		//Location spawn = new Location(Bukkit.getWorld("world"), 0, -60, 0, 180, 0);
+
+		if(!LobbyDatabase.isPlayerInDatabase(p)){
+			LobbyDatabase.makeNewLobbyPlayersEntry(p);
+			LobbyDatabase.addCosmetic(p, Cosmetic.BLUE_SHARDCORE, true);
+			//TODO Tutorial here maybe?
+		}
+
 		if(Lobby_plugin.getInstance().passive_mode){
 			return;
 		}
+
 		ScoreboardManager.SetScoreboard(p);
 		p.teleport(LobbyConfig.spawn);
 		p.addPotionEffect(
@@ -58,20 +64,12 @@ public final class PlayerListener implements Listener {
 		p.getInventory().clear();
 		LobbyDatabase.updatePlayerNames(p);
 		LobbyDatabase.updateSkin(p);
-
-		if(!LobbyDatabase.isPlayerInDatabase(p)){
-			LobbyDatabase.makeNewLobbyPlayersEntry(p);
-			LobbyDatabase.addCosmetic(p, Cosmetic.BLUE_SHARDCORE, true);
-			//TODO Tutorial here maybe?
-		}
 		LobbyDatabase.updatePlayerNames(p);
 		LobbyDatabase.updateSkin(p);
-		HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
 
-		if(!((Integer)data.get("rank_id") == 0)){
-			updateDisplayName(p);
-			e.joinMessage(text(p.displayName() + "joined the game"));
-		}
+		e.joinMessage(Ranks.getJoinMessage(p));
+		Ranks.renderNameTags(p);
+		Ranks.renderTabList(p);
 
 		LevelManager.updateLevel(p);
 		HashMap<String, Object> map = LobbyDatabase.fetchAndDeleteTemporaryData(p);
@@ -184,11 +182,13 @@ public final class PlayerListener implements Listener {
 		event.setCancelled(true);
 	}
 
-	public static void updateDisplayName(Player p){
-		HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
-		String name = p.getName();
-		if((Integer)data.get("rank_id") == 1){
-			p.displayName(Component.text("\uE301").append(Component.text(name).color(TextColor.color(148, 3, 75))));
-		}
+	@EventHandler
+	public void onChat(AsyncChatEvent e){
+		e.setCancelled(true);
+		Component message = e.message();
+		Player p = e.getPlayer();
+		Component name = Ranks.getName(p);
+		Component newMessage = name.append(Component.text(": ")).append(message);
+		Bukkit.getServer().sendMessage(newMessage);
 	}
 }

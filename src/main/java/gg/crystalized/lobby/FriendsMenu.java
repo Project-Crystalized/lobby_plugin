@@ -39,7 +39,7 @@ public class FriendsMenu {
             skull.setPlayerProfile(profile);
             friend.setItemMeta(skull);
             ItemMeta meta = friend.getItemMeta();
-            meta.displayName(Component.text(name).color(WHITE).decoration(ITALIC, false));
+            meta.displayName(Ranks.getName(Bukkit.getOfflinePlayer(name)).decoration(ITALIC, false));
             ArrayList<Component> lore = new ArrayList<>();
             lore.add(Component.text("Friends since: " + date).color(GRAY).decoration(ITALIC, false));
             lore.add(Component.text("[Left-click] View Profile").color(YELLOW).decoration(ITALIC, false));
@@ -95,13 +95,15 @@ public class FriendsMenu {
     }
 
     public static void placePartyMembers(ArrayList<String> members, Player p, Inventory inv){
-        for(int i = 0; i <= 4 && i < members.size(); i++){
+        int i = 0;
+        while(i <= 4 && i < members.size()){
             Player pl = Bukkit.getPlayer(members.get(i));
             if(pl.equals(p) && i == 0){
                 pl = null;
             }
             ItemStack item = buildPartyMember(pl, p);
             inv.setItem(i+3, item);
+            i++;
         }
         p.openInventory(inv);
     }
@@ -124,7 +126,7 @@ public class FriendsMenu {
             skull.setPlayerProfile(profile);
             member.setItemMeta(skull);
             ItemMeta meta = member.getItemMeta();
-            meta.displayName(p.displayName());
+            meta.displayName(Ranks.getName(p).decoration(ITALIC, false));
             ArrayList<Component> lore = new ArrayList<>();
             lore.add(Component.text("[Left-click] View Profile").color(TextColor.fromHexString("#f299da")).decoration(ITALIC, false));
             if(!LobbyDatabase.areFriends(p, viewer)) {

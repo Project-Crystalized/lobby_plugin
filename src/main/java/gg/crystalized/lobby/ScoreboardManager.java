@@ -27,7 +27,7 @@ public class ScoreboardManager {
         obj.getScore("7").customName(text("   "));
 
         obj.getScore("6").setScore(6);
-        obj.getScore("6").customName(text("Rank: ").color(NamedTextColor.AQUA).append(text("TODO"))); //TODO get rank name and append it to here
+        obj.getScore("6").customName(text("Rank: ").color(NamedTextColor.AQUA));
 
         obj.getScore("5").setScore(5);
         obj.getScore("5").customName(text("Currency: "));
@@ -58,6 +58,10 @@ public class ScoreboardManager {
         Team LobbyNumber = s.registerNewTeam("LobbyNumber");
         LobbyNumber.addEntry("3");
         obj.getScore("3").setScore(3);
+
+        Team Rank = s.registerNewTeam("Rank");
+        LobbyNumber.addEntry("6");
+        obj.getScore("6").setScore(6);
 
         p.setScoreboard(s);
 
@@ -94,11 +98,16 @@ public class ScoreboardManager {
                     obj.getScore("5").customName(text("Currency: ")
                             .append(text("" + LevelManager.getMoney(p)))
                     );
+
+                    obj.getScore("6").customName(text("Rank: ")
+                            .append(Ranks.getRankWithName(p))
+                    );
                 } else {
                     //Java
                     LobbyNumber.suffix(text("1"));
                     PlayerCounter.suffix(text("" + Bukkit.getOnlinePlayers().size()));
                     CurrencyCounter.suffix(text("" + LevelManager.getMoney(p)));
+                    Rank.suffix(Ranks.getRankWithName(p));
                 }
             }
         }.runTaskTimer(Lobby_plugin.getInstance(), 2, 5);
