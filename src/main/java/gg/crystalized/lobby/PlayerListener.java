@@ -52,6 +52,8 @@ public final class PlayerListener implements Listener {
 			//TODO Tutorial here maybe?
 		}
 
+		e.joinMessage(Ranks.getJoinMessage(p));
+
 		if(Lobby_plugin.getInstance().passive_mode){
 			return;
 		}
@@ -67,7 +69,6 @@ public final class PlayerListener implements Listener {
 		LobbyDatabase.updatePlayerNames(p);
 		LobbyDatabase.updateSkin(p);
 
-		e.joinMessage(Ranks.getJoinMessage(p));
 		Ranks.renderNameTags(p);
 		Ranks.renderTabList(p);
 
@@ -184,6 +185,9 @@ public final class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onChat(AsyncChatEvent e){
+		if(Lobby_plugin.getInstance().passive_mode){
+			return;
+		}
 		e.setCancelled(true);
 		Component message = e.message();
 		Player p = e.getPlayer();

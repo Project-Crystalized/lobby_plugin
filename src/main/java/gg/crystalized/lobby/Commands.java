@@ -140,7 +140,7 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
 
         //TODO hard code more ranks
         LobbyDatabase.setRank(p, rank);
-        if(p.isOnline()) {
+        if(p.isOnline() && !Lobby_plugin.getInstance().passive_mode) {
             Ranks.renderTabList(p.getPlayer());
             Ranks.renderNameTags(p.getPlayer());
         }

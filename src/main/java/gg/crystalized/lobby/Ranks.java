@@ -3,13 +3,13 @@ package gg.crystalized.lobby;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.*;
 import org.geysermc.floodgate.api.FloodgateApi;
@@ -55,10 +55,6 @@ public class Ranks {
             icon = "\uE309";
         }
 
-        if(Lobby_plugin.getInstance().passive_mode){
-          return Component.text(icon + " ").color(WHITE).decoration(ITALIC, false).append(name);
-        }
-
         if((Integer)data.get("rank_id") == 1) {
             hexColor = "#ba1560";
         } else if((Integer)data.get("rank_id") == 2) {
@@ -94,9 +90,6 @@ public class Ranks {
             icon = "\uE308";
         }
 
-        if(Lobby_plugin.getInstance().passive_mode){
-            return Component.text(icon + " ").color(WHITE).append(name);
-        }
 
         if((Integer)data.get("rank_id") == 1) {
             hexColor = "#ba1560";
@@ -131,6 +124,25 @@ public class Ranks {
             icon = "\uE308";
         }
         return text(icon);
+    }
+
+    public static Component getIcon(OfflinePlayer p){
+        HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
+        String icon = "";
+
+        if((Integer)data.get("rank_id") == 1) {
+            icon = "\uE301";
+        } else if((Integer)data.get("rank_id") == 2) {
+            icon = "\uE307";
+        } else if((Integer)data.get("rank_id") == 3) {
+            icon = "\uE303";
+        } else if((Integer)data.get("rank_id") == 4) {
+            icon = "\uE305";
+        } else if((Integer)data.get("rank_id") == 5) {
+            icon = "\uE309";
+        }
+
+        return text(icon).color(WHITE).decoration(ITALIC, false);
     }
 
     public static Component getJoinMessage(Player p){
@@ -185,5 +197,29 @@ public class Ranks {
         t.addEntity(p);
 
         p.setScoreboard(s);
+    }
+
+    public static ItemStack buildItem(OfflinePlayer p){
+        ItemStack item = new ItemStack(Material.COAL);
+        ItemMeta meta = item.getItemMeta();
+        HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
+        NamespacedKey key = null;
+
+        //TODO
+        return null;
+    }
+
+    public static void passiveNames(Player p, TextColor color, Component before, Component after){
+        Component a = getIcon(p);
+        Component b = text(" ").append(text(p.getName()).color(color));
+        if(before != null){
+           a =  a.append(before);
+        }
+
+        if(after != null){
+           b = b.append(after);
+        }
+
+        p.displayName(a.append(b));
     }
 }

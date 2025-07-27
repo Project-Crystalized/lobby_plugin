@@ -60,7 +60,7 @@ public class ScoreboardManager {
         obj.getScore("3").setScore(3);
 
         Team Rank = s.registerNewTeam("Rank");
-        LobbyNumber.addEntry("6");
+        Rank.addEntry("6");
         obj.getScore("6").setScore(6);
 
         p.setScoreboard(s);

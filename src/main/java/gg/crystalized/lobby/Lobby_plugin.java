@@ -42,18 +42,21 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "crystalized:main");
 		this.getServer().getMessenger().registerIncomingPluginChannel(this, "crystalized:main", this);
 
+		Commands dc = new Commands();
+		this.getCommand("set_rank").setExecutor(dc);
+
 		if(Lobby_plugin.getInstance().passive_mode){
 			return;
 		}
 
 		new Leaderboards();
 
-		Commands dc = new Commands();
+
 		this.getCommand("chess").setExecutor(dc);
 		this.getCommand("pig_hunt").setExecutor(dc);
 		this.getCommand("give_xp").setExecutor(dc);
 		this.getCommand("give_money").setExecutor(dc);
-		this.getCommand("set_rank").setExecutor(dc);
+
 		new RankDisplay();
 
 
