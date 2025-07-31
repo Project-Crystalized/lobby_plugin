@@ -39,7 +39,12 @@ public class Ranks {
 
     public static Component getName(OfflinePlayer p){
         HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
-        Component name = text(p.getName());
+        Component name;
+        if(p.getName() == null){
+            name = text("null");
+        }else {
+            name = text(p.getName());
+        }
         String icon = "";
         String hexColor = "#a1a1a1";
 

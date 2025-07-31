@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.entity.Display.Billboard;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -88,25 +89,41 @@ public class Leaderboards {
 
 class WinLeaderboard {
 	public WinLeaderboard(World w, String type) {
+		Bukkit.getLogger().warning("win leader");
 		Location loc = null;
 
 		// FYI, pitch and yaw doesn't matter when the leaderboard rotates automatically
 		// based on how the client looks at it
 		switch (type) {
 			case "ls":
-				loc = new Location(w, -19, -57.5, -110.5);
+				loc = LobbyConfig.ls_leaderboard;
 				break;
 			case "ko":
-				loc = new Location(w, -8, -57, -25);
+				loc = LobbyConfig.ko_leaderboard;
 				break;
 		}
 
 		// Location loc = new Location(w, -19, -57.5, -110.5, 90.0f, 26.565f);
 		Location finalLoc = loc;
+		TextDisplay display = (TextDisplay) finalLoc.getWorld().spawnEntity(finalLoc, EntityType.TEXT_DISPLAY);
+		switch (type) {
+			case "ls":
+				// display.text(generate_ls_text());
+				display.text(generate_ls_text());
+				break;
+			case "ko":
+				// display.text(generate_ko_text());
+				display.text(generate_ko_text());
+				break;
+		}
+		display.setShadowed(true);
+		display.setBillboard(Billboard.CENTER);
+		display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
 		new BukkitRunnable() {
 
 			@Override
 			public void run() {
+
 				try {
 					TextDisplay display = finalLoc.getNearbyEntitiesByType(TextDisplay.class, 2.0).stream().findAny().get();
 					display.teleport(finalLoc);
@@ -124,6 +141,7 @@ class WinLeaderboard {
 					display.setBillboard(Billboard.CENTER);
 					display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
 				} catch (NoSuchElementException e) {
+					Bukkit.getLogger().warning("no Element");
 				}
 			}
 		}.runTaskTimer(Lobby_plugin.getInstance(), (20 * 5), (20 * 10));
@@ -134,15 +152,15 @@ class WinLeaderboard {
 		String query = "SELECT player_uuid, SUM(was_winner) FROM LsGamesPlayers GROUP BY player_uuid ORDER BY SUM(was_winner) DESC LIMIT 10;";
 		try (Connection conn = DriverManager.getConnection(Leaderboards.LS_URL)) {
 			ResultSet res = conn.createStatement().executeQuery(query);
-			Component leaderbaord_rows = text("Game Leaderboard\n").color(GOLD).append(text("LIGHTSTRIKE").color(GREEN));
+			Component leaderbaord_rows = text("Game Leaderboard\n").color(GOLD).append(text("LITESTRIKE").color(GREEN));
 			int i = 0;
 			while (res.next()) {
 				i++;
 				UUID uuid = Leaderboards.convertBytesToUUID(res.getBytes("player_uuid"));
-				String name = Bukkit.getOfflinePlayer(uuid).getName();
+				Component name = Ranks.getName(Bukkit.getOfflinePlayer(uuid));
 				Component num = Leaderboards.get_styles(i);
 				leaderbaord_rows = leaderbaord_rows.append(text("\n")).append(num);
-				leaderbaord_rows = leaderbaord_rows.append(text("" + name).color(WHITE)).append(text(" - ").color(GRAY));
+				leaderbaord_rows = leaderbaord_rows.append(name).append(text(" - ").color(GRAY));
 				leaderbaord_rows = leaderbaord_rows.append(text("" + res.getInt("SUM(was_winner)")).color(GREEN));
 			}
 			return leaderbaord_rows;
@@ -167,15 +185,15 @@ class WinLeaderboard {
 			while (res.next()) {
 				i++;
 				UUID uuid = Leaderboards.convertBytesToUUID(res.getBytes("player_uuid"));
-				String name = Bukkit.getOfflinePlayer(uuid).getName();
+				Component name = Ranks.getName(Bukkit.getOfflinePlayer(uuid));
 				Component num = Leaderboards.get_styles(i);
 				leaderbaord_rows = leaderbaord_rows.append(text("\n")).append(num);
-				leaderbaord_rows = leaderbaord_rows.append(text("" + name).color(WHITE)).append(text(" - ").color(GRAY));
+				leaderbaord_rows = leaderbaord_rows.append(name).append(text(" - ").color(GRAY));
 				leaderbaord_rows = leaderbaord_rows.append(text("" + res.getInt("SUM(games_won)")).color(GREEN));
 			}
 			return leaderbaord_rows;
 		} catch (SQLException e) {
-			Bukkit.getLogger().warning("error opening database: " + e);
+			//Bukkit.getLogger().warning("error opening database: " + e);
 			return null;
 		}
 	}

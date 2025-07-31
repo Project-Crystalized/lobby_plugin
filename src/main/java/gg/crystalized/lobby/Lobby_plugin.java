@@ -39,6 +39,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		this.getServer().getPluginManager().registerEvents(new LevelManager(), this);
 		this.getServer().getPluginManager().registerEvents(new CrystalizedChessListener(), this);
 		this.getServer().getPluginManager().registerEvents(new InventoryManager(), this);
+		this.getServer().getPluginManager().registerEvents(new EntityRefresh(), this);
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "crystalized:main");
 		this.getServer().getMessenger().registerIncomingPluginChannel(this, "crystalized:main", this);
 
@@ -49,17 +50,12 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 			return;
 		}
 
-		new Leaderboards();
-
+		EntityRefresh.setupEntityRefresh();
 
 		this.getCommand("chess").setExecutor(dc);
 		this.getCommand("pig_hunt").setExecutor(dc);
 		this.getCommand("give_xp").setExecutor(dc);
 		this.getCommand("give_money").setExecutor(dc);
-
-		new RankDisplay();
-
-
 	}
 
 	@Override

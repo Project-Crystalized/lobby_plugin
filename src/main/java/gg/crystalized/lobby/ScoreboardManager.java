@@ -99,7 +99,7 @@ public class ScoreboardManager {
                             .append(text("" + LevelManager.getMoney(p)))
                     );
 
-                    obj.getScore("6").customName(text("Rank: ")
+                    obj.getScore("6").customName(text("Rank: ").color(NamedTextColor.AQUA)
                             .append(Ranks.getRankWithName(p))
                     );
                 } else {

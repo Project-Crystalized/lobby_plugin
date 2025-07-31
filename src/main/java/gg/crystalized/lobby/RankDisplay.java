@@ -25,8 +25,8 @@ import static net.kyori.adventure.text.Component.text;
 
 public class RankDisplay {
 
-	public static Location display_loc = new Location(Bukkit.getWorld("world"), -37, -59, -107);
-	public static Location lb_loc = new Location(Bukkit.getWorld("world"), -37, -59, -101);
+	public static Location display_loc = LobbyConfig.ls_ranked_display;
+	public static Location lb_loc = LobbyConfig.ls_ranked_leaderboard;
 
 	public RankDisplay() {
 		spawn_leaderboard();
