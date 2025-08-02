@@ -175,6 +175,13 @@ public final class PlayerListener implements Listener {
 			out.writeUTF("true");
 			((Player) e.getDamager()).sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main",
 					out.toByteArray());
+		} else if (npc.getName().equals("Crystal Blitz")) {
+			ByteArrayDataOutput out = ByteStreams.newDataOutput();
+			out.writeUTF("Connect");
+			out.writeUTF("crystalblitz");
+			out.writeUTF("true");
+			((Player) e.getDamager()).sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main",
+					out.toByteArray());
 		}
 	}
 
