@@ -168,7 +168,7 @@ public class FriendsMenu {
     }
 
     public static void clickedPartyMember(Player p, ItemStack item, ClickType click){
-        String name = String name = item.getPersistentDataContainer().get(key, PersistentDataType.STRING);;
+        String name = item.getPersistentDataContainer().get(key, PersistentDataType.STRING);;
         if(click.isShiftClick()){
             ByteArrayDataOutput out = ByteStreams.newDataOutput();
             out.writeUTF("Party");

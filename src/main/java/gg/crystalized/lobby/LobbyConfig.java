@@ -245,7 +245,7 @@ class NPCData{
         NPC npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.PLAYER, name, loc);
         SkinTrait trait = new SkinTrait();
         trait.setSkinPersistent(skinName, skinSignature, skinValue);
-        npc.getOrAddTrait(trait);
+        npc.getOrAddTrait(SkinTrait.class);
         npc.spawn(loc);
     }
 
