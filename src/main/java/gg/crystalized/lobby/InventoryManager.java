@@ -66,6 +66,7 @@ public class InventoryManager implements Listener {
         event.setCancelled(true);
 
         if(item == null){
+            p.playSound(p, "crystalized:effect.scn3.click_basic", 1, 1);
             App app = null;
             for(App a : App.values()){
                 if(a.slot != null && event.getSlot() == a.slot && a.self == null){
@@ -80,8 +81,13 @@ public class InventoryManager implements Listener {
             }
             goBack(identifyInv(event.getView()), p);
             return;
+        } else {
+            p.playSound(p, "crystalized:effect.scn3.click", 1, 1); //assuming the item we have we're supposed to click on - Callum
         }
+
+
         if(item.getType() == Material.PLAYER_HEAD){
+            //TODO Ladycat do some check here to check if we're on the friends app - Callum
             if(event.getSlot() < 7){
                 FriendsMenu.clickedPartyMember(p, item, event.getClick());
                 return;
