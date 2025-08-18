@@ -25,8 +25,8 @@ import static net.kyori.adventure.text.Component.text;
 
 public class RankDisplay {
 
-	public static Location display_loc = LobbyConfig.ls_ranked_display;
-	public static Location lb_loc = LobbyConfig.ls_ranked_leaderboard;
+	public static Location display_loc = LobbyConfig.Locations.get("ls-ranked-display");
+	public static Location lb_loc = LobbyConfig.Locations.get("ls-ranked-leaderboard");
 
 	public RankDisplay() {
 		spawn_leaderboard();

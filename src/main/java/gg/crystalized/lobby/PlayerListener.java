@@ -62,7 +62,7 @@ public final class PlayerListener implements Listener {
 		}
 
 		ScoreboardManager.SetScoreboard(p);
-		p.teleport(LobbyConfig.spawn);
+		p.teleport(LobbyConfig.Locations.get("spawn"));
 		p.addPotionEffect(
 				new PotionEffect(PotionEffectType.HUNGER, PotionEffect.INFINITE_DURATION, 1, false, false, true));
 		p.setGameMode(GameMode.ADVENTURE);
@@ -159,16 +159,16 @@ public final class PlayerListener implements Listener {
 		}
 		NPC npc = CitizensAPI.getNPCRegistry().getNPC(e.getEntity());
 		World w = e.getDamager().getWorld();
-		if (npc.getName().equals("Litestrike!")) {
-			e.getDamager().teleport(LobbyConfig.litestrike_hub);
-		} else if (npc.getName().equals("Litestrike")) {
+		if (e.getEntity().getLocation().equals(LobbyConfig.NPCs.get("lsspawn").loc)) {//TODO
+			e.getDamager().teleport(LobbyConfig.Locations.get("litestrike_hub"));
+		} else if (e.getEntity().getLocation().equals(LobbyConfig.NPCs.get("ls").loc)) {
 			ByteArrayDataOutput out = ByteStreams.newDataOutput();
 			out.writeUTF("Connect");
 			out.writeUTF("litestrike");
 			out.writeUTF("true");
 			((Player) e.getDamager()).sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main",
 					out.toByteArray());
-		} else if (npc.getName().equals("Knockoff")) {
+		} else if (e.getEntity().getLocation().equals(LobbyConfig.NPCs.get("ko").loc)) {
 			ByteArrayDataOutput out = ByteStreams.newDataOutput();
 			out.writeUTF("Connect");
 			out.writeUTF("knockoff");

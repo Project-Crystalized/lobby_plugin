@@ -96,10 +96,10 @@ class WinLeaderboard {
 		// based on how the client looks at it
 		switch (type) {
 			case "ls":
-				loc = LobbyConfig.ls_leaderboard;
+				loc = LobbyConfig.Locations.get("ls-leaderboard");
 				break;
 			case "ko":
-				loc = LobbyConfig.ko_leaderboard;
+				loc = LobbyConfig.Locations.get("ko-leaderboard");
 				break;
 		}
 
@@ -141,7 +141,6 @@ class WinLeaderboard {
 					display.setBillboard(Billboard.CENTER);
 					display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
 				} catch (NoSuchElementException e) {
-					Bukkit.getLogger().warning("no Element");
 				}
 			}
 		}.runTaskTimer(Lobby_plugin.getInstance(), (20 * 5), (20 * 10));

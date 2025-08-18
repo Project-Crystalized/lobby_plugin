@@ -8,12 +8,15 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.profile.PlayerTextures;
 
 import java.net.MalformedURLException;
@@ -21,12 +24,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 public class FriendsMenu {
     public static HashMap<Player, Inventory> waitingForPartyMembers = new HashMap<>();
+    public static NamespacedKey key = new NamespacedKey("crystalized", "friends_menu");
     public static ItemStack buildFriend(String name, String skin, String date, int online){
         try {
             URL skinURL = new URL(skin);
@@ -52,6 +57,8 @@ public class FriendsMenu {
             }
             meta.lore(lore);
             friend.setItemMeta(meta);
+            Consumer<PersistentDataContainer> c = pdc -> pdc.set(key, PersistentDataType.STRING, name);
+            friend.editPersistentDataContainer(c);
             return friend;
         }catch(MalformedURLException e){
             Bukkit.getLogger().warning(e.getMessage());
@@ -74,7 +81,7 @@ public class FriendsMenu {
     }
 
     public static void clickedFriend(ItemStack item, Player p, ClickType click){
-        String name = ((TextComponent)item.getItemMeta().displayName()).content();
+        String name = item.getPersistentDataContainer().get(key, PersistentDataType.STRING);
         if(click.isShiftClick()){
             ByteArrayDataOutput out = ByteStreams.newDataOutput();
             out.writeUTF("Friend");
@@ -83,7 +90,7 @@ public class FriendsMenu {
             p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
             App.Friends.action(p);
         }else if(click.isLeftClick()) {
-            App.Profile.action((Player)Bukkit.getOfflinePlayer(name));
+            App.Profile.action(Bukkit.getOfflinePlayer(name).getPlayer());
         }else if(click.isRightClick()){
             ByteArrayDataOutput out = ByteStreams.newDataOutput();
             out.writeUTF("Party");
@@ -92,6 +99,13 @@ public class FriendsMenu {
             p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
             App.Friends.action(p);
         }
+    }
+
+    public static String removeRank(String name){
+        if(!Ranks.isRankSymbol(name.charAt(0))){
+            return name;
+        }
+        return name.substring(2);
     }
 
     public static void placePartyMembers(ArrayList<String> members, Player p, Inventory inv){
@@ -141,6 +155,9 @@ public class FriendsMenu {
                 lore.add(Component.text("offline").color(RED));
             }
             meta.lore(lore);
+            String name = p.getName();
+            Consumer<PersistentDataContainer> c = pdc -> pdc.set(key, PersistentDataType.STRING, name);
+            member.editPersistentDataContainer(c);
             member.setItemMeta(meta);
             return member;
         }catch(MalformedURLException e){
@@ -151,7 +168,7 @@ public class FriendsMenu {
     }
 
     public static void clickedPartyMember(Player p, ItemStack item, ClickType click){
-        String name = ((TextComponent)item.getItemMeta().displayName()).content();
+        String name = String name = item.getPersistentDataContainer().get(key, PersistentDataType.STRING);;
         if(click.isShiftClick()){
             ByteArrayDataOutput out = ByteStreams.newDataOutput();
             out.writeUTF("Party");
