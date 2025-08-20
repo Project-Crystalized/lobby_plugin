@@ -89,7 +89,6 @@ public class Leaderboards {
 
 class WinLeaderboard {
 	public WinLeaderboard(World w, String type) {
-		Bukkit.getLogger().warning("win leader");
 		Location loc = null;
 
 		// FYI, pitch and yaw doesn't matter when the leaderboard rotates automatically

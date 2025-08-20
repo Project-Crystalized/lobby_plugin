@@ -16,7 +16,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -65,7 +67,6 @@ public class LobbyConfig {
 
                 Locations.put(k, loc);
             }
-
         }catch(Exception e){
             if(e instanceof NoSuchFileException){
                 Bukkit.getLogger().warning("[Lobby_plugin] Couldn't find lobby_config.json. Starting Lobby_plugin in passive mode.");
@@ -83,6 +84,7 @@ public class LobbyConfig {
 
 class EntityRefresh implements Listener{
     static ArrayList<Location> toBeRefreshed;
+    static boolean fix = true;
 
     public static void setupEntityRefresh(){
         ArrayList<Location> list = new ArrayList<>();
@@ -91,10 +93,11 @@ class EntityRefresh implements Listener{
             list.add(data.loc);
         }
         toBeRefreshed = list;
+        spawnOnWorldLoad();
     }
-
+    /*
     @EventHandler
-    public void onChunkLoad(ChunkLoadEvent e){
+    public void onChunkLoad(EntitiesLoadEvent e){
         if(Lobby_plugin.getInstance().passive_mode){
             return;
         }
@@ -105,11 +108,33 @@ class EntityRefresh implements Listener{
         }.runTaskLater(Lobby_plugin.getInstance(), 5);
     }
 
+     */
+
+    public static void spawnOnWorldLoad(){
+        new BukkitRunnable(){
+            public void run(){
+                if(toBeRefreshed.isEmpty()){
+                    cancel();
+                }
+                ArrayList<Location> delete = new ArrayList<>();
+                for(Location loc : toBeRefreshed){
+                    if(loc.isWorldLoaded()){
+                        refreshEntities(loc);
+                        delete.add(loc);
+                    }
+                }
+                for(Location loc : delete){
+                    toBeRefreshed.remove(loc);
+                }
+            }
+        }.runTaskTimer(Lobby_plugin.getInstance(), 1, 5);
+    }
+
     public static void refreshEntities(Chunk c){
         //this basically just deletes and places game relevant entities
         ArrayList<Location> delete = new ArrayList<>();
         for(Location loc : toBeRefreshed) {
-            if(!loc.getChunk().equals(c)){
+            if(!(loc.getChunk().equals(c))){
                 continue;
             }
             Collection<Entity> l = loc.getWorld().getNearbyEntities(loc, 1, 1, 1);
@@ -127,11 +152,23 @@ class EntityRefresh implements Listener{
         }
     }
 
+    public static void refreshEntities(Location loc){
+        Collection<Entity> l = loc.getWorld().getNearbyEntities(loc, 1, 1, 1);
+        for (Entity e : l) {
+            if(e instanceof Player && !CitizensAPI.getNPCRegistry().isNPC(e)){
+                continue;
+            }
+            e.remove();
+        }
+        putWhatBelongsHere(loc);
+    }
+
     public static void putWhatBelongsHere(Location loc){
         for(String s : LobbyConfig.Locations.keySet()) {
             if (!LobbyConfig.Locations.get(s).equals(loc)) {
                 continue;
             }
+
             if (s.toLowerCase().contains("leaderboard") || s.toLowerCase().contains("display")) {
                 if (loc.equals(LobbyConfig.Locations.get("ls-leaderboard"))) {
                     new WinLeaderboard(Bukkit.getWorld("world"), "ls");
@@ -242,11 +279,12 @@ class NPCData{
     }
 
     public void spawnNPC(){
-        NPC npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.PLAYER, name, loc);
-        SkinTrait trait = new SkinTrait();
-        trait.setSkinPersistent(skinName, skinSignature, skinValue);
-        npc.getOrAddTrait(SkinTrait.class);
-        npc.spawn(loc);
+        try {
+            NPC npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.PLAYER, name, loc);
+            SkinTrait trait = npc.getOrAddTrait(SkinTrait.class);
+            trait.setSkinPersistent(skinName, skinSignature, skinValue);
+            npc.spawn(loc);
+        }catch(IllegalArgumentException e){}
     }
 
     public static ArrayList<String> deleteRest(ArrayList<String> map, String key){

@@ -161,7 +161,9 @@ public final class PlayerListener implements Listener {
 		World w = e.getDamager().getWorld();
 		if (e.getEntity().getLocation().equals(LobbyConfig.NPCs.get("lsspawn").loc)) {//TODO
 			e.getDamager().teleport(LobbyConfig.Locations.get("litestrike_hub"));
-		} else if (e.getEntity().getLocation().equals(LobbyConfig.NPCs.get("ls").loc)) {
+		} else if(e.getEntity().getLocation().equals(LobbyConfig.NPCs.get("kospawn").loc)){
+			e.getDamager().teleport(LobbyConfig.Locations.get("knockout_hub"));
+		}else if (e.getEntity().getLocation().equals(LobbyConfig.NPCs.get("ls").loc)) {
 			ByteArrayDataOutput out = ByteStreams.newDataOutput();
 			out.writeUTF("Connect");
 			out.writeUTF("litestrike");
@@ -175,7 +177,7 @@ public final class PlayerListener implements Listener {
 			out.writeUTF("true");
 			((Player) e.getDamager()).sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main",
 					out.toByteArray());
-		} else if (npc.getName().equals("Crystal Blitz")) {
+		} else if (e.getEntity().getLocation().equals(LobbyConfig.NPCs.get("cb").loc)) {
 			ByteArrayDataOutput out = ByteStreams.newDataOutput();
 			out.writeUTF("Connect");
 			out.writeUTF("crystalblitz");
