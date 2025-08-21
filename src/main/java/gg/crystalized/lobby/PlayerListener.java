@@ -159,32 +159,13 @@ public final class PlayerListener implements Listener {
 		}
 		NPC npc = CitizensAPI.getNPCRegistry().getNPC(e.getEntity());
 		World w = e.getDamager().getWorld();
-		if (e.getEntity().getLocation().equals(LobbyConfig.NPCs.get("lsspawn").loc)) {//TODO
-			e.getDamager().teleport(LobbyConfig.Locations.get("litestrike_hub"));
-		} else if(e.getEntity().getLocation().equals(LobbyConfig.NPCs.get("kospawn").loc)){
-			e.getDamager().teleport(LobbyConfig.Locations.get("knockout_hub"));
-		}else if (e.getEntity().getLocation().equals(LobbyConfig.NPCs.get("ls").loc)) {
-			ByteArrayDataOutput out = ByteStreams.newDataOutput();
-			out.writeUTF("Connect");
-			out.writeUTF("litestrike");
-			out.writeUTF("true");
-			((Player) e.getDamager()).sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main",
-					out.toByteArray());
-		} else if (e.getEntity().getLocation().equals(LobbyConfig.NPCs.get("ko").loc)) {
-			ByteArrayDataOutput out = ByteStreams.newDataOutput();
-			out.writeUTF("Connect");
-			out.writeUTF("knockoff");
-			out.writeUTF("true");
-			((Player) e.getDamager()).sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main",
-					out.toByteArray());
-		} else if (e.getEntity().getLocation().equals(LobbyConfig.NPCs.get("cb").loc)) {
-			ByteArrayDataOutput out = ByteStreams.newDataOutput();
-			out.writeUTF("Connect");
-			out.writeUTF("crystalblitz");
-			out.writeUTF("true");
-			((Player) e.getDamager()).sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main",
-					out.toByteArray());
+		for(NPCData data : LobbyConfig.NPCs.values()){
+			if(!data.loc.equals(e.getEntity().getLocation())){
+				continue;
+			}
+			data.action((Player) e.getDamager());
 		}
+
 	}
 
 	@EventHandler

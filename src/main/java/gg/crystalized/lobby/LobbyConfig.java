@@ -1,5 +1,7 @@
 package gg.crystalized.lobby;
 
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -7,6 +9,8 @@ import com.google.gson.JsonParser;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.trait.SkinTrait;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -25,6 +29,8 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Level;
+
+import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 
 public class LobbyConfig {
    public static HashMap<String, Location> Locations = new HashMap<>();
@@ -95,20 +101,6 @@ class EntityRefresh implements Listener{
         toBeRefreshed = list;
         spawnOnWorldLoad();
     }
-    /*
-    @EventHandler
-    public void onChunkLoad(EntitiesLoadEvent e){
-        if(Lobby_plugin.getInstance().passive_mode){
-            return;
-        }
-        new BukkitRunnable() {
-            public void run() {
-                refreshEntities(e.getChunk());
-            }
-        }.runTaskLater(Lobby_plugin.getInstance(), 5);
-    }
-
-     */
 
     public static void spawnOnWorldLoad(){
         new BukkitRunnable(){
@@ -128,28 +120,6 @@ class EntityRefresh implements Listener{
                 }
             }
         }.runTaskTimer(Lobby_plugin.getInstance(), 1, 5);
-    }
-
-    public static void refreshEntities(Chunk c){
-        //this basically just deletes and places game relevant entities
-        ArrayList<Location> delete = new ArrayList<>();
-        for(Location loc : toBeRefreshed) {
-            if(!(loc.getChunk().equals(c))){
-                continue;
-            }
-            Collection<Entity> l = loc.getWorld().getNearbyEntities(loc, 1, 1, 1);
-            for (Entity e : l) {
-                if(e instanceof Player && !CitizensAPI.getNPCRegistry().isNPC(e)){
-                    continue;
-                }
-                e.remove();
-            }
-            putWhatBelongsHere(loc);
-            delete.add(loc);
-        }
-        for(Location loc : delete){
-            toBeRefreshed.remove(loc);
-        }
     }
 
     public static void refreshEntities(Location loc){
@@ -196,7 +166,7 @@ class NPCData{
     String skinName = null;
     String skinSignature = null;
     String skinValue = null;
-    ArrayList<String> dialogue = new ArrayList<>();
+    Object action = null;
 
     public static void newNPCData(String key, Map<String, JsonElement> map){
         NPCData data = new NPCData();
@@ -204,7 +174,7 @@ class NPCData{
         data.declareName(keyName, map);
         data.declareSkin(keyName, map);
         data.declareLocation(keyName, map);
-        data.declareDialogue(keyName, map);
+        data.declareAction(keyName, map);
         LobbyConfig.NPCs.put(keyName, data);
     }
 
@@ -251,17 +221,32 @@ class NPCData{
         }
     }
 
-    public void declareDialogue(String keyName, Map<String, JsonElement> map){
+    public void declareAction(String keyName, Map<String, JsonElement> map){
         for(String k : map.keySet()){
             if(getKeyName(k, "dialogue").toLowerCase().contains(keyName) && k.contains("dialogue")){
                 JsonArray array = map.get(k).getAsJsonArray();
+                action = new ArrayList<>();
                 for(int i = 0; i < array.size(); i++){
-                    dialogue.add(array.get(i).getAsString());
+                    ((ArrayList)action).add(array.get(i).getAsString());
                 }
                 return;
             }
+
+            if(getKeyName(k, "teleport").toLowerCase().contains(keyName) && k.contains("teleport")){
+                JsonArray array = map.get(k).getAsJsonArray();
+                if(array.size() == 3) {
+                    action = new Location(Bukkit.getWorld("world"), array.get(0).getAsDouble(),  array.get(1).getAsDouble(),  array.get(2).getAsDouble());
+                }else{
+                    action = new Location(Bukkit.getWorld("world"), array.get(0).getAsDouble(),  array.get(1).getAsDouble(),  array.get(2).getAsDouble(), array.get(3).getAsFloat(), array.get(4).getAsFloat());
+                }
+                return;
+            }
+
+            if(getKeyName(k, "connect").toLowerCase().contains(keyName) && k.contains("connect")){
+                action = map.get(k).getAsString();
+                return;
+            }
         }
-        dialogue = null;
     }
 
     public static String getUse(String key){
@@ -274,6 +259,10 @@ class NPCData{
             re = "location";
         }else if(key.toLowerCase().contains("dialogue")){
             re = "dialogue";
+        }else if(key.toLowerCase().contains("connect")){
+            re = "connect";
+        }else if(key.toLowerCase().contains("teleport")){
+            re = "teleport";
         }
         return re;
     }
@@ -301,5 +290,24 @@ class NPCData{
         }
 
         return map;
+    }
+
+    public void action(Player p){
+        if(action instanceof String){
+            ByteArrayDataOutput out = ByteStreams.newDataOutput();
+            out.writeUTF("Connect");
+            out.writeUTF((String)action);
+            out.writeUTF("true");
+            p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main",
+                    out.toByteArray());
+        }else if(action instanceof Location){
+            p.teleport((Location) action);
+        }else if(action instanceof ArrayList){
+            Component c = Component.text("[" + name + "] ").color(TextColor.fromHexString("#bf8032"));
+            for(String s : (ArrayList<String>)action){
+                Component mess = Component.text(s).color(WHITE);
+                p.sendMessage(c.append(mess));
+            }
+        }
     }
 }
