@@ -159,6 +159,9 @@ public enum App {
     }
 
     public void action(Player p){
+        if(extra == null){
+
+        }
         if(this == Requeue){
             ArrayList<String> plugins = new ArrayList<>();
             stream(Bukkit.getServer().getPluginManager().getPlugins()).forEach(pl -> plugins.add(pl.getName()));
