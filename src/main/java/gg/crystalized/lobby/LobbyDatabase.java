@@ -233,15 +233,15 @@ public class LobbyDatabase {
             return false;
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't check excistence in database for " + p.getName() + " UUID: " + p.getUniqueId());
+            Bukkit.getLogger().warning("couldn't check existence in database for " + p.getName() + " UUID: " + p.getUniqueId());
             return false;
         }
     }
 
     public static void makeNewLobbyPlayersEntry(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
-            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id, payed_rank_id, skin_url)"
-                    + "VALUES (?, ?, 0, 0, 0, 0, 0, 0,?)";
+            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id, pay_rank_id, skin_url)"
+                    + "VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?)";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.setString(2, p.getName());
@@ -309,7 +309,7 @@ public class LobbyDatabase {
 
     public static void setPayedRank(OfflinePlayer p, int rankID){
         try(Connection conn = DriverManager.getConnection(URL)){
-            String makeNewEntry = "UPDATE LobbyPlayers SET payed_rank_id = ? WHERE player_uuid = ?";
+            String makeNewEntry = "UPDATE LobbyPlayers SET pay_rank_id = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setInt(1, rankID);
             prepared.setBytes(2, uuid_to_bytes(p));

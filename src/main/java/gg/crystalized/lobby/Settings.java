@@ -5,4 +5,7 @@ import org.bukkit.inventory.Inventory;
 
 public class Settings {
 
+    public static void doSettings(App app){
+
+    }
 }

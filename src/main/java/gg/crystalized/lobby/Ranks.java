@@ -11,6 +11,7 @@ import org.bukkit.scoreboard.*;
 
 
 import java.util.*;
+import java.util.logging.Level;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
@@ -32,7 +33,7 @@ public class Ranks {
      */
 
     public static Component getName(OfflinePlayer p){
-        int rank = getRank(p.getPlayer());
+        int rank = getRank(p);
         Component name;
         if(p.getName() == null){
             name = text("null");
@@ -239,10 +240,14 @@ public class Ranks {
 
     public static int getRank(OfflinePlayer p){
         HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
+        if(data.get("rank_id") == null){
+            return 0;
+        }
+
         if((Integer)data.get("rank_id") != 0){
             return (Integer)data.get("rank_id");
         }
 
-        return (Integer)data.get("payed_rank_id");
+        return (Integer)data.get("pay_rank_id");
     }
 }

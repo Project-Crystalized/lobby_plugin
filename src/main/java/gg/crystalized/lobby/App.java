@@ -159,8 +159,8 @@ public enum App {
     }
 
     public void action(Player p){
-        if(extra == null){
-
+        if(extra == null && use == useCases.Settings){
+            //Settings.doSettings(this);
         }
         if(this == Requeue){
             ArrayList<String> plugins = new ArrayList<>();
