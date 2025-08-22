@@ -90,7 +90,6 @@ public class LobbyConfig {
 
 class EntityRefresh implements Listener{
     static ArrayList<Location> toBeRefreshed;
-    static boolean fix = true;
 
     public static void setupEntityRefresh(){
         ArrayList<Location> list = new ArrayList<>();

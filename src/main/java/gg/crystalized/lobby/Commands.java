@@ -124,6 +124,7 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
         }
 
         int rank = 0;
+
         if(args[1].equals("rankless")){
             rank = 0;
         }else if(args[1].equals("admin")){
@@ -136,10 +137,18 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
             rank = 4;
         } else if(args[1].equals("sub-project")){
             rank = 5;
+        } else if(args[1].equals("one-time-payment")){
+            rank = 6;
+        } else if(args[1].equals("subscription")){
+            rank = 7;
         }
 
-        //TODO hard code more ranks
-        LobbyDatabase.setRank(p, rank);
+        if(rank != 6 && rank != 7){
+            LobbyDatabase.setRank(p, rank);
+        }else{
+            LobbyDatabase.setPayedRank(p, rank);
+        }
+
         if(p.isOnline() && !Lobby_plugin.getInstance().passive_mode) {
             Ranks.renderTabList(p.getPlayer());
             Ranks.renderNameTags(p.getPlayer());

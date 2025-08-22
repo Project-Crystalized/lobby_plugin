@@ -53,7 +53,12 @@ public enum App {
     ScrollRight("ui/invisible", new useCases[]{useCases.ShopPage, useCases.Friends}, Component.translatable("crystalized.shardcore.generic.scrollright").color(WHITE).decoration(ITALIC, false), 23),
     Back("ui/invisible", new useCases[]{useCases.ShopPage}, Component.text("Back").color(WHITE).decoration(ITALIC, false), 20),
     Requeue("ui/replay", useCases.Demand, Component.text("Requeue").color(WHITE).decoration(ITALIC, false), 7),
-    BackToHub("ui/leave", useCases.Demand, Component.text("Return to Lobby").color(WHITE).decoration(ITALIC, false), 8);
+    BackToHub("ui/leave", useCases.Demand, Component.text("Return to Lobby").color(WHITE).decoration(ITALIC, false), 8),
+    GlobalChat_Setting("ui/leave", useCases.Settings, Component.text("Global chat").color(WHITE).decoration(ITALIC, false), 31), //TODO model
+    DMChat_Setting("ui/leave", useCases.Settings, Component.text("Direct messages").color(WHITE).decoration(ITALIC, false), 32), //TODO model
+    PigGame_Setting("ui/leave", useCases.Settings, Component.text("Toggle pig hunt").color(WHITE).decoration(ITALIC, false), 33), //TODO model
+    ShowPlayers_Setting("ui/leave", useCases.Settings, Component.text("Show other players").color(WHITE).decoration(ITALIC, false), 40), //TODO model
+    PlayerHeight_Setting("ui/leave", useCases.Settings, Component.text("Change character height").color(WHITE).decoration(ITALIC, false), 41); //TODO model
     //how buttons work {top left corner, width, height}
     enum useCases{
         Navigator,

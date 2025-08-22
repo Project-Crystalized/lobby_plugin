@@ -20,6 +20,7 @@ public class LobbyDatabase {
             + "money     INTEGER,"
             + "online     INTEGER,"
             + "rank_id     INTEGER,"
+            + "pay_rank_id   INTEGER,"
             + "skin_url    STRING"
             + ");";
 
@@ -239,7 +240,7 @@ public class LobbyDatabase {
 
     public static void makeNewLobbyPlayersEntry(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
-            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id,skin_url)"
+            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id, payed_rank_id, skin_url)"
                     + "VALUES (?, ?, 0, 0, 0, 0, 0,?)";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, uuid_to_bytes(p));
@@ -296,6 +297,19 @@ public class LobbyDatabase {
     public static void setRank(OfflinePlayer p, int rankID){
         try(Connection conn = DriverManager.getConnection(URL)){
             String makeNewEntry = "UPDATE LobbyPlayers SET rank_id = ? WHERE player_uuid = ?";
+            PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
+            prepared.setInt(1, rankID);
+            prepared.setBytes(2, uuid_to_bytes(p));
+            prepared.executeUpdate();
+        }catch(SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());
+        }
+    }
+
+    public static void setPayedRank(OfflinePlayer p, int rankID){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            String makeNewEntry = "UPDATE LobbyPlayers SET payed_rank_id = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setInt(1, rankID);
             prepared.setBytes(2, uuid_to_bytes(p));

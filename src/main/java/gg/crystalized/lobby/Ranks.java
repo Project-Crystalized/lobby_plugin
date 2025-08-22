@@ -4,24 +4,18 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.*;
-import org.bukkit.entity.Display;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.TextDisplay;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.*;
-import org.geysermc.floodgate.api.FloodgateApi;
+
 
 import java.util.*;
 
-import static java.util.Arrays.stream;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
 import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
-import static org.bukkit.scoreboard.NameTagVisibility.NEVER;
 
 public class Ranks {
 
@@ -33,12 +27,12 @@ public class Ranks {
     3 = dev
     4 = contributer
     5 = sub-project maker
-    6 = ???
-    7 = ???
+    6 = one time payment
+    7 = subscription
      */
 
     public static Component getName(OfflinePlayer p){
-        HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
+        int rank = getRank(p.getPlayer());
         Component name;
         if(p.getName() == null){
             name = text("null");
@@ -48,27 +42,27 @@ public class Ranks {
         String icon = "";
         String hexColor = "#a1a1a1";
 
-        if((Integer)data.get("rank_id") == 1) {
+        if(rank == 1) {
             icon = "\uE301";
-        } else if((Integer)data.get("rank_id") == 2) {
+        } else if(rank == 2) {
             icon = "\uE307";
-        } else if((Integer)data.get("rank_id") == 3) {
+        } else if(rank == 3) {
             icon = "\uE303";
-        } else if((Integer)data.get("rank_id") == 4) {
+        } else if(rank == 4) {
             icon = "\uE305";
-        } else if((Integer)data.get("rank_id") == 5) {
+        } else if(rank == 5) {
             icon = "\uE309";
         }
 
-        if((Integer)data.get("rank_id") == 1) {
+        if(rank == 1) {
             hexColor = "#ba1560";
-        } else if((Integer)data.get("rank_id") == 2) {
+        } else if(rank == 2) {
             hexColor = "#22d87a";
-        } else if((Integer)data.get("rank_id") == 3) {
+        } else if(rank == 3) {
             hexColor = "#379fe5";
-        } else if((Integer)data.get("rank_id") == 4) {
+        } else if(rank == 4) {
             hexColor = "#bf750f";
-        } else if((Integer)data.get("rank_id") == 5) {
+        } else if(rank == 5) {
             hexColor = "#087544"; //TODO get the right color for this
         }
 
@@ -78,33 +72,33 @@ public class Ranks {
     }
 
     public static Component getNameWithName(Player p){
-        HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
+        int rank = getRank(p.getPlayer());
         Component name = text(p.getName());
         String icon = "";
         String hexColor = "#a1a1a1";
 
-        if((Integer)data.get("rank_id") == 1) {
+        if(rank == 1) {
             icon = "\uE300";
-        } else if((Integer)data.get("rank_id") == 2) {
+        } else if(rank == 2) {
             icon = "\uE306";
-        } else if((Integer)data.get("rank_id") == 3) {
+        } else if(rank == 3) {
             icon = "\uE302";
-        } else if((Integer)data.get("rank_id") == 4) {
+        } else if(rank == 4) {
             icon = "\uE304";
-        } else if((Integer)data.get("rank_id") == 5) {
+        } else if(rank == 5) {
             icon = "\uE308";
         }
 
 
-        if((Integer)data.get("rank_id") == 1) {
+        if(rank == 1) {
             hexColor = "#ba1560";
-        } else if((Integer)data.get("rank_id") == 2) {
+        } else if(rank == 2) {
             hexColor = "#22d87a";
-        } else if((Integer)data.get("rank_id") == 3) {
+        } else if(rank == 3) {
             hexColor = "#379fe5";
-        } else if((Integer)data.get("rank_id") == 4) {
+        } else if(rank == 4) {
             hexColor = "#bf750f";
-        } else if((Integer)data.get("rank_id") == 5) {
+        } else if(rank == 5) {
             hexColor = "#087544"; //TODO get the right color for this
         }
 
@@ -114,36 +108,36 @@ public class Ranks {
     }
 
     public static Component getRankWithName(Player p){
-        HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
+        int rank = getRank(p.getPlayer());
         String icon = "";
 
-        if((Integer)data.get("rank_id") == 1) {
+        if(rank == 1) {
             icon = "\uE300";
-        } else if((Integer)data.get("rank_id") == 2) {
+        } else if(rank == 2) {
             icon = "\uE306";
-        } else if((Integer)data.get("rank_id") == 3) {
+        } else if(rank == 3) {
             icon = "\uE302";
-        } else if((Integer)data.get("rank_id") == 4) {
+        } else if(rank == 4) {
             icon = "\uE304";
-        } else if((Integer)data.get("rank_id") == 5) {
+        } else if(rank == 5) {
             icon = "\uE308";
         }
         return text(icon);
     }
 
     public static Component getIcon(OfflinePlayer p){
-        HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
+        int rank = getRank(p.getPlayer());
         String icon = "";
 
-        if((Integer)data.get("rank_id") == 1) {
+        if(rank == 1) {
             icon = "\uE301";
-        } else if((Integer)data.get("rank_id") == 2) {
+        } else if(rank == 2) {
             icon = "\uE307";
-        } else if((Integer)data.get("rank_id") == 3) {
+        } else if(rank == 3) {
             icon = "\uE303";
-        } else if((Integer)data.get("rank_id") == 4) {
+        } else if(rank == 4) {
             icon = "\uE305";
-        } else if((Integer)data.get("rank_id") == 5) {
+        } else if(rank == 5) {
             icon = "\uE309";
         }
 
@@ -162,9 +156,9 @@ public class Ranks {
     }
 
     public static Component getJoinMessage(Player p){
-        HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
+        int rank = getRank(p.getPlayer());
 
-        if((Integer)data.get("rank_id") == 0 || (Integer)data.get("rank_id") == 0){
+        if(rank == 0){
             return Component.text("");
         }
 
@@ -207,6 +201,10 @@ public class Ranks {
             team = "[D] Contrib";
         } else if((Integer)data.get("rank_id") == 5) {
             team = "[E] Sub_project";
+        } else if((Integer)data.get("rank_id") == 6){
+            team = "[F] One time payment";
+        } else if((Integer)data.get("rank_id") == 7){
+            team = "[G] Subscription";
         }
 
         Team t = s.registerNewTeam(team);
@@ -237,5 +235,14 @@ public class Ranks {
         }
 
         p.displayName(a.append(b));
+    }
+
+    public static int getRank(Player p){
+        HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
+        if((Integer)data.get("rank_id") != 0){
+            return (Integer)data.get("rank_id");
+        }
+
+        return (Integer)data.get("payed_rank_id");
     }
 }

@@ -86,8 +86,7 @@ public class InventoryManager implements Listener {
         }
 
 
-        if(item.getType() == Material.PLAYER_HEAD){
-            //TODO Ladycat do some check here to check if we're on the friends app - Callum
+        if(item.getType() == Material.PLAYER_HEAD && identifyInv(event.getView()) == App.useCases.Friends){
             if(event.getSlot() < 7){
                 FriendsMenu.clickedPartyMember(p, item, event.getClick());
                 return;
@@ -112,9 +111,10 @@ public class InventoryManager implements Listener {
         App app = App.identifyApp(item);
         if(app != null) {
             if(event.getClick().isShiftClick() && app.extra instanceof Location){
+                String name = ((TextComponent) app.name).content();
                 ByteArrayDataOutput out = ByteStreams.newDataOutput();
                 out.writeUTF("Connect");
-                out.writeUTF(app.toString().toLowerCase());
+                out.writeUTF(name.toLowerCase());
                 out.writeUTF("true");
                 p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
                 return;
