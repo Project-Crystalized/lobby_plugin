@@ -72,7 +72,7 @@ public class Ranks {
     }
 
     public static Component getNameWithName(Player p){
-        int rank = getRank(p.getPlayer());
+        int rank = getRank(p);
         Component name = text(p.getName());
         String icon = "";
         String hexColor = "#a1a1a1";
@@ -108,7 +108,7 @@ public class Ranks {
     }
 
     public static Component getRankWithName(Player p){
-        int rank = getRank(p.getPlayer());
+        int rank = getRank(p);
         String icon = "";
 
         if(rank == 1) {
@@ -126,7 +126,7 @@ public class Ranks {
     }
 
     public static Component getIcon(OfflinePlayer p){
-        int rank = getRank(p.getPlayer());
+        int rank = getRank(p);
         String icon = "";
 
         if(rank == 1) {
@@ -156,7 +156,7 @@ public class Ranks {
     }
 
     public static Component getJoinMessage(Player p){
-        int rank = getRank(p.getPlayer());
+        int rank = getRank(p);
 
         if(rank == 0){
             return Component.text("");
@@ -189,21 +189,21 @@ public class Ranks {
 
         Scoreboard s = p.getScoreboard();
         String team = "[H] Rankless";
-        HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
+        int rank = getRank(p);
 
-        if((Integer)data.get("rank_id") == 1) {
+        if(rank == 1) {
             team = "[A] Admin";
-        } else if((Integer)data.get("rank_id") == 2) {
+        } else if(rank == 2) {
             team = "[B] Mod";
-        } else if((Integer)data.get("rank_id") == 3) {
+        } else if(rank == 3) {
             team = "[C] Dev";
-        } else if((Integer)data.get("rank_id") == 4) {
+        } else if(rank == 4) {
             team = "[D] Contrib";
-        } else if((Integer)data.get("rank_id") == 5) {
+        } else if(rank == 5) {
             team = "[E] Sub_project";
-        } else if((Integer)data.get("rank_id") == 6){
+        } else if(rank == 6){
             team = "[F] One time payment";
-        } else if((Integer)data.get("rank_id") == 7){
+        } else if(rank == 7){
             team = "[G] Subscription";
         }
 
@@ -237,7 +237,7 @@ public class Ranks {
         p.displayName(a.append(b));
     }
 
-    public static int getRank(Player p){
+    public static int getRank(OfflinePlayer p){
         HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
         if((Integer)data.get("rank_id") != 0){
             return (Integer)data.get("rank_id");
