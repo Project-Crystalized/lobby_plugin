@@ -28,6 +28,9 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
 import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
@@ -90,6 +93,7 @@ public class LobbyConfig {
 
 class EntityRefresh implements Listener{
     static ArrayList<Location> toBeRefreshed;
+    static ArrayList<Chunk> loadedChunks = new ArrayList<>();
 
     public static void setupEntityRefresh(){
         ArrayList<Location> list = new ArrayList<>();
@@ -98,38 +102,45 @@ class EntityRefresh implements Listener{
             list.add(data.loc);
         }
         toBeRefreshed = list;
-        spawnOnWorldLoad();
+        loadChunks();
     }
 
-    public static void spawnOnWorldLoad(){
-        new BukkitRunnable(){
-            public void run(){
-                if(toBeRefreshed.isEmpty()){
-                    cancel();
+    public static void loadChunks() {
+        ArrayList<Location> delete = new ArrayList<>();
+        for (Location loc : toBeRefreshed) {
+            CompletableFuture<Chunk> future = Bukkit.getWorld("world").getChunkAtAsyncUrgently(loc);
+            Runnable r = new Runnable() {
+                public void run() {
+                    refreshEntities(loc);
                 }
-                ArrayList<Location> delete = new ArrayList<>();
-                for(Location loc : toBeRefreshed){
-                    if(loc.isWorldLoaded()){
-                        refreshEntities(loc);
-                        delete.add(loc);
+            };
+            CompletionStage<Chunk> c = future.minimalCompletionStage();
+            future.runAfterBoth(c, r);
+            delete.add(loc);
+        }
+        for (Location loc : delete) {
+            toBeRefreshed.remove(loc);
+        }
+    }
+
+    public static void refreshEntities(Location loc) {
+        new BukkitRunnable() {
+            public void run() {
+                Collection<Entity> l = loc.getNearbyEntities(1, 1, 1);
+                for (
+                        Entity e : l) {
+                    if (CitizensAPI.getNPCRegistry().isNPC(e)) {
+                        e.remove();
+                    }
+
+                    if (e.getType() == EntityType.TEXT_DISPLAY) {
+                        e.remove();
                     }
                 }
-                for(Location loc : delete){
-                    toBeRefreshed.remove(loc);
-                }
-            }
-        }.runTaskTimer(Lobby_plugin.getInstance(), 1, 5);
-    }
 
-    public static void refreshEntities(Location loc){
-        Collection<Entity> l = loc.getWorld().getNearbyEntities(loc, 1, 1, 1);
-        for (Entity e : l) {
-            if(e instanceof Player && !CitizensAPI.getNPCRegistry().isNPC(e)){
-                continue;
+                putWhatBelongsHere(loc);
             }
-            e.remove();
-        }
-        putWhatBelongsHere(loc);
+        }.runTaskLater(Lobby_plugin.getInstance(), 1);
     }
 
     public static void putWhatBelongsHere(Location loc){
