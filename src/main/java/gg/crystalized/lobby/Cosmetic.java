@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
@@ -52,7 +53,10 @@ public enum Cosmetic {
         ItemMeta meta = item.getItemMeta();
         meta.setItemModel(new NamespacedKey("crystalized", itemModel));
         if(wearing != null && wearing && slot == EquipmentSlot.HAND){
-            meta.displayName(Component.text("Menu").color(LIGHT_PURPLE).decoration(BOLD, true));
+            meta.displayName(Component.translatable("crystalized.item.shardcore3.name").color(LIGHT_PURPLE).decoration(BOLD, true).decoration(ITALIC, true));
+            List<Component> lore = new ArrayList<>();
+            lore.add(Component.translatable("crystalized.item.shardcore3.desc").color(WHITE).decoration(ITALIC, false));
+            meta.lore(lore);
             if(open){
                 meta.setCustomModelData(1);
             }
