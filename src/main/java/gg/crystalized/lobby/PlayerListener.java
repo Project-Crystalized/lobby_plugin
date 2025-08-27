@@ -1,13 +1,17 @@
 package gg.crystalized.lobby;
 
+import io.papermc.paper.chat.ChatRenderer;
 import io.papermc.paper.event.packet.PlayerChunkLoadEvent;
+import io.papermc.paper.event.player.AbstractChatEvent;
 import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.*;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventException;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -28,16 +32,18 @@ import com.google.common.io.ByteStreams;
 
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
+import org.bukkit.plugin.EventExecutor;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import static net.kyori.adventure.text.Component.text;
 
 import java.util.HashMap;
+import java.util.Set;
 
 
 public final class PlayerListener implements Listener {
-
+	private LobbyChatRenderer chat_renderer = new LobbyChatRenderer();
 	@EventHandler
 	public void onPlayerLogin(PlayerLoginEvent event) {
 		// NPC npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.PLAYER,
@@ -52,6 +58,7 @@ public final class PlayerListener implements Listener {
 		if(!LobbyDatabase.isPlayerInDatabase(p)){
 			LobbyDatabase.makeNewLobbyPlayersEntry(p);
 			LobbyDatabase.addCosmetic(p, Cosmetic.BLUE_SHARDCORE, true);
+			LobbyDatabase.makeNewSettingsEntry(p);
 			//TODO Tutorial here maybe?
 		}
 
@@ -181,11 +188,14 @@ public final class PlayerListener implements Listener {
 		if(Lobby_plugin.getInstance().passive_mode){
 			return;
 		}
-		e.setCancelled(true);
-		Component message = e.message();
-		Player p = e.getPlayer();
-		Component name = Ranks.getName(p);
-		Component newMessage = name.append(Component.text(": ")).append(message);
-		Bukkit.getServer().sendMessage(newMessage);
+		e.renderer(ChatRenderer.viewerUnaware(chat_renderer));
+	}
+}
+class LobbyChatRenderer implements ChatRenderer.ViewerUnaware{
+
+	@Override
+	public Component render(Player player, Component displayName, Component message) {
+		Component name = Ranks.getName(player);
+		return name.append(Component.text(": ")).append(message);
 	}
 }

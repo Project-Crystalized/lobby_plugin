@@ -40,7 +40,7 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
             case "give_money":
                 return give_money(args, commandSender);
             case "set_rank":
-                return set_rank(args, commandSender); //TODO
+                return set_rank(args, commandSender);
             default:
                 return false;
 

@@ -42,7 +42,7 @@ public class InventoryManager implements Listener {
         if(event.getItem() == null) return;
         Player p = event.getPlayer();
         if(event.getItem().equals(Cosmetic.getShardcore(p).build(true, false))){
-            p.openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu));
+            p.openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu, event.getPlayer()));
             for(int i = 0; i <= 54; i++){
                 if(p.getInventory().getItem(i) == null){
                     continue;
@@ -96,7 +96,7 @@ public class InventoryManager implements Listener {
         }
 
         if(event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(true, false)) || event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(true, true))){
-            event.getWhoClicked().openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu));
+            event.getWhoClicked().openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu, (Player)event.getWhoClicked()));
             for(int i = 0; i <= 54; i++){
                 if(p.getInventory().getItem(i) == null){
                     continue;

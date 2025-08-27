@@ -54,11 +54,17 @@ public enum App {
     Back("ui/invisible", new useCases[]{useCases.ShopPage}, Component.text("Back").color(WHITE).decoration(ITALIC, false), 20),
     Requeue("ui/replay", useCases.Demand, Component.text("Requeue").color(WHITE).decoration(ITALIC, false), 7),
     BackToHub("ui/leave", useCases.Demand, Component.text("Return to Lobby").color(WHITE).decoration(ITALIC, false), 8),
-    GlobalChat_Setting("ui/leave", useCases.Settings, Component.text("Global chat").color(WHITE).decoration(ITALIC, false), 31), //TODO model
-    DMChat_Setting("ui/leave", useCases.Settings, Component.text("Direct messages").color(WHITE).decoration(ITALIC, false), 32), //TODO model
-    PigGame_Setting("ui/leave", useCases.Settings, Component.text("Toggle pig hunt").color(WHITE).decoration(ITALIC, false), 33), //TODO model
-    ShowPlayers_Setting("ui/leave", useCases.Settings, Component.text("Show other players").color(WHITE).decoration(ITALIC, false), 40), //TODO model
-    PlayerHeight_Setting("ui/leave", useCases.Settings, Component.text("Change character height").color(WHITE).decoration(ITALIC, false), 41); //TODO model
+    MsgSetting("ui/scn3/settings/msg", useCases.Set, new useCases[]{useCases.Settings}, Component.text("Allow direct messages").color(WHITE).decoration(ITALIC, false), 30, "dms"),
+    FriendRequestSetting("ui/scn3/settings/friend_requests", useCases.Set, new useCases[]{useCases.Settings}, Component.text("Allow friend requests").color(WHITE).decoration(ITALIC, false), 39, "friends_requests"),
+    PartyRequestSetting("ui/scn3/settings/party_requests", useCases.Set, new useCases[]{useCases.Settings}, Component.text("Allow party invites").color(WHITE).decoration(ITALIC, false), 48, "party_requests"),
+    PigHuntSetting("ui/scn3/settings/pig_hunt", useCases.Set, new useCases[]{useCases.Settings}, Component.text("Toggle pig hunt").color(WHITE).decoration(ITALIC, false), 41, "pig_game"),
+    PlayerHeightSetting("ui/scn3/settings/player_height", useCases.Set, new useCases[]{useCases.Settings}, Component.text("Change player height").color(WHITE).decoration(ITALIC, false), 50, "height"),
+    PlayerVisibilitySetting("ui/scn3/settings/player_visibility", useCases.Set, new useCases[]{useCases.Settings}, Component.text("Show other players").color(WHITE).decoration(ITALIC, false), 32, "show_players"),
+    SettingsToggleOff("ui/scn3/settings/toggle_off", useCases.Set, new useCases[]{useCases.Demand}, Component.text("Off").color(RED).decoration(ITALIC, false), 0,0),
+    SettingsToggleOn("ui/scn3/settings/toggle_on", useCases.Set, new useCases[]{useCases.Demand}, Component.text("On").color(GREEN).decoration(ITALIC, false), 0, 1),
+    SettingsToggleMid("ui/scn3/settings/toggle_mid", useCases.Set, new useCases[]{useCases.Demand}, Component.text("Mid").color(YELLOW).decoration(ITALIC, false), 0, 0.5);
+
+
     //how buttons work {top left corner, width, height}
     enum useCases{
         Navigator,
@@ -68,9 +74,9 @@ public enum App {
         ShopPage,
         Profile,
         Friends,
-        Party,
         Map,
         Settings,
+        Set,
         Achievements,
         Hotbar,
         Demand
@@ -115,19 +121,14 @@ public enum App {
         this.name = name;
         this.slot = slot;
     }
-    public static void buildApps(Inventory inv, useCases use){
-        int i = 0;
+    public static void buildApps(Inventory inv, useCases use, Player p){
         for(App app : App.values()){
             if(app.uses == null){
                 continue;
             }
             if(Arrays.asList(app.uses).contains(use)){
-                if(use == useCases.Menu) {
-                    inv.setItem(app.slot, app.build());
-                }else{
-                    inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 4, 1, 1),app.build());
-                    i++;
-                }
+                inv.setItem(app.slot, Setting.addDescription(app, p));
+                Setting.placeToggle(p, app, inv);
             }
         }
     }
@@ -152,15 +153,16 @@ public enum App {
         return app;
     }
 
-    public static Inventory prepareInv(String name, int slots, useCases use){
+    public static Inventory prepareInv(String name, int slots, useCases use, Player p){
         Inventory inv = Bukkit.getServer().createInventory(null, slots, Component.text(name).color(WHITE));
-        App.buildApps(inv, use);
+        App.buildApps(inv, use, p);
         return inv;
     }
 
     public void action(Player p){
-        if(extra == null && use == useCases.Settings){
-            //Settings.doSettings(this);
+        if(self == useCases.Set){
+            Setting.changeSettings(this, p);
+            return;
         }
         if(this == Requeue){
             ArrayList<String> plugins = new ArrayList<>();
@@ -203,7 +205,7 @@ public enum App {
             }
             p.teleport((Location)extra);
         }else if(extra instanceof String){
-            Inventory inv = prepareInv((String) extra, 54, self);
+            Inventory inv = prepareInv((String) extra, 54, self, p);
             if(this == App.Friends){
                 FriendsMenu.placeFriends(p, inv);
                 ByteArrayDataOutput out = ByteStreams.newDataOutput();

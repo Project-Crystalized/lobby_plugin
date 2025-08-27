@@ -37,6 +37,15 @@ public class LobbyDatabase {
             + "currently_wearing   INTEGER"
             +");";
 
+    String createSettingsTable = "CREATE TABLE IF NOT EXISTS Settings ("
+            + "player_uuid        BLOB UNIQUE,"
+            + "dms   INTEGER,"
+            + "pig_game   INTEGER,"
+            + "show_players   INTEGER,"
+            + "height   INTEGER,"
+            + "friends_requests   INTEGER,"
+            + "party_requests   INTEGER"
+            +");";
 
     String createTemporaryData = "CREATE TABLE IF NOT EXISTS TemporaryData ("
             + "player_uuid        BLOB UNIQUE,"
@@ -49,6 +58,7 @@ public class LobbyDatabase {
             stmt.execute(createLobbyPlayerTable);
             stmt.execute(createFriendsTable);
             stmt.execute(createCosmeticsTable);
+            stmt.execute(createSettingsTable);
             stmt.execute(createTemporaryData);
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
@@ -246,6 +256,52 @@ public class LobbyDatabase {
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.setString(2, p.getName());
             prepared.setString(3, p.getPlayerProfile().getTextures().getSkin().toString());
+            prepared.executeUpdate();
+        }catch(SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());
+        }
+    }
+
+    public static void makeNewSettingsEntry(Player p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            String makeNewEntry = "INSERT INTO Settings(player_uuid, dms, pig_game, show_players, height, friends_requests, party_requests)"
+                    + "VALUES (?, 1 ,0 ,1 ,0.5 ,1, 1)";
+            PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
+            prepared.setBytes(1, uuid_to_bytes(p));
+            prepared.executeUpdate();
+        }catch(SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());
+        }
+    }
+
+    public static HashMap<String, Object> fetchSettings(OfflinePlayer p){
+        try(Connection conn = DriverManager.getConnection(URL)) {
+            PreparedStatement prep = conn.prepareStatement("SELECT * FROM Settings WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            ResultSet set = prep.executeQuery();
+            set.next();
+            ResultSetMetaData data = set.getMetaData();
+            int count = data.getColumnCount();
+            HashMap<String, Object> map = new HashMap<>();
+            for(int i = 1; i <= count; i++){
+                map.put(data.getColumnLabel(i), set.getObject(data.getColumnLabel(i)));
+            }
+            return map;
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't get settings data for " + p.getName() + "UUID: " + p.getUniqueId());
+            return null;
+        }
+    }
+
+    public static void updateSetting(Player p, String dbSettingName, int value){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            String makeNewEntry = "UPDATE Settings SET "+ dbSettingName + " = ? WHERE player_uuid = ?";
+            PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
+            prepared.setInt(1, value);
+            prepared.setBytes(2, uuid_to_bytes(p));
             prepared.executeUpdate();
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
