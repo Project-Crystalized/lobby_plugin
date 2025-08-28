@@ -119,6 +119,10 @@ public class InventoryManager implements Listener {
                 p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
                 return;
             }
+            if(app.self == App.useCases.Set){
+                Setting.changeSettings(app, p, event.getSlot());
+                return;
+            }
             app.action((Player) event.getWhoClicked());
         }else if(Cosmetic.identifyCosmetic(item) != null){
             event.getInventory().setItem(event.getSlot(), Cosmetic.identifyCosmetic(item).build(!Cosmetic.identifyCosmetic(item).isWearing(p), false));

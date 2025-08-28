@@ -160,10 +160,6 @@ public enum App {
     }
 
     public void action(Player p){
-        if(self == useCases.Set){
-            Setting.changeSettings(this, p);
-            return;
-        }
         if(this == Requeue){
             ArrayList<String> plugins = new ArrayList<>();
             stream(Bukkit.getServer().getPluginManager().getPlugins()).forEach(pl -> plugins.add(pl.getName()));

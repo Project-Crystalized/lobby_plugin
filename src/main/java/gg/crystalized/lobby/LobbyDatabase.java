@@ -296,11 +296,11 @@ public class LobbyDatabase {
         }
     }
 
-    public static void updateSetting(Player p, String dbSettingName, int value){
+    public static void updateSetting(Player p, String dbSettingName, double value){
         try(Connection conn = DriverManager.getConnection(URL)){
             String makeNewEntry = "UPDATE Settings SET "+ dbSettingName + " = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
-            prepared.setInt(1, value);
+            prepared.setDouble(1, value);
             prepared.setBytes(2, uuid_to_bytes(p));
             prepared.executeUpdate();
         }catch(SQLException e) {

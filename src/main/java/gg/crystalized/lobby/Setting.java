@@ -1,23 +1,18 @@
 package gg.crystalized.lobby;
 
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
-import java.util.List;
-import java.util.function.Consumer;
+
+import java.util.ArrayList;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 public class Setting {
-    public static NamespacedKey key = new NamespacedKey("crystalized", "settings");
     /*
        0 = off
        0.5 = mid
@@ -30,11 +25,8 @@ public class Setting {
         double value = getValue((String)a.extra, p);
         for(App app : App.values()){
             if(isThatToggle(app, value)){
-                Consumer<PersistentDataContainer> con = pdc -> pdc.set(key, PersistentDataType.STRING, (String)a.extra);
-                ItemStack item = app.build();
-                item.editPersistentDataContainer(con);
                 int i = a.slot + 1;
-                inv.setItem(i, item);
+                inv.setItem(i, app.build());
                 return;
             }
         }
@@ -57,8 +49,11 @@ public class Setting {
         if(getDescription(a, value) == null){
             return item;
         }
-        Consumer<ItemMeta> meta = m -> item.getItemMeta().lore(List.of(getDescription(a, value)));
-        item.editMeta(meta);
+        ItemMeta meta = item.getItemMeta();
+        ArrayList<Component> l = new ArrayList<>();
+        l.add(getDescription(a, value));
+        meta.lore(l);
+        item.setItemMeta(meta);
         return item;
     }
 
@@ -76,11 +71,11 @@ public class Setting {
 
         if(a == App.PlayerHeightSetting){
             if(value == 0){
-                return Component.text("Small").color(WHITE).decoration(ITALIC, false);
+                return Component.text("Small").color(RED).decoration(ITALIC, false);
             }else if(value == 0.5){
-                return Component.text("Default").color(WHITE).decoration(ITALIC, false);
+                return Component.text("Default").color(YELLOW).decoration(ITALIC, false);
             }else if(value == 1){
-                return Component.text("Tall").color(WHITE).decoration(ITALIC, false);
+                return Component.text("Tall").color(GREEN).decoration(ITALIC, false);
             }
         }
         return null;
@@ -99,9 +94,12 @@ public class Setting {
         return false;
     }
 
-    public static double toDouble(Object o){
+    public static Double toDouble(Object o){
         if(o instanceof Double){
             return (Double)o;
+        }
+        if(!(o instanceof Integer)){
+            return null;
         }
         return Double.valueOf((Integer) o);
     }
@@ -112,9 +110,37 @@ public class Setting {
         }
         return false;
     }
-    public static void changeSettings(App app, Player p){
+    public static void changeSettings(App app, Player p, int slot){
+        App a = app;
         if(isToggle(app)){
-
+            for(App ap : App.values()){
+                if(ap.self == App.useCases.Set && ap.slot != null && ap.slot == slot - 1){
+                    a = ap;
+                    break;
+                }
+            }
         }
+
+        if(a == App.PlayerHeightSetting){
+            if(((Integer)LobbyDatabase.fetchPlayerData(p).get("pay_rank_id")) != 7){
+                p.sendMessage(Component.text("Buy [rank name here] to change your height.").color(RED));
+                return;
+            }
+        }
+
+        double value = toDouble(LobbyDatabase.fetchSettings(p).get((String) a.extra));
+
+        if(value == 0 && hasMidValue(a)){
+            value = 0.5;
+        }else if(value == 0){
+            value = 1;
+        }else if(value == 0.5){
+            value = 1;
+        }else{
+            value = 0;
+        }
+
+        LobbyDatabase.updateSetting(p, (String) a.extra, value);
+        App.Settings.action(p);
     }
 }
