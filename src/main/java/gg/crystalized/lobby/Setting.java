@@ -1,6 +1,8 @@
 package gg.crystalized.lobby;
 
+import net.citizensnpcs.api.CitizensAPI;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -142,5 +144,21 @@ public class Setting {
 
         LobbyDatabase.updateSetting(p, (String) a.extra, value);
         App.Settings.action(p);
+        updatePlayerVisibility(p);
+    }
+
+    public static void updatePlayerVisibility(Player p){
+        double value = toDouble(LobbyDatabase.fetchSettings(p).get("show_players"));
+        for(Player player : Bukkit.getOnlinePlayers()){
+            if (CitizensAPI.getNPCRegistry().isNPC(player)) {
+                continue;
+            }
+
+            if((value == 0.5 && LobbyDatabase.areFriends(p, player)) || value == 1){
+                p.showPlayer(Lobby_plugin.getInstance(), player);
+            }else if((value == 0.5 && !LobbyDatabase.areFriends(p, player)) || value == 0){
+                p.hidePlayer(Lobby_plugin.getInstance(), player);
+            }
+        }
     }
 }

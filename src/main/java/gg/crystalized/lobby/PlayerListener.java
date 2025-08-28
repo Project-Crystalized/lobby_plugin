@@ -82,6 +82,8 @@ public final class PlayerListener implements Listener {
 		Ranks.renderNameTags(p);
 		Ranks.renderTabList(p);
 
+		Setting.updatePlayerVisibility(p);
+
 		LevelManager.updateLevel(p);
 		HashMap<String, Object> map = LobbyDatabase.fetchAndDeleteTemporaryData(p);
 		if(map.get("xp_amount") != null) {

@@ -150,6 +150,10 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 					return;
 				}
 			}
+		}else if(message1.equals("Settings") && !passive_mode){
+			if(in.readUTF().equals("player_visibility")){
+				Setting.updatePlayerVisibility(player);
+			}
 		}
 	}
 }
