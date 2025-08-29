@@ -83,6 +83,7 @@ public final class PlayerListener implements Listener {
 		Ranks.renderTabList(p);
 
 		Setting.updatePlayerVisibility(p);
+		Setting.updatePlayerHeight(p);
 
 		LevelManager.updateLevel(p);
 		HashMap<String, Object> map = LobbyDatabase.fetchAndDeleteTemporaryData(p);

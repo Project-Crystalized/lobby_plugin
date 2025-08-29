@@ -199,7 +199,6 @@ class WinLeaderboard {
 	String get_small_cap_num(int i) {
 		switch (i) {
 			case 0:
-
 				return "𝟢";
 			case 1:
 				return "𝟣";

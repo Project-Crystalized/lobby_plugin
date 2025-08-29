@@ -3,6 +3,10 @@ package gg.crystalized.lobby;
 import net.citizensnpcs.api.CitizensAPI;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -13,6 +17,9 @@ import java.util.ArrayList;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
+import static org.bukkit.attribute.Attribute.SCALE;
+import static org.bukkit.attribute.AttributeModifier.Operation.ADD_NUMBER;
+import static org.bukkit.attribute.AttributeModifier.Operation.ADD_SCALAR;
 
 public class Setting {
     /*
@@ -20,6 +27,8 @@ public class Setting {
        0.5 = mid
        1 = on
         */
+
+    static NamespacedKey key = new NamespacedKey("crystalized", "settings");
     public static void placeToggle(Player p, App a, Inventory inv){
         if(a.self != App.useCases.Set){
             return;
@@ -145,6 +154,7 @@ public class Setting {
         LobbyDatabase.updateSetting(p, (String) a.extra, value);
         App.Settings.action(p);
         updatePlayerVisibility(p);
+        updatePlayerHeight(p);
     }
 
     public static void updatePlayerVisibility(Player p){
@@ -160,5 +170,21 @@ public class Setting {
                 p.hidePlayer(Lobby_plugin.getInstance(), player);
             }
         }
+    }
+
+    public static void updatePlayerHeight(Player p){
+        AttributeInstance instance = p.getAttribute(SCALE);
+        if(instance.getModifier(key) != null) {
+            instance.removeModifier(key);
+        }
+        double value = toDouble(LobbyDatabase.fetchSettings(p).get("height"));
+        double amount = 0;
+        if(value == 1){
+            amount = 1;
+        }else if(value == 0){
+            amount = -0.5;
+        }
+        AttributeModifier modifier = new AttributeModifier(key, amount, ADD_SCALAR);
+        instance.addTransientModifier(modifier);
     }
 }
