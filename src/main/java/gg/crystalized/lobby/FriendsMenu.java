@@ -9,6 +9,7 @@ import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -32,9 +33,11 @@ import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 public class FriendsMenu {
     public static HashMap<Player, Inventory> waitingForPartyMembers = new HashMap<>();
     public static NamespacedKey key = new NamespacedKey("crystalized", "friends_menu");
-    public static ItemStack buildFriend(String name, String skin, String date, int online){
+    public static HashMap<String, Boolean> areOnline = new HashMap<>();
+    public static ItemStack buildFriend(Object[] o){
         try {
-            URL skinURL = new URL(skin);
+            HashMap<String, Object> data = LobbyDatabase.fetchPlayerData((byte[]) o[1]);
+            URL skinURL = new URL((String)data.get("skin_url"));
             ItemStack friend = new ItemStack(Material.PLAYER_HEAD, 1);
             SkullMeta skull = (SkullMeta) friend.getItemMeta();
             PlayerProfile profile = (PlayerProfile) Bukkit.createPlayerProfile(UUID.randomUUID());
@@ -44,20 +47,20 @@ public class FriendsMenu {
             skull.setPlayerProfile(profile);
             friend.setItemMeta(skull);
             ItemMeta meta = friend.getItemMeta();
-            meta.displayName(Ranks.getName(Bukkit.getOfflinePlayer(name)).decoration(ITALIC, false));
+            meta.displayName(Ranks.getName(Bukkit.getOfflinePlayer((String) data.get("player_name"))).decoration(ITALIC, false));
             ArrayList<Component> lore = new ArrayList<>();
-            lore.add(Component.text("Friends since: " + date).color(GRAY).decoration(ITALIC, false));
+            lore.add(Component.text("Friends since: " + o[2]).color(GRAY).decoration(ITALIC, false));
             lore.add(Component.text("[Left-click] View Profile").color(YELLOW).decoration(ITALIC, false));
             lore.add(Component.text("[Right-click] Invite to party").color(YELLOW).decoration(ITALIC, false));
             lore.add(Component.text("[Shift-click] Remove from friends").color(YELLOW).decoration(ITALIC, false));
-            if(online == 1) {
+            if(isOnline((String) data.get("player_name"))) {
                 lore.add(Component.text("online").color(GREEN));
-            }else if(online == 0){
+            }else{
                 lore.add(Component.text("offline").color(RED));
             }
             meta.lore(lore);
             friend.setItemMeta(meta);
-            Consumer<PersistentDataContainer> c = pdc -> pdc.set(key, PersistentDataType.STRING, name);
+            Consumer<PersistentDataContainer> c = pdc -> pdc.set(key, PersistentDataType.STRING, (String) data.get("player_name"));
             friend.editPersistentDataContainer(c);
             return friend;
         }catch(MalformedURLException e){
@@ -71,8 +74,8 @@ public class FriendsMenu {
         ArrayList<Object[]> list = LobbyDatabase.fetchFriends(p);
         int i = 0;
         for(Object[] o : list){
-            HashMap<String, Object> data = LobbyDatabase.fetchPlayerData((byte[]) o[1]);
-            ItemStack stack = buildFriend((String)data.get("player_name"), (String)data.get("skin_url"), (String) o[2], (Integer) data.get("online"));
+            checkOnline(p, Bukkit.getOfflinePlayer((String)LobbyDatabase.fetchPlayerData((byte[]) o[1]).get("player_name")));
+            ItemStack stack = buildFriend(o);
             if(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0) != null) {
                 inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), stack);
             }
@@ -108,6 +111,22 @@ public class FriendsMenu {
         return name.substring(2);
     }
 
+    public static void checkOnline(Player player, OfflinePlayer p){
+        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF("Online");
+        out.writeUTF(p.getName());
+        player.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
+    }
+
+    public static boolean isOnline(String name){
+        for(String s : areOnline.keySet()){
+            if(s.equals(name)){
+                return areOnline.get(s);
+            }
+        }
+        return false;
+    }
+
     public static void placePartyMembers(ArrayList<String> members, Player p, Inventory inv){
         int i = 0;
         while(i <= 4 && i < members.size()){
@@ -115,6 +134,7 @@ public class FriendsMenu {
             if(pl.equals(p) && i == 0){
                 pl = null;
             }
+            checkOnline(p, pl);
             ItemStack item = buildPartyMember(pl, p);
             inv.setItem(i+3, item);
             i++;
@@ -149,9 +169,9 @@ public class FriendsMenu {
             if(forLeader) {
                 lore.add(Component.text("[Shift-click] Remove from Party").color(TextColor.fromHexString("#f299da")).decoration(ITALIC, false));
             }
-            if((Integer)data.get("online") == 1) {
+            if(isOnline(p.getName())) {
                 lore.add(Component.text("online").color(GREEN));
-            }else if((Integer)data.get("online") == 0){
+            }else{
                 lore.add(Component.text("offline").color(RED));
             }
             meta.lore(lore);

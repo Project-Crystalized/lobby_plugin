@@ -5,6 +5,7 @@ import com.google.common.io.ByteStreams;
 import gg.crystalized.lobby.minigames.CrystalizedChess;
 import gg.crystalized.lobby.minigames.CrystalizedChessListener;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -153,6 +154,14 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		}else if(message1.equals("Settings") && !passive_mode){
 			if(in.readUTF().equals("player_visibility")){
 				Setting.updatePlayerVisibility(player);
+			}
+		}else if(message1.equals("Online") && !passive_mode){
+			String p = in.readUTF();
+			int i = in.readInt();
+			if(i == 1){
+				FriendsMenu.areOnline.put(p, true);
+			}else{
+				FriendsMenu.areOnline.put(p, false);
 			}
 		}
 	}
