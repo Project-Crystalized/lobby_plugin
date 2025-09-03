@@ -49,7 +49,6 @@ public class CrystalizedChess implements Listener {
         White,
         Black
     }
-
     enum GameStatuses{
         playing,
         end,
