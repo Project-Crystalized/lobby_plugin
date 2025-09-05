@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.EquipmentSlot;
@@ -120,7 +121,7 @@ public enum Cosmetic {
         return null;
     }
 
-    public boolean isWearing(Player p){
+    public boolean isWearing(OfflinePlayer p){
         if(!ownsCosmetic(p)){
             return false;
         }
@@ -138,7 +139,7 @@ public enum Cosmetic {
         return wear;
     }
 
-    public boolean ownsCosmetic(Player p){
+    public boolean ownsCosmetic(OfflinePlayer p){
         ArrayList<Object[]> list = LobbyDatabase.fetchCosmetics(p);
         boolean own = false;
         for(Object[] o : list){

@@ -26,10 +26,10 @@ import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 public enum App {
     Litestrike("ui/scn3/games/litestrike", useCases.Games, new useCases[]{useCases.Navigator},Component.translatable("crystalized.game.litestrike.name").color(GREEN).decoration(ITALIC, false), 29, LobbyConfig.Locations.get("litestrike_hub")),
     Knockoff("ui/scn3/games/knockoff", useCases.Games, new useCases[]{useCases.Navigator},Component.translatable("crystalized.game.knockoff.name").color(GOLD).decoration(ITALIC, false), 30, LobbyConfig.Locations.get("knockoff_hub")), //TODO change locs
-    Crystalblitz("ui/scn3/games/crystalblitz", useCases.Games, new useCases[]{useCases.Navigator},Component.translatable("crystalized.game.crystalblitz.name").color(LIGHT_PURPLE).decoration(ITALIC, false), 31,  LobbyConfig.Locations.get("litestrike_hub")), //TODO
+    Crystalblitz("ui/scn3/games/crystalblitz", useCases.Games, new useCases[]{useCases.Navigator},Component.translatable("crystalized.game.crystalblitz.name").color(LIGHT_PURPLE).decoration(ITALIC, false), 31,  LobbyConfig.Locations.get("crystalblitz_hub")), //TODO
     Navigator( "ui/scn3/games", useCases.Navigator, new useCases[]{useCases.Menu, useCases.Hotbar},Component.translatable("crystalized.shardcore.games.name").color(WHITE).decoration(ITALIC, false), 29,
             "\uA000\uA006"),
-    Profile("ui/scn3/profile", useCases.Profile, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.profile.name").color(WHITE).decoration(ITALIC, false), 24,
+    Profiles("ui/scn3/profile", useCases.Profiles, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.profile.name").color(WHITE).decoration(ITALIC, false), 24,
             "\uA000\uA008"),
     Friends("ui/scn3/friends", useCases.Friends, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.translatable("crystalized.shardcore.party.name").color(WHITE).decoration(ITALIC, false), 30,
             "\uA000\uA005"),
@@ -62,7 +62,12 @@ public enum App {
     PlayerVisibilitySetting("ui/scn3/settings/player_visibility", useCases.Set, new useCases[]{useCases.Settings}, Component.text("Show other players").color(WHITE).decoration(ITALIC, false), 32, "show_players"),
     SettingsToggleOff("ui/scn3/settings/toggle_off", useCases.Set, new useCases[]{useCases.Demand}, Component.text("Off").color(RED).decoration(ITALIC, false), 0,0),
     SettingsToggleOn("ui/scn3/settings/toggle_on", useCases.Set, new useCases[]{useCases.Demand}, Component.text("On").color(GREEN).decoration(ITALIC, false), 0, 1),
-    SettingsToggleMid("ui/scn3/settings/toggle_mid", useCases.Set, new useCases[]{useCases.Demand}, Component.text("Mid").color(YELLOW).decoration(ITALIC, false), 0, 0.5);
+    SettingsToggleMid("ui/scn3/settings/toggle_mid", useCases.Set, new useCases[]{useCases.Demand}, Component.text("Mid").color(YELLOW).decoration(ITALIC, false), 0, 0.5),
+    ProfileScrollRight("scn3/profile/info/right", useCases.Profiles, Component.text("Right").color(WHITE).decoration(ITALIC, false), 21),
+    ProfileScrollLeft("scn3/profile/info/left", useCases.Profiles, Component.text("Left").color(WHITE).decoration(ITALIC, false), 24),
+    ProfileLsStats("scn3/profile/info/ls", useCases.Demand, Component.text("Litestrike Statistics").color(WHITE).decoration(ITALIC, false), 0),
+    ProfileKoStats("scn3/profile/info/ko", useCases.Demand, Component.text("KnockOff Statistics").color(WHITE).decoration(ITALIC, false), 0),
+    ProfileCbStats("scn3/profile/info/ko", useCases.Demand, Component.text("CrystalBlitz Statistics").color(WHITE).decoration(ITALIC, false), 0);
 
 
     //how buttons work {top left corner, width, height}
@@ -72,14 +77,14 @@ public enum App {
         Menu,
         Shop,
         ShopPage,
-        Profile,
+        Profiles,
         Friends,
         Map,
         Settings,
         Set,
         Achievements,
         Hotbar,
-        Demand
+        Demand,
     }
     final String model;
     useCases self;
@@ -210,8 +215,8 @@ public enum App {
                 p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
                 FriendsMenu.waitingForPartyMembers.put(p, inv);
                 return;
-            }else if(this == App.Profile){
-                InventoryManager.prepareProfile(p, inv);
+            }else if(this == App.Profiles){
+                Profile.prepareProfile(p, inv, p);
             }
             p.openInventory(inv);
         }

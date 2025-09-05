@@ -68,7 +68,7 @@ public class RankDisplay {
 			}
 			return leaderbaord_rows;
 		} catch (SQLException e) {
-			Bukkit.getLogger().severe("sqlerror in Rank Leaderboard: "+e);
+			//Bukkit.getLogger().severe("sqlerror in Rank Leaderboard: "+e);
 			return Component.text("sqlerror: "+e);
 		}
 	}
@@ -102,7 +102,7 @@ public class RankDisplay {
 				p.showEntity(Lobby_plugin.getInstance(), display);
 			}
 		} catch (SQLException e) {
-			Bukkit.getLogger().severe("sqlerror in Rank Display: "+e);
+			//Bukkit.getLogger().severe("sqlerror in Rank Display: "+e);
 		}
 	}
 

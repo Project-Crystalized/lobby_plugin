@@ -69,10 +69,10 @@ public class Ranks {
 
         name = name.color(TextColor.fromHexString(hexColor)).decoration(ITALIC, false);
 
-        return Component.text(icon + " ").color(WHITE).append(name);
+        return Component.text(icon + " ").decoration(ITALIC, false).color(WHITE).append(name);
     }
 
-    public static Component getNameWithName(Player p){
+    public static Component getNameWithName(OfflinePlayer p){
         int rank = getRank(p);
         Component name = text(p.getName());
         String icon = "";
@@ -105,10 +105,10 @@ public class Ranks {
 
         name = name.color(TextColor.fromHexString(hexColor)).decoration(ITALIC, false);
 
-        return Component.text(icon + " ").color(WHITE).append(name);
+        return Component.text(icon + " ").color(WHITE).decoration(ITALIC, false).append(name);
     }
 
-    public static Component getRankWithName(Player p){
+    public static Component getRankWithName(OfflinePlayer p){
         int rank = getRank(p);
         String icon = "";
 
@@ -123,7 +123,7 @@ public class Ranks {
         } else if(rank == 5) {
             icon = "\uE308";
         }
-        return text(icon);
+        return text(icon).decoration(ITALIC, false);
     }
 
     public static Component getIcon(OfflinePlayer p){
@@ -217,11 +217,26 @@ public class Ranks {
     public static ItemStack buildItem(OfflinePlayer p){
         ItemStack item = new ItemStack(Material.COAL);
         ItemMeta meta = item.getItemMeta();
-        HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
-        NamespacedKey key = null;
+        String model = "ui/invisible";
 
-        //TODO
-        return null;
+        int rank = getRank(p);
+        if(rank == 1) {
+            model = "ui/scn3/profile/rank_admin";
+        } else if(rank == 2) {
+            model = "ui/scn3/profile/rank_mod";
+        } else if(rank == 3) {
+            model = "ui/scn3/profile/rank_dev";
+        } else if(rank == 4) {
+            model = "ui/scn3/profile/rank_contributer";
+        } else if(rank == 5) {
+            model = "ui/scn3/profile/rank_sub_project";
+        }
+
+        NamespacedKey key = new NamespacedKey("crystalized", model);
+        meta.setItemModel(key);
+        meta.displayName(getRankWithName(p));
+        item.setItemMeta(meta);
+        return item;
     }
 
     public static void passiveNames(Player p, TextColor color, Component before, Component after){

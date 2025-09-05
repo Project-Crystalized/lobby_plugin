@@ -338,28 +338,4 @@ public class InventoryManager implements Listener {
         }
         return false;
     }
-
-    public static void prepareProfile(Player p, Inventory inv){
-        try {
-            HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
-            ItemStack head = new ItemStack(Material.PLAYER_HEAD);
-            SkullMeta meta = (SkullMeta) head.getItemMeta();
-            PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID());
-            PlayerTextures textures = profile.getTextures();
-            textures.setSkin(new URL((String)data.get("skin_url")));
-            profile.setTextures(textures);
-            meta.setPlayerProfile(profile);
-            meta.displayName(p.displayName());
-            ArrayList<Component> lore = new ArrayList<>();
-            lore.add(Component.text("Level: " + data.get("level")).color(WHITE).decoration(ITALIC, false));
-            meta.lore(lore);
-            head.setItemMeta(meta);
-            inv.setItem(2, head);
-        }catch(MalformedURLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't set head in player profile");
-        }
-
-        //TODO place more stuff in the profile
-    }
 }

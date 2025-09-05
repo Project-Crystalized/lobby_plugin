@@ -151,7 +151,7 @@ public class LobbyDatabase {
         }
     }
 
-    public static ArrayList<Object[]> fetchCosmetics(Player p){
+    public static ArrayList<Object[]> fetchCosmetics(OfflinePlayer p){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Cosmetics WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));

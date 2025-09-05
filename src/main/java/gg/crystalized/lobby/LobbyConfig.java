@@ -154,7 +154,9 @@ class EntityRefresh implements Listener{
                     new WinLeaderboard(Bukkit.getWorld("world"), "ls");
                 } else if (loc.equals(LobbyConfig.Locations.get("ko-leaderboard"))) {
                     new WinLeaderboard(Bukkit.getWorld("world"), "ko");
-                } else if (loc.equals(LobbyConfig.Locations.get("ls-ranked-display")) || loc.equals(LobbyConfig.Locations.get("ls-ranked-leaderboard"))) {
+                } else if(loc.equals(LobbyConfig.Locations.get("cb-leaderboard"))){
+                    new WinLeaderboard(Bukkit.getWorld("world"), "cb");
+                }else if (loc.equals(LobbyConfig.Locations.get("ls-ranked-display")) || loc.equals(LobbyConfig.Locations.get("ls-ranked-leaderboard"))) {
                     new RankDisplay();
                 }
                 return;

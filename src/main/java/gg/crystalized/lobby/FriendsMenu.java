@@ -93,7 +93,7 @@ public class FriendsMenu {
             p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
             App.Friends.action(p);
         }else if(click.isLeftClick()) {
-            App.Profile.action(Bukkit.getOfflinePlayer(name).getPlayer());
+            App.Profiles.action(Bukkit.getOfflinePlayer(name).getPlayer());
         }else if(click.isRightClick()){
             ByteArrayDataOutput out = ByteStreams.newDataOutput();
             out.writeUTF("Party");
@@ -197,7 +197,7 @@ public class FriendsMenu {
             p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
             App.Friends.action(p);
         }else if(click.isLeftClick()) {
-            App.Profile.action((Player)Bukkit.getOfflinePlayer(name));
+            App.Profiles.action((Player)Bukkit.getOfflinePlayer(name));
         }else if(click.isRightClick()){
             ByteArrayDataOutput out = ByteStreams.newDataOutput();
             out.writeUTF("Friend");

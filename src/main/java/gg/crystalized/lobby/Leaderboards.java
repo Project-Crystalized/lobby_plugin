@@ -26,6 +26,7 @@ import static net.kyori.adventure.text.Component.text;
 public class Leaderboards {
 	public static final String LS_URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/litestrike_db.sql";
 	public static final String KO_URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/knockoff_db.sql";
+	public static final String CB_URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/crystalblitz_db.sql";
 
 	public Leaderboards() {
 		new WinLeaderboard(Bukkit.getWorld("world"), "ko");
@@ -100,6 +101,9 @@ class WinLeaderboard {
 			case "ko":
 				loc = LobbyConfig.Locations.get("ko-leaderboard");
 				break;
+			case "cb":
+				loc = LobbyConfig.Locations.get("cb-leaderboard");
+				break;
 		}
 
 		// Location loc = new Location(w, -19, -57.5, -110.5, 90.0f, 26.565f);
@@ -113,6 +117,9 @@ class WinLeaderboard {
 			case "ko":
 				// display.text(generate_ko_text());
 				display.text(generate_ko_text());
+				break;
+			case "cb":
+				display.text(generate_cb_text());
 				break;
 		}
 		display.setShadowed(true);
@@ -134,6 +141,9 @@ class WinLeaderboard {
 						case "ko":
 							// display.text(generate_ko_text());
 							display.text(generate_ko_text());
+							break;
+						case "cb":
+							display.text(generate_cb_text());
 							break;
 					}
 					display.setShadowed(true);
@@ -163,7 +173,7 @@ class WinLeaderboard {
 			}
 			return leaderbaord_rows;
 		} catch (SQLException e) {
-			Bukkit.getLogger().warning("error opening database: " + e);
+			//Bukkit.getLogger().warning("error opening database: " + e);
 			return null;
 		}
 	}
@@ -179,6 +189,34 @@ class WinLeaderboard {
 		try (Connection conn = DriverManager.getConnection(Leaderboards.KO_URL)) {
 			ResultSet res = conn.createStatement().executeQuery(query);
 			Component leaderbaord_rows = text("Game Leaderboard\n").color(GOLD).append(text("KNOCKOFF").color(GOLD));
+			int i = 0;
+			while (res.next()) {
+				i++;
+				UUID uuid = Leaderboards.convertBytesToUUID(res.getBytes("player_uuid"));
+				Component name = Ranks.getName(Bukkit.getOfflinePlayer(uuid));
+				Component num = Leaderboards.get_styles(i);
+				leaderbaord_rows = leaderbaord_rows.append(text("\n")).append(num);
+				leaderbaord_rows = leaderbaord_rows.append(name).append(text(" - ").color(GRAY));
+				leaderbaord_rows = leaderbaord_rows.append(text("" + res.getInt("SUM(games_won)")).color(GREEN));
+			}
+			return leaderbaord_rows;
+		} catch (SQLException e) {
+			//Bukkit.getLogger().warning("error opening database: " + e);
+			return null;
+		}
+	}
+
+	private Component generate_cb_text() {
+		// was_winner -> games_won
+		// TODO this is completely invisible in-game, no idea why so that needs to be
+		// sorted out
+		// Knockoff's Database code for reference
+		// https://github.com/Project-Crystalized/knockoff-game/blob/main/src/main/java/gg/knockoff/game/KnockoffDatabase.java
+
+		String query = "SELECT player_uuid, SUM(games_won) FROM CbGamesPlayers GROUP BY player_uuid ORDER BY SUM(games_won) DESC LIMIT 10;";
+		try (Connection conn = DriverManager.getConnection(Leaderboards.CB_URL)) {
+			ResultSet res = conn.createStatement().executeQuery(query);
+			Component leaderbaord_rows = text("Game Leaderboard\n").color(LIGHT_PURPLE).append(text("CRYSTAL BLITZ").color(LIGHT_PURPLE));
 			int i = 0;
 			while (res.next()) {
 				i++;
