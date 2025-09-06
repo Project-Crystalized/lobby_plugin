@@ -46,7 +46,7 @@ public class Profile {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't set head in player profile");
         }
-
+        /*
         for(Cosmetic c : Cosmetic.values()){
             if(c.isWearing(p) && c.ownsCosmetic(viewer)){
                 inv.setItem(getCosmeticSlot(c), c.build(c.isWearing(viewer), true));
@@ -54,6 +54,8 @@ public class Profile {
                 inv.setItem(getCosmeticSlot(c), c.build(null, true));
             }
         }
+
+         */
 
         //TODO statistics (21,22,23,24)
 
@@ -70,7 +72,7 @@ public class Profile {
     public static ItemStack[] getExpItems(Player p){
         HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
         int level = (Integer)data.get("level");
-        double expToNext = (Double)data.get("exp_to_next_lvl");
+        double expToNext = Setting.toDouble(data.get("exp_to_next_lvl"));
         long total = p.getExperiencePointsNeededForNextLevel();
         double a = (total - expToNext) / total;
         double amount = 48 * a;
