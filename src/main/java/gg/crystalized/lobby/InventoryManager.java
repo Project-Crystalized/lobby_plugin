@@ -22,6 +22,7 @@ import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.profile.PlayerTextures;
 
 import java.net.MalformedURLException;
@@ -111,10 +112,13 @@ public class InventoryManager implements Listener {
         App app = App.identifyApp(item);
         if(app != null) {
             if(event.getClick().isShiftClick() && app.extra instanceof Location){
-                String name = ((TextComponent) app.name).content();
+                String name = item.getItemMeta().getPersistentDataContainer().get(new NamespacedKey("crystalized", "app"), PersistentDataType.STRING);
+                if(name == null || name.equals("")){
+                    return; //TODO I feel like this will one day cause problems
+                }
                 ByteArrayDataOutput out = ByteStreams.newDataOutput();
                 out.writeUTF("Connect");
-                out.writeUTF(name.toLowerCase());
+                out.writeUTF(name);
                 out.writeUTF("true");
                 p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
                 return;

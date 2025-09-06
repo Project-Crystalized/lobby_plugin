@@ -12,12 +12,15 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static java.util.Arrays.stream;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
@@ -25,8 +28,8 @@ import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 public enum App {
     Litestrike("ui/scn3/games/litestrike", useCases.Games, new useCases[]{useCases.Navigator},Component.translatable("crystalized.game.litestrike.name").color(GREEN).decoration(ITALIC, false), 29, LobbyConfig.Locations.get("litestrike_hub")),
-    Knockoff("ui/scn3/games/knockoff", useCases.Games, new useCases[]{useCases.Navigator},Component.translatable("crystalized.game.knockoff.name").color(GOLD).decoration(ITALIC, false), 30, LobbyConfig.Locations.get("knockoff_hub")), //TODO change locs
-    Crystalblitz("ui/scn3/games/crystalblitz", useCases.Games, new useCases[]{useCases.Navigator},Component.translatable("crystalized.game.crystalblitz.name").color(LIGHT_PURPLE).decoration(ITALIC, false), 31,  LobbyConfig.Locations.get("crystalblitz_hub")), //TODO
+    Knockoff("ui/scn3/games/knockoff", useCases.Games, new useCases[]{useCases.Navigator},Component.translatable("crystalized.game.knockoff.name").color(GOLD).decoration(ITALIC, false), 30, LobbyConfig.Locations.get("knockoff_hub")),
+    Crystalblitz("ui/scn3/games/crystalblitz", useCases.Games, new useCases[]{useCases.Navigator},Component.translatable("crystalized.game.crystalblitz.name").color(LIGHT_PURPLE).decoration(ITALIC, false), 31,  LobbyConfig.Locations.get("crystalblitz_hub")),
     Navigator( "ui/scn3/games", useCases.Navigator, new useCases[]{useCases.Menu, useCases.Hotbar},Component.translatable("crystalized.shardcore.games.name").color(WHITE).decoration(ITALIC, false), 29,
             "\uA000\uA006"),
     Profiles("ui/scn3/profile", useCases.Profiles, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.profile.name").color(WHITE).decoration(ITALIC, false), 24,
@@ -144,7 +147,24 @@ public enum App {
         meta.setItemModel(new NamespacedKey("crystalized", model));
         meta.displayName(name);
         i.setItemMeta(meta);
+        this.addPDC(i);
         return i;
+    }
+
+    private void addPDC(ItemStack item){
+        NamespacedKey key = new NamespacedKey("crystalized", "app");
+        String s;
+        if(this == Litestrike){
+            s = "litestrike";
+        }else if(this == Knockoff){
+            s = "knockoff";
+        }else if(this == Crystalblitz){
+            s = "crystalblitz";
+        } else {
+            s = "";
+        }
+        Consumer<PersistentDataContainer> c = pdc -> pdc.set(key, PersistentDataType.STRING, s);
+        item.editPersistentDataContainer(c);
     }
 
     public static App identifyApp(ItemStack item){
