@@ -210,8 +210,6 @@ class WinLeaderboard {
 		// was_winner -> games_won
 		// TODO this is completely invisible in-game, no idea why so that needs to be
 		// sorted out
-		// Knockoff's Database code for reference
-		// https://github.com/Project-Crystalized/knockoff-game/blob/main/src/main/java/gg/knockoff/game/KnockoffDatabase.java
 
 		String query = "SELECT player_uuid, SUM(games_won) FROM CbGamesPlayers GROUP BY player_uuid ORDER BY SUM(games_won) DESC LIMIT 10;";
 		try (Connection conn = DriverManager.getConnection(Leaderboards.CB_URL)) {

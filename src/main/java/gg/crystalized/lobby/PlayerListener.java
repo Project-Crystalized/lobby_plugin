@@ -18,11 +18,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.meta.FireworkMeta;
@@ -44,12 +40,6 @@ import java.util.Set;
 
 public final class PlayerListener implements Listener {
 	private LobbyChatRenderer chat_renderer = new LobbyChatRenderer();
-	@EventHandler
-	public void onPlayerLogin(PlayerLoginEvent event) {
-		// NPC npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.PLAYER,
-		// "Litestrike!");
-		// npc.spawn(new Location(Bukkit.getWorld("world"), -10.5, -60, -20.5, -90, 0));
-	}
 
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerJoin(PlayerJoinEvent e) {
@@ -192,6 +182,14 @@ public final class PlayerListener implements Listener {
 			return;
 		}
 		e.renderer(ChatRenderer.viewerUnaware(chat_renderer));
+	}
+
+	@EventHandler
+	public void onDrop(PlayerDropItemEvent e){
+		if(Lobby_plugin.getInstance().passive_mode){
+			return;
+		}
+		e.setCancelled(true);
 	}
 }
 class LobbyChatRenderer implements ChatRenderer.ViewerUnaware{

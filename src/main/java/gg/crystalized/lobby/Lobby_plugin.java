@@ -4,6 +4,7 @@ import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 import gg.crystalized.lobby.minigames.CrystalizedChess;
 import gg.crystalized.lobby.minigames.CrystalizedChessListener;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -26,6 +27,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Level;
+
+import static net.kyori.adventure.text.format.NamedTextColor.DARK_AQUA;
+import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
+import static org.bukkit.Color.TEAL;
 
 
 public final class Lobby_plugin extends JavaPlugin implements PluginMessageListener{
@@ -57,6 +62,17 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		this.getCommand("pig_hunt").setExecutor(dc);
 		this.getCommand("give_xp").setExecutor(dc);
 		this.getCommand("give_money").setExecutor(dc);
+
+		Component message = Component.text("------------------------------------").color(WHITE);
+		Component message2 = Component.text("\nFound any bugs? \n Report them in our Discord! \n https://discord.gg/saAGYcncd7\n").color(DARK_AQUA);
+		new BukkitRunnable(){
+			public void run(){
+				for(Player p : Bukkit.getOnlinePlayers()){
+					p.setSaturation(20);
+					p.sendMessage(message.append(message2).append(message));
+				}
+			}
+		}.runTaskTimer(this, 5, 600 * 20);
 	}
 
 	@Override
