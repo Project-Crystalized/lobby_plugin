@@ -227,7 +227,7 @@ public class Ranks {
         } else if(rank == 3) {
             model = "ui/scn3/profile/rank_dev";
         } else if(rank == 4) {
-            model = "ui/scn3/profile/rank_contributer";
+            model = "ui/scn3/profile/rank_contributor";
         } else if(rank == 5) {
             model = "ui/scn3/profile/rank_sub_project";
         }
