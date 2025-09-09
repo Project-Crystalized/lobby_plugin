@@ -18,6 +18,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -154,6 +155,7 @@ public final class PlayerListener implements Listener {
 		if(Lobby_plugin.getInstance().passive_mode){
 			return;
 		}
+		e.setCancelled(true);
 		if (!CitizensAPI.getNPCRegistry().isNPC(e.getEntity())) {
 			return;
 		}
@@ -186,6 +188,14 @@ public final class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onDrop(PlayerDropItemEvent e){
+		if(Lobby_plugin.getInstance().passive_mode){
+			return;
+		}
+		e.setCancelled(true);
+	}
+
+	@EventHandler
+	public void onHangingBreak(HangingBreakEvent e){
 		if(Lobby_plugin.getInstance().passive_mode){
 			return;
 		}

@@ -227,7 +227,7 @@ class WinLeaderboard {
 			}
 			return leaderbaord_rows;
 		} catch (SQLException e) {
-			Bukkit.getLogger().warning("error opening database: " + e);
+			//Bukkit.getLogger().warning("error opening database: " + e);
 			return null;
 		}
 	}
