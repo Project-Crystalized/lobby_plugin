@@ -1,25 +1,32 @@
 package gg.crystalized.lobby;
 
+import net.citizensnpcs.api.CitizensAPI;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.*;
+import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scoreboard.*;
+import org.jetbrains.annotations.NotNull;
 
 
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
 import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
+import static org.bukkit.entity.EntityType.TEXT_DISPLAY;
+import static org.bukkit.entity.TextDisplay.TextAlignment.CENTER;
 
 public class Ranks {
-
     /*
     Rank ID system:
     0 = rankless
@@ -33,64 +40,16 @@ public class Ranks {
      */
 
     public static Component getName(OfflinePlayer p){
-        int rank = getRank(p);
-        Component name;
-        if(p.getName() == null){
-            name = text("null");
-        }else {
-            name = text(p.getName());
-        }
-        String icon = "";
-        String hexColor = "#a1a1a1";
-
-        if(rank == 1) {
-            icon = "\uE301";
-        } else if(rank == 2) {
-            icon = "\uE307";
-        } else if(rank == 3) {
-            icon = "\uE303";
-        } else if(rank == 4) {
-            icon = "\uE305";
-        } else if(rank == 5) {
-            icon = "\uE309";
-        }
-
-        if(rank == 1) {
-            hexColor = "#ba1560";
-        } else if(rank == 2) {
-            hexColor = "#22d87a";
-        } else if(rank == 3) {
-            hexColor = "#379fe5";
-        } else if(rank == 4) {
-            hexColor = "#bf750f";
-        } else if(rank == 5) {
-            hexColor = "#087544"; //TODO get the right color for this
-        }
-
-        name = name.color(TextColor.fromHexString(hexColor)).decoration(ITALIC, false);
-
-        return Component.text(icon + " ").decoration(ITALIC, false).color(WHITE).append(name);
+        return getIcon(p).append(text(" ")).append(getColoredName(p));
     }
 
     public static Component getNameWithName(OfflinePlayer p){
+        return getRankWithName(p).append(text(" ")).append(getColoredName(p));
+    }
+
+    public static Component getColoredName(OfflinePlayer p){
         int rank = getRank(p);
-        Component name = text(p.getName());
-        String icon = "";
         String hexColor = "#a1a1a1";
-
-        if(rank == 1) {
-            icon = "\uE300";
-        } else if(rank == 2) {
-            icon = "\uE306";
-        } else if(rank == 3) {
-            icon = "\uE302";
-        } else if(rank == 4) {
-            icon = "\uE304";
-        } else if(rank == 5) {
-            icon = "\uE308";
-        }
-
-
         if(rank == 1) {
             hexColor = "#ba1560";
         } else if(rank == 2) {
@@ -100,12 +59,9 @@ public class Ranks {
         } else if(rank == 4) {
             hexColor = "#bf750f";
         } else if(rank == 5) {
-            hexColor = "#087544"; //TODO get the right color for this
+            hexColor = "#087544";
         }
-
-        name = name.color(TextColor.fromHexString(hexColor)).decoration(ITALIC, false);
-
-        return Component.text(icon + " ").color(WHITE).decoration(ITALIC, false).append(name);
+        return Component.text(p.getName()).color(TextColor.fromHexString(hexColor)).decoration(ITALIC, false);
     }
 
     public static Component getRankWithName(OfflinePlayer p){
@@ -167,10 +123,25 @@ public class Ranks {
     }
 
     public static void renderNameTags(Player p){
-        HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
-        Component level = Component.text("\n" + data.get("level") + "   ").color(GREEN);
-        Component money = Component.text("" + data.get("money")); //TODO style this
-        p.displayName(getNameWithName(p).append(level).append(money));
+        if (CitizensAPI.getNPCRegistry().isNPC(p)) {
+            return;
+        }
+        p.getPassengers().forEach(p::removePassenger);
+
+        TextDisplay e = (TextDisplay) Bukkit.getWorld("world").spawnEntity(new Location(Bukkit.getWorld("world"), 0, 0, 0), TEXT_DISPLAY);
+        Component c = getRankWithName(p).append(text("\n")).append(getColoredName(p)).append(text("\n"));
+        e.text(c);
+        e.setAlignment(CENTER);
+        e.setBillboard(Display.Billboard.CENTER);
+        p.addPassenger(e);
+        p.hideEntity(Lobby_plugin.getInstance(), e);
+
+
+        Scoreboard s = p.getScoreboard();
+        Team name = s.registerNewTeam("no_name");
+        name.addPlayer(p);
+        name.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
+        p.setScoreboard(s);
     }
 
     public static void renderTabList(Player p){
@@ -187,32 +158,82 @@ public class Ranks {
                                 color(NamedTextColor.DARK_GRAY));
 
         p.playerListName(getName(p));
+        orderList();
+    }
 
-        Scoreboard s = p.getScoreboard();
-        String team = "[H] Rankless";
-        int rank = getRank(p);
-
-        if(rank == 1) {
-            team = "[A] Admin";
-        } else if(rank == 2) {
-            team = "[B] Mod";
-        } else if(rank == 3) {
-            team = "[C] Dev";
-        } else if(rank == 4) {
-            team = "[D] Contrib";
-        } else if(rank == 5) {
-            team = "[E] Sub_project";
-        } else if(rank == 6){
-            team = "[F] One time payment";
-        } else if(rank == 7){
-            team = "[G] Subscription";
+    public static void orderList(){
+        /*
+        ArrayList<String> sameRank = new ArrayList<>();
+        ArrayList<Player> allRanks = new ArrayList<>();
+        for(Player p : Bukkit.getOnlinePlayers()){
+            if(getRank(p) == getRank(player)){
+                sameRank.add(p.getName());
+            }
+            allRanks.add(p);
+        }
+        int place;
+        int size;
+        if(sameRank.size() == 1){
+            allRanks.sort(Comparator.comparingInt(Ranks::getRank));
+            allRanks.forEach(p -> Bukkit.getLogger().warning(p.getName()));
+            place = allRanks.indexOf(player);
+            size = allRanks.size();
+        }else{
+            sameRank.sort(null);
+            place = sameRank.indexOf(player.getName());
+            size = sameRank.size();
         }
 
-        Team t = s.registerNewTeam(team);
-        t.addEntity(p);
+        for(int i = place-1; i < size; i++){
+            if(nextInLine(i) == null){
+                return;
+            }
 
-        p.setScoreboard(s);
+            nextInLine(i).setPlayerListOrder(i+1);
+        }
+         */
+        HashMap<Integer, ArrayList<Player>> map = new HashMap<>();
+        for(Player p : Bukkit.getOnlinePlayers()){
+            if(!map.containsKey(getRank(p))){
+                ArrayList<Player> list = new ArrayList<>();
+                list.add(p);
+                map.put(getRank(p), list);
+            }else {
+                ArrayList<Player> list = map.get(getRank(p));
+                list.add(p);
+                map.replace(getRank(p), list);
+            }
+        }
+
+        int i = 0;
+
+        for(int in = 10; in >= 1; in--){
+            if(!map.containsKey(in)){
+                continue;
+            }
+            for(Player p : map.get(in)){
+                p.setPlayerListOrder(i);
+                i++;
+            }
+            map.remove(in);
+        }
+        for(ArrayList<Player> li : map.values()){
+            for(Player pl : li){
+                pl.setPlayerListOrder(i);
+                i++;
+            }
+        }
     }
+
+    public static Player nextInLine(int i){
+        for(Player p : Bukkit.getOnlinePlayers()){
+            if(p.getPlayerListOrder() == i + 1){
+                return p;
+            }
+        }
+        return null;
+    }
+
 
     public static ItemStack buildItem(OfflinePlayer p){
         ItemStack item = new ItemStack(Material.COAL);

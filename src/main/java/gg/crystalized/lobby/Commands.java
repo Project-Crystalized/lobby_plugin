@@ -41,6 +41,8 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
                 return give_money(args, commandSender);
             case "set_rank":
                 return set_rank(args, commandSender);
+            case "spawn":
+                return spawn(commandSender);
             default:
                 return false;
 
@@ -153,6 +155,19 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
             Ranks.renderTabList(p.getPlayer());
             Ranks.renderNameTags(p.getPlayer());
         }
+        return true;
+    }
+
+    private boolean spawn(CommandSender sender){
+        if(!(sender instanceof Player)){
+            return false;
+        }
+
+        if(Lobby_plugin.getInstance().passive_mode){
+            return false;
+        }
+
+        ((Player)sender).teleport(LobbyConfig.Locations.get("spawn"));
         return true;
     }
 }

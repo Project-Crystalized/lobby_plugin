@@ -1,5 +1,7 @@
 package gg.crystalized.lobby;
 
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -15,6 +17,7 @@ import java.sql.SQLException;
 import static net.kyori.adventure.text.Component.text;
 
 public class ScoreboardManager {
+    public static int onlinePlayers = 0;
     public static void SetScoreboard(Player p) {
         FloodgateApi floodgate = FloodgateApi.getInstance();
         Scoreboard s = Bukkit.getScoreboardManager().getNewScoreboard();
@@ -105,10 +108,15 @@ public class ScoreboardManager {
                 } else {
                     //Java
                     LobbyNumber.suffix(text("1"));
-                    PlayerCounter.suffix(text("" + Bukkit.getOnlinePlayers().size()));
+                    PlayerCounter.suffix(text("" + onlinePlayers));
                     CurrencyCounter.suffix(text("" + LevelManager.getMoney(p)));
                     Rank.suffix(Ranks.getRankWithName(p));
                 }
+
+                ByteArrayDataOutput out = ByteStreams.newDataOutput();
+                out.writeUTF("Online");
+                out.writeUTF("a");
+                p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
             }
         }.runTaskTimer(Lobby_plugin.getInstance(), 2, 5);
     }

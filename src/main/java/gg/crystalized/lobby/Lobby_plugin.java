@@ -62,6 +62,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		this.getCommand("pig_hunt").setExecutor(dc);
 		this.getCommand("give_xp").setExecutor(dc);
 		this.getCommand("give_money").setExecutor(dc);
+		this.getCommand("spawn").setExecutor(dc);
 
 		Component message = Component.text("------------------------------------").color(WHITE);
 		Component message2 = Component.text("\nFound any bugs? \n Report them in our Discord! \n https://discord.gg/saAGYcncd7\n").color(DARK_AQUA);
@@ -174,6 +175,10 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		}else if(message1.equals("Online") && !passive_mode){
 			String p = in.readUTF();
 			int i = in.readInt();
+			if(p.equals("a")){
+				ScoreboardManager.onlinePlayers = i;
+				return;
+			}
 			if(i == 1){
 				FriendsMenu.areOnline.put(p, true);
 			}else{

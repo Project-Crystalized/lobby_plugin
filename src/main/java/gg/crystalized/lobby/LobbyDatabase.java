@@ -135,13 +135,11 @@ public class LobbyDatabase {
             int count = data.getColumnCount();
             ArrayList<Object[]> list = new ArrayList<>();
             while(set.next()) {
-                while(set.next()) {
-                    Object[] o = new Object[3];
-                    for (int i = 1; i <= count; i++) {
-                        o[i-1] = set.getObject(data.getColumnLabel(i));
-                    }
-                    list.add(o);
+                Object[] o = new Object[3];
+                for (int i = 1; i <= count; i++) {
+                    o[i-1] = set.getObject(data.getColumnLabel(i));
                 }
+                list.add(o);
             }
             return list;
         }catch(SQLException e){
@@ -251,7 +249,7 @@ public class LobbyDatabase {
     public static void makeNewLobbyPlayersEntry(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
             String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id, pay_rank_id, skin_url)"
-                    + "VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?)";
+                    + "VALUES (?, ?, 7, 0, 0, 0, 0, 0, ?)";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.setString(2, p.getName());

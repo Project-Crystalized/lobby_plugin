@@ -114,6 +114,9 @@ public enum Cosmetic {
     // 1 = true
     public static Cosmetic identifyCosmetic(ItemStack item){
         for(Cosmetic c : Cosmetic.values()){
+            if(item.getItemMeta() == null){
+                continue;
+            }
             if(Objects.equals(item.getItemMeta().getItemModel(), new NamespacedKey("crystalized", c.itemModel))){
                 return c;
             }

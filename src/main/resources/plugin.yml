@@ -35,4 +35,10 @@ commands:
     usage: "/set_rank"
     aliases: []
     permission: crystalized.lobby.command
+  spawn:
+    description: "teleport back to spawn"
+    usage: "/spawn"
+    aliases: ["s"]
+    permission: crystalized.lobby.spawn
+    premission: "[!] You don't have permission to run this command, this is probably a bug"
 

@@ -67,8 +67,6 @@ public final class PlayerListener implements Listener {
 		p.getInventory().clear();
 		LobbyDatabase.updatePlayerNames(p);
 		LobbyDatabase.updateSkin(p);
-		LobbyDatabase.updatePlayerNames(p);
-		LobbyDatabase.updateSkin(p);
 
 		Ranks.renderNameTags(p);
 		Ranks.renderTabList(p);
