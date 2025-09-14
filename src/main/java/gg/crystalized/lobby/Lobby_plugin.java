@@ -7,6 +7,7 @@ import gg.crystalized.lobby.minigames.CrystalizedChessListener;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -78,6 +79,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 
 	@Override
 	public void onDisable() {
+		Bukkit.getOnlinePlayers().forEach(p -> p.getPassengers().forEach(Entity::remove));
 	}
 
 	public static Lobby_plugin getInstance() {
