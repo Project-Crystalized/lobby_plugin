@@ -18,6 +18,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.*;
@@ -33,10 +34,12 @@ import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import static net.kyori.adventure.text.Component.text;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 
@@ -200,6 +203,17 @@ public final class PlayerListener implements Listener {
 			return;
 		}
 		e.setCancelled(true);
+	}
+
+	@EventHandler
+	public void onTeleport(EntityTeleportEvent e){
+		List<Entity> list = e.getEntity().getPassengers();
+		list.forEach(Entity::remove);
+		new BukkitRunnable(){
+			public void run(){
+				list.forEach(e.getEntity()::addPassenger);
+			}
+		}.runTaskLater(Lobby_plugin.getInstance(), 1);
 	}
 }
 class LobbyChatRenderer implements ChatRenderer.ViewerUnaware{
