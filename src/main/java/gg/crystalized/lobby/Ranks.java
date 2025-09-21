@@ -136,6 +136,7 @@ public class Ranks {
         display.setBillboard(Display.Billboard.CENTER);
         display.setPersistent(false);
         display.getPersistentDataContainer().set(new NamespacedKey("crystalized", "nametag"), PersistentDataType.STRING, "nametag");
+        p.hideEntity(Lobby_plugin.getInstance(), display);
         p.addPassenger(display);
     }
 

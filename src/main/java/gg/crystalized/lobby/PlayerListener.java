@@ -115,6 +115,10 @@ public final class PlayerListener implements Listener {
 				continue;
 			}
 
+			if(ent.getPersistentDataContainer().get(new NamespacedKey("crystalized", "nametag"), PersistentDataType.STRING) == null){
+				continue;
+			}
+
 			if(ent.getPersistentDataContainer().get(new NamespacedKey("crystalized", "nametag"), PersistentDataType.STRING).equals("nametag") && ((TextDisplay)ent).text().contains(Ranks.getColoredName(e.getPlayer()))){
 				ent.remove();
 			}

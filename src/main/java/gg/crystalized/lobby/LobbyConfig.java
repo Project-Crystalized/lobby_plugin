@@ -6,6 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.papermc.paper.entity.TeleportFlag;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.trait.SkinTrait;
@@ -151,11 +152,11 @@ class EntityRefresh implements Listener{
 
             if (s.toLowerCase().contains("leaderboard") || s.toLowerCase().contains("display")) {
                 if (loc.equals(LobbyConfig.Locations.get("ls-leaderboard"))) {
-                    new WinLeaderboard(Bukkit.getWorld("world"), "ls");
+                    new WinLeaderboard("ls", LobbyConfig.Locations.get("ls-leaderboard"));
                 } else if (loc.equals(LobbyConfig.Locations.get("ko-leaderboard"))) {
-                    new WinLeaderboard(Bukkit.getWorld("world"), "ko");
+                    new WinLeaderboard("ko", LobbyConfig.Locations.get("ko-leaderboard"));
                 } else if(loc.equals(LobbyConfig.Locations.get("cb-leaderboard"))){
-                    new WinLeaderboard(Bukkit.getWorld("world"), "cb");
+                    new WinLeaderboard("cb", LobbyConfig.Locations.get("cb-leaderboard"));
                 }else if (loc.equals(LobbyConfig.Locations.get("ls-ranked-display")) || loc.equals(LobbyConfig.Locations.get("ls-ranked-leaderboard"))) {
                     new RankDisplay();
                 }
@@ -313,7 +314,7 @@ class NPCData{
             p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main",
                     out.toByteArray());
         }else if(action instanceof Location){
-            p.teleport((Location) action);
+            p.teleport((Location) action, TeleportFlag.EntityState.RETAIN_PASSENGERS);
         }else if(action instanceof ArrayList){
             Component c = Component.text("[" + name + "] ").color(TextColor.fromHexString("#bf8032"));
             for(String s : (ArrayList<String>)action){

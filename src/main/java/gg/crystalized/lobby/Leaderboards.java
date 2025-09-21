@@ -18,6 +18,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
+import static gg.crystalized.lobby.Leaderboards.LS_URL;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.Component.text;
 
@@ -27,8 +28,8 @@ public class Leaderboards {
 	public static final String CB_URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/crystalblitz_db.sql";
 
 	public Leaderboards() {
-		new WinLeaderboard(Bukkit.getWorld("world"), "ko");
-		new WinLeaderboard(Bukkit.getWorld("world"), "ls");
+		//new WinLeaderboard("ko");
+		//new WinLeaderboard("ls");
 	}
 
 	public static UUID convertBytesToUUID(byte[] bytes) {
@@ -95,27 +96,10 @@ class WinLeaderboard {
 	public static final Component KO_TITLE = text("Game Leaderboard\n").color(GOLD).append(text("KNOCKOFF").color(GOLD));
 	public static final Component CB_TITLE = text("Game Leaderboard\n").color(LIGHT_PURPLE).append(text("CRYSTAL BLITZ").color(LIGHT_PURPLE));
 
-	public WinLeaderboard(World w, String type) {
-		Location loc = null;
-		// FYI, pitch and yaw doesn't matter when the leaderboard rotates automatically
-		// based on how the client looks at it
-		switch (type) {
-			case "ls":
-				loc = LobbyConfig.Locations.get("ls-leaderboard");
-				break;
-			case "ko":
-				loc = LobbyConfig.Locations.get("ko-leaderboard");
-				break;
-			case "cb":
-				loc = LobbyConfig.Locations.get("cb-leaderboard");
-				break;
-		}
-
-		// Location loc = new Location(w, -19, -57.5, -110.5, 90.0f, 26.565f);
-		Location finalLoc = loc;
+	public WinLeaderboard(String type, Location loc) {
 		for(Player p : Bukkit.getOnlinePlayers()) {
-			TextDisplay display = (TextDisplay) finalLoc.getWorld().spawnEntity(finalLoc, EntityType.TEXT_DISPLAY);
-			display.teleport(finalLoc);
+			TextDisplay display = (TextDisplay) loc.getWorld().spawnEntity(loc, EntityType.TEXT_DISPLAY);
+			display.teleport(loc);
 			display.text(generateText(p, type));
 			display.setShadowed(true);
 			display.setBillboard(Billboard.CENTER);
@@ -132,8 +116,8 @@ class WinLeaderboard {
 
 				try {
 					for(Player p : Bukkit.getOnlinePlayers()) {
-						TextDisplay display = finalLoc.getNearbyEntitiesByType(TextDisplay.class, 2.0).stream().findAny().get();
-						display.teleport(finalLoc);
+						TextDisplay display = loc.getNearbyEntitiesByType(TextDisplay.class, 2.0).stream().findAny().get();
+						display.teleport(loc);
 						display.text(generateText(p, type));
 						display.setShadowed(true);
 						display.setBillboard(Billboard.CENTER);
@@ -152,7 +136,7 @@ class WinLeaderboard {
 	private Component generate_ls_text() {
 
 		String query = "SELECT player_uuid, SUM(was_winner) FROM LsGamesPlayers GROUP BY player_uuid ORDER BY SUM(was_winner) DESC LIMIT 10;";
-		try (Connection conn = DriverManager.getConnection(Leaderboards.LS_URL)) {
+		try (Connection conn = DriverManager.getConnection(LS_URL)) {
 			ResultSet res = conn.createStatement().executeQuery(query);
 			Component leaderbaord_rows = text("Game Leaderboard\n").color(GOLD).append(text("LITESTRIKE").color(GREEN));
 			int i = 0;
@@ -251,22 +235,26 @@ class WinLeaderboard {
 
 	public static Component generateText(Player p, String type){
 		String db = null;
+		String url = null;
 		switch (type) {
 			case "ls":
 				db = LS_DB;
+				url = Leaderboards.LS_URL;
 				break;
 			case "ko":
 				db = KO_DB;
+				url = Leaderboards.KO_URL;
 				break;
 			case "cb":
 				db = CB_DB;
+				url = Leaderboards.CB_URL;
 				break;
 		}
 		if(db == null){
 			return text("null");
 		}
 		String query = "SELECT player_uuid, SUM(games_won) FROM " + db + " GROUP BY player_uuid ORDER BY SUM(games_won) DESC;";
-		try (Connection conn = DriverManager.getConnection(Leaderboards.CB_URL)) {
+		try (Connection conn = DriverManager.getConnection(url)) {
 			ResultSet res = conn.createStatement().executeQuery(query);
 
 			Component leaderboard_rows = text("");
