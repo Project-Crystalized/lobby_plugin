@@ -249,7 +249,7 @@ public class LobbyDatabase {
     public static void makeNewLobbyPlayersEntry(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
             String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id, pay_rank_id, skin_url)"
-                    + "VALUES (?, ?, 7, 0, 0, 0, 0, 0, ?)";
+                    + "VALUES (?, ?, 1, 0, 0, 0, 0, 0, ?)";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.setString(2, p.getName());

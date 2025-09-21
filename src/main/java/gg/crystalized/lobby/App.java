@@ -2,6 +2,7 @@ package gg.crystalized.lobby;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import io.papermc.paper.entity.TeleportFlag;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -224,7 +225,7 @@ public enum App {
                 p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
                 return;
             }
-            p.teleport((Location)extra);
+            p.teleport((Location)extra, TeleportFlag.EntityState.RETAIN_PASSENGERS);
         }else if(extra instanceof String){
             Inventory inv = prepareInv((String) extra, 54, self, p);
             if(this == App.Friends){

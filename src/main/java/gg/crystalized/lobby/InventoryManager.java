@@ -5,6 +5,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.TranslatableComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -29,6 +30,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 
+import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
@@ -211,7 +213,7 @@ public class InventoryManager implements Listener {
 
     public static App.useCases identifyInv(InventoryView inv){
         for(App a : App.values()){
-            if(((TextComponent) inv.title()).content().equals("\uA000\uA00A")){
+            if(inv.title().equals(text("\uA000\uA00A"))){
                 return App.useCases.ShopPage;
             }
             if(!(a.extra instanceof String)){

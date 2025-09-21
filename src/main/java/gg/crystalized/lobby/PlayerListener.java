@@ -1,6 +1,7 @@
 package gg.crystalized.lobby;
 
 import io.papermc.paper.chat.ChatRenderer;
+import io.papermc.paper.entity.TeleportFlag;
 import io.papermc.paper.event.packet.PlayerChunkLoadEvent;
 import io.papermc.paper.event.player.AbstractChatEvent;
 import io.papermc.paper.event.player.AsyncChatEvent;
@@ -12,6 +13,7 @@ import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventException;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -31,13 +33,16 @@ import com.google.common.io.ByteStreams;
 
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import static net.kyori.adventure.text.Component.text;
+import static org.bukkit.entity.EntityType.TEXT_DISPLAY;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -64,7 +69,7 @@ public final class PlayerListener implements Listener {
 		}
 
 		ScoreboardManager.SetScoreboard(p);
-		p.teleport(LobbyConfig.Locations.get("spawn"));
+		p.teleport(LobbyConfig.Locations.get("spawn"), TeleportFlag.EntityState.RETAIN_PASSENGERS);
 		p.addPotionEffect(
 				new PotionEffect(PotionEffectType.HUNGER, PotionEffect.INFINITE_DURATION, 1, false, false, true));
 		p.setGameMode(GameMode.ADVENTURE);
@@ -102,8 +107,18 @@ public final class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent e) {
-		e.getPlayer().getPassengers().forEach(Entity::remove);
 		e.quitMessage(text(""));
+		Location loc = e.getPlayer().getLocation();
+		e.getPlayer().eject();
+		for(Entity ent : loc.getNearbyEntities(1 , 4, 1)){
+			if(ent.getType() != TEXT_DISPLAY){
+				continue;
+			}
+
+			if(ent.getPersistentDataContainer().get(new NamespacedKey("crystalized", "nametag"), PersistentDataType.STRING).equals("nametag") && ((TextDisplay)ent).text().contains(Ranks.getColoredName(e.getPlayer()))){
+				ent.remove();
+			}
+		}
 	}
 
 	@EventHandler
@@ -203,17 +218,6 @@ public final class PlayerListener implements Listener {
 			return;
 		}
 		e.setCancelled(true);
-	}
-
-	@EventHandler
-	public void onTeleport(EntityTeleportEvent e){
-		List<Entity> list = e.getEntity().getPassengers();
-		list.forEach(Entity::remove);
-		new BukkitRunnable(){
-			public void run(){
-				list.forEach(e.getEntity()::addPassenger);
-			}
-		}.runTaskLater(Lobby_plugin.getInstance(), 1);
 	}
 }
 class LobbyChatRenderer implements ChatRenderer.ViewerUnaware{

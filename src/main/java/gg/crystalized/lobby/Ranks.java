@@ -1,5 +1,7 @@
 package gg.crystalized.lobby;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.destroystokyo.paper.profile.ProfileProperty;
 import net.citizensnpcs.api.CitizensAPI;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
@@ -11,11 +13,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scoreboard.*;
 import org.jetbrains.annotations.NotNull;
 
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -25,6 +30,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 import static org.bukkit.entity.EntityType.TEXT_DISPLAY;
 import static org.bukkit.entity.TextDisplay.TextAlignment.CENTER;
+import static org.bukkit.scoreboard.DisplaySlot.BELOW_NAME;
 
 public class Ranks {
     /*
@@ -123,25 +129,14 @@ public class Ranks {
     }
 
     public static void renderNameTags(Player p){
-        if (CitizensAPI.getNPCRegistry().isNPC(p)) {
-            return;
-        }
-        p.getPassengers().forEach(p::removePassenger);
-
-        TextDisplay e = (TextDisplay) Bukkit.getWorld("world").spawnEntity(new Location(Bukkit.getWorld("world"), 0, 0, 0), TEXT_DISPLAY);
-        Component c = getRankWithName(p).append(text("\n")).append(getColoredName(p)).append(text("\n"));
-        e.text(c);
-        e.setAlignment(CENTER);
-        e.setBillboard(Display.Billboard.CENTER);
-        p.addPassenger(e);
-        p.hideEntity(Lobby_plugin.getInstance(), e);
-
-
-        Scoreboard s = p.getScoreboard();
-        Team name = s.registerNewTeam("no_name");
-        name.addPlayer(p);
-        name.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
-        p.setScoreboard(s);
+        TextDisplay display = (TextDisplay) Bukkit.getWorld("world").spawnEntity(new Location(Bukkit.getWorld("world"), 0, 0, 0), TEXT_DISPLAY);
+        Component text = getRankWithName(p).append(text("\n")).append(getColoredName(p)).append(text("\n"));
+        display.text(text);
+        display.setAlignment(CENTER);
+        display.setBillboard(Display.Billboard.CENTER);
+        display.setPersistent(false);
+        display.getPersistentDataContainer().set(new NamespacedKey("crystalized", "nametag"), PersistentDataType.STRING, "nametag");
+        p.addPassenger(display);
     }
 
     public static void renderTabList(Player p){
