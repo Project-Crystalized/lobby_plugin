@@ -3,12 +3,14 @@ package gg.crystalized.lobby;
 import java.nio.ByteBuffer;
 import java.sql.*;
 import java.util.*;
+import java.util.logging.Level;
 
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
@@ -21,6 +23,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import static gg.crystalized.lobby.Leaderboards.LS_URL;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 
 public class Leaderboards {
 	public static final String LS_URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/litestrike_db.sql";
@@ -74,7 +77,7 @@ public class Leaderboards {
 		Component s = text(convertToSmallCaps(i));
 		switch (i) {
 			case 1:
-				s = s.color(GREEN).decoration(TextDecoration.BOLD, true);
+				s = s.color(GREEN).decoration(BOLD, true);
 				break;
 			case 2:
 				s = s.color(YELLOW);
@@ -88,189 +91,66 @@ public class Leaderboards {
 }
 
 class WinLeaderboard {
-	public static final String LS_DB = "LsGamesPlayers";
-	public static final String KO_DB = "KoGamesPlayers";
-	public static final String CB_DB = "CbGamesPlayers";
-
-	public static final Component LS_TITLE = text("Game Leaderboard\n").color(GOLD).append(text("LITESTRIKE").color(GREEN));
-	public static final Component KO_TITLE = text("Game Leaderboard\n").color(GOLD).append(text("KNOCKOFF").color(GOLD));
-	public static final Component CB_TITLE = text("Game Leaderboard\n").color(LIGHT_PURPLE).append(text("CRYSTAL BLITZ").color(LIGHT_PURPLE));
 
 	public WinLeaderboard(String type, Location loc) {
+		/*
 		for(Player p : Bukkit.getOnlinePlayers()) {
-			TextDisplay display = (TextDisplay) loc.getWorld().spawnEntity(loc, EntityType.TEXT_DISPLAY);
-			display.teleport(loc);
-			display.text(generateText(p, type));
-			display.setShadowed(true);
-			display.setBillboard(Billboard.CENTER);
-			display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
-			for (Player player : Bukkit.getOnlinePlayers()) {
-				player.hideEntity(Lobby_plugin.getInstance(), display);
-			}
-			p.showEntity(Lobby_plugin.getInstance(), display);
+			createDisplay(p, loc, type);
 		}
+		 */
 		new BukkitRunnable() {
 
 			@Override
 			public void run() {
-
-				try {
-					for(Player p : Bukkit.getOnlinePlayers()) {
-						TextDisplay display = loc.getNearbyEntitiesByType(TextDisplay.class, 2.0).stream().findAny().get();
-						display.teleport(loc);
-						display.text(generateText(p, type));
-						display.setShadowed(true);
-						display.setBillboard(Billboard.CENTER);
-						display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
-						for (Player player : Bukkit.getOnlinePlayers()) {
-							player.hideEntity(Lobby_plugin.getInstance(), display);
-						}
-						p.showEntity(Lobby_plugin.getInstance(), display);
+				for(Player p : Bukkit.getOnlinePlayers()) {
+					Optional<TextDisplay> opt = loc.getNearbyEntitiesByType(TextDisplay.class, 2.0).stream().findAny();
+					if(!opt.isPresent()){
+						createDisplay(p, loc, type);
+						continue;
 					}
-				} catch (NoSuchElementException e) {
+					TextDisplay	display = opt.get();
+					display.teleport(loc);
+					display.text(generateText(p, type));
+					display.setShadowed(true);
+					display.setBillboard(Billboard.CENTER);
+					display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
+					for (Player player : Bukkit.getOnlinePlayers()) {
+						player.hideEntity(Lobby_plugin.getInstance(), display);
+					}
+					p.showEntity(Lobby_plugin.getInstance(), display);
 				}
 			}
-		}.runTaskTimer(Lobby_plugin.getInstance(), (20 * 5), (20 * 10));
+		}.runTaskTimer(Lobby_plugin.getInstance(), 1, (20 * 10));
 	}
 
-	private Component generate_ls_text() {
-
-		String query = "SELECT player_uuid, SUM(was_winner) FROM LsGamesPlayers GROUP BY player_uuid ORDER BY SUM(was_winner) DESC LIMIT 10;";
-		try (Connection conn = DriverManager.getConnection(LS_URL)) {
-			ResultSet res = conn.createStatement().executeQuery(query);
-			Component leaderbaord_rows = text("Game Leaderboard\n").color(GOLD).append(text("LITESTRIKE").color(GREEN));
-			int i = 0;
-			while (res.next()) {
-				i++;
-				UUID uuid = Leaderboards.convertBytesToUUID(res.getBytes("player_uuid"));
-				Component name = Ranks.getName(Bukkit.getOfflinePlayer(uuid));
-				Component num = Leaderboards.get_styles(i);
-				leaderbaord_rows = leaderbaord_rows.append(text("\n")).append(num);
-				leaderbaord_rows = leaderbaord_rows.append(name).append(text(" - ").color(GRAY));
-				leaderbaord_rows = leaderbaord_rows.append(text("" + res.getInt("SUM(was_winner)")).color(GREEN));
-			}
-			return leaderbaord_rows;
-		} catch (SQLException e) {
-			//Bukkit.getLogger().warning("error opening database: " + e);
-			return null;
+	static void createDisplay(Player p, Location loc, String type){
+		TextDisplay display = (TextDisplay) loc.getWorld().spawnEntity(loc, EntityType.TEXT_DISPLAY);
+		display.teleport(loc);
+		display.text(generateText(p, type));
+		display.setShadowed(true);
+		display.setBillboard(Billboard.CENTER);
+		display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
+		for (Player player : Bukkit.getOnlinePlayers()) {
+			player.hideEntity(Lobby_plugin.getInstance(), display);
 		}
-	}
-
-	private Component generate_ko_text() {
-		// was_winner -> games_won
-		// TODO this is completely invisible in-game, no idea why so that needs to be
-		// sorted out
-		// Knockoff's Database code for reference
-		// https://github.com/Project-Crystalized/knockoff-game/blob/main/src/main/java/gg/knockoff/game/KnockoffDatabase.java
-
-		String query = "SELECT player_uuid, SUM(games_won) FROM KoGamesPlayers GROUP BY player_uuid ORDER BY SUM(games_won) DESC LIMIT 10;";
-		try (Connection conn = DriverManager.getConnection(Leaderboards.KO_URL)) {
-			ResultSet res = conn.createStatement().executeQuery(query);
-			Component leaderbaord_rows = text("Game Leaderboard\n").color(GOLD).append(text("KNOCKOFF").color(GOLD));
-			int i = 0;
-			while (res.next()) {
-				i++;
-				UUID uuid = Leaderboards.convertBytesToUUID(res.getBytes("player_uuid"));
-				Component name = Ranks.getName(Bukkit.getOfflinePlayer(uuid));
-				Component num = Leaderboards.get_styles(i);
-				leaderbaord_rows = leaderbaord_rows.append(text("\n")).append(num);
-				leaderbaord_rows = leaderbaord_rows.append(name).append(text(" - ").color(GRAY));
-				leaderbaord_rows = leaderbaord_rows.append(text("" + res.getInt("SUM(games_won)")).color(GREEN));
-			}
-			return leaderbaord_rows;
-		} catch (SQLException e) {
-			//Bukkit.getLogger().warning("error opening database: " + e);
-			return null;
-		}
-	}
-
-	private Component generate_cb_text() {
-		// was_winner -> games_won
-		// TODO this is completely invisible in-game, no idea why so that needs to be
-		// sorted out
-
-		String query = "SELECT player_uuid, SUM(games_won) FROM CbGamesPlayers GROUP BY player_uuid ORDER BY SUM(games_won) DESC LIMIT 10;";
-		try (Connection conn = DriverManager.getConnection(Leaderboards.CB_URL)) {
-			ResultSet res = conn.createStatement().executeQuery(query);
-			Component leaderbaord_rows = text("Game Leaderboard\n").color(LIGHT_PURPLE).append(text("CRYSTAL BLITZ").color(LIGHT_PURPLE));
-			NavigableMap<Integer, TextComponent> names = Collections.emptyNavigableMap();
-
-			while (res.next()) {
-				UUID uuid = Leaderboards.convertBytesToUUID(res.getBytes("player_uuid"));
-				Component name = Ranks.getName(Bukkit.getOfflinePlayer(uuid));
-				int wins = res.getInt("SUM(games_won)");
-				names.put(wins, (TextComponent)name);
-			}
-
-			names.descendingMap();
-			TextComponent longest = names.firstEntry().getValue();
-			Integer key = names.firstKey();
-			for(int j = 1; j <= names.size(); j++){
-				if(balance(names.lowerEntry(key).getValue().content()) > balance(longest.content())){
-					longest = names.lowerEntry(key).getValue();
-				}
-				key = names.lowerKey(key);
-			}
-
-			key = names.firstKey();
-			int total = balance(longest.content()) + 3;
-
-			int i = 0;
-			for(int j = 1; j <= names.size(); j++){
-				i++;
-				int padding = total - (balance(names.get(key).content()) + balance("" + key));
-				String dots = ".".repeat(padding);
-				Component num = Leaderboards.get_styles(i);
-				leaderbaord_rows = leaderbaord_rows.append(text("\n")).append(num);
-				leaderbaord_rows = leaderbaord_rows.append(names.get(key)).append(text(dots).color(GRAY));
-				leaderbaord_rows = leaderbaord_rows.append(text("" + key)).color(GREEN);
-				key = names.lowerKey(key);
-			}
-			return leaderbaord_rows;
-		} catch (SQLException e) {
-			//Bukkit.getLogger().warning("error opening database: " + e);
-			return null;
-		}
+		p.showEntity(Lobby_plugin.getInstance(), display);
 	}
 
 	public static Component generateText(Player p, String type){
-		String db = null;
-		String url = null;
-		switch (type) {
-			case "ls":
-				db = LS_DB;
-				url = Leaderboards.LS_URL;
-				break;
-			case "ko":
-				db = KO_DB;
-				url = Leaderboards.KO_URL;
-				break;
-			case "cb":
-				db = CB_DB;
-				url = Leaderboards.CB_URL;
-				break;
-		}
-		if(db == null){
+		GameType t = GameType.findType(type);
+
+		if(t == null){
 			return text("null");
 		}
-		String query = "SELECT player_uuid, SUM(games_won) FROM " + db + " GROUP BY player_uuid ORDER BY SUM(games_won) DESC;";
-		try (Connection conn = DriverManager.getConnection(url)) {
+
+		String query = "SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + ";";
+		try (Connection conn = DriverManager.getConnection(t.url)) {
+
 			ResultSet res = conn.createStatement().executeQuery(query);
 
-			Component leaderboard_rows = text("");
-			switch (type) {
-				case "ls":
-					leaderboard_rows = LS_TITLE;
-					break;
-				case "ko":
-					leaderboard_rows = KO_TITLE;
-					break;
-				case "cb":
-					leaderboard_rows = CB_TITLE;
-					break;
-			}
+			Component leaderboard_rows = text("Game Leaderboard\n").color(GOLD).append(t.title);
 
-			NavigableMap<Integer, TextComponent> names = Collections.emptyNavigableMap();
+			NavigableMap<Integer, TextComponent> names = new TreeMap<>();
 			Integer rank = null;
 			Integer win = null;
 
@@ -279,7 +159,7 @@ class WinLeaderboard {
 				h++;
 				UUID uuid = Leaderboards.convertBytesToUUID(res.getBytes("player_uuid"));
 				Component name = Ranks.getName(Bukkit.getOfflinePlayer(uuid));
-				int wins = res.getInt("SUM(games_won)");
+				int wins = res.getInt("SUM(" + t.dbColumn + ")");
 				names.put(wins, (TextComponent)name);
 
 				if(Bukkit.getOfflinePlayer(uuid).equals(p)){
@@ -292,6 +172,9 @@ class WinLeaderboard {
 			TextComponent longest = names.firstEntry().getValue();
 			Integer key = names.firstKey();
 			for(int j = 1; j <= 10 && j <= names.size(); j++){
+				if(names.lowerEntry(key) == null){
+					break;
+				}
 				if(balance(names.lowerEntry(key).getValue().content()) > balance(longest.content())){
 					longest = names.lowerEntry(key).getValue();
 				}
@@ -303,7 +186,7 @@ class WinLeaderboard {
 			}
 
 			key = names.firstKey();
-			int total = balance(longest.content()) + 3;
+			int total = balance(longest.content()) + 9;
 
 			int i = 0;
 			for(int j = 1; j <= names.size(); j++){
@@ -321,8 +204,8 @@ class WinLeaderboard {
 				return leaderboard_rows;
 			}
 
-			leaderboard_rows.append(text("\n")).append(text("-----------------").color(GRAY));
-			int padding = total - (balance(((TextComponent)Ranks.getName(p)).content() + balance("" + win)));
+			leaderboard_rows = leaderboard_rows.append(text("\n")).append(text("-----------------").color(GRAY));
+			int padding = total - (balance(((TextComponent)Ranks.getName(p)).content()) + balance("" + win));
 			String dots = ".".repeat(padding);
 			Component num = Leaderboards.get_styles(rank);
 			leaderboard_rows = leaderboard_rows.append(text("\n")).append(num);
@@ -331,7 +214,7 @@ class WinLeaderboard {
 
 			return leaderboard_rows;
 		} catch (SQLException e) {
-			Bukkit.getLogger().warning("error opening database: " + e);
+			//Bukkit.getLogger().warning("error opening database: " + e);
 			return null;
 		}
 	}
@@ -373,4 +256,32 @@ class WinLeaderboard {
 		return sum / 2;
 	}
 
+	enum GameType{
+		LS("ls", Leaderboards.LS_URL, "LsGamesPlayers", "was_winner", text("LITESTRIKE\n").color(GREEN).decoration(BOLD, true)),
+		KO("ko", Leaderboards.KO_URL, "KoGamesPlayers", "games_won", text("KNOCKOFF\n").color(GOLD).decoration(BOLD, true)),
+		CB("cb", Leaderboards.CB_URL, "CbGamesPlayers", "games_won", text("CRYSTAL BLITZ\n").color(LIGHT_PURPLE).decoration(BOLD, true));
+
+		final String key;
+		final String url;
+		final String dbName;
+		final String dbColumn;
+		final Component title;
+
+		GameType(String key, String url, String dbName, String dbColumn, Component title){
+			this.key = key;
+			this.url = url;
+			this.dbName = dbName;
+			this.dbColumn = dbColumn;
+			this.title = title;
+		}
+
+		public static GameType findType(String type){
+			for(GameType t : GameType.values()){
+				if(t.key.equals(type)){
+					return t;
+				}
+			}
+			return null;
+		}
+	}
 }
