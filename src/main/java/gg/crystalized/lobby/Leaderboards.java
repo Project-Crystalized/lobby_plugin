@@ -143,9 +143,8 @@ class WinLeaderboard {
 			return text("null");
 		}
 
-		String query = "SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + ";";
 		try (Connection conn = DriverManager.getConnection(t.url)) {
-
+			String query = "SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + "GROUP BY player_uuid;";
 			ResultSet res = conn.createStatement().executeQuery(query);
 
 			Component leaderboard_rows = text("Game Leaderboard\n").color(GOLD).append(t.title);

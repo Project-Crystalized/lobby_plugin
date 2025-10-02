@@ -41,15 +41,4 @@ public class LsStats {
         }
         return done;
     }
-
-    public static ItemStack[] createLifetimeItems(OfflinePlayer p){
-
-        ItemStack games = new ItemStack(Material.COAL);
-        ItemMeta games_meta = games.getItemMeta();
-        games_meta.displayName(Component.text("Total games played: ").color(GREEN).decoration(BOLD, true));
-        ArrayList<Component> games_lore = new ArrayList<>();
-        games_lore.add(Component.text(""));
-        //TODO
-        return null;
-    }
 }

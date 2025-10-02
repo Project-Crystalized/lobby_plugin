@@ -55,4 +55,25 @@ public class StatsDatabase {
             return null;
         }
     }
+
+    public static Integer getValueByName(String name, Integer gameId, OfflinePlayer p, StatType type){
+        try(Connection conn = DriverManager.getConnection(type.url)){
+            String query = "SELECT " + name + " FROM " + type.playerDB + " WHERE player_uuid = ? AND game_id = ?";
+            if(gameId == null){
+                name = "SUM(" + name + ")";
+              query = "SELECT " + name + " FROM " + type.playerDB + " WHERE player_uuid = ?";
+            }
+            PreparedStatement prep = conn.prepareStatement(query);
+            prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
+            if(gameId == null){
+                prep.setInt(2, gameId);
+            }
+            ResultSet set = prep.executeQuery();
+            set.next();
+            return set.getInt(name);
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            return null;
+        }
+    }
 }
