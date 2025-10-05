@@ -135,7 +135,7 @@ public class Ranks {
         display.setAlignment(CENTER);
         display.setBillboard(Display.Billboard.CENTER);
         display.setPersistent(false);
-        display.getPersistentDataContainer().set(new NamespacedKey("crystalized", "nametag"), PersistentDataType.STRING, "nametag");
+        display.getPersistentDataContainer().set(new NamespacedKey("crystalized", "nametag"), PersistentDataType.STRING, p.getName() + "_nametag");
         p.hideEntity(Lobby_plugin.getInstance(), display);
         p.addPassenger(display);
     }
@@ -158,36 +158,6 @@ public class Ranks {
     }
 
     public static void orderList(){
-        /*
-        ArrayList<String> sameRank = new ArrayList<>();
-        ArrayList<Player> allRanks = new ArrayList<>();
-        for(Player p : Bukkit.getOnlinePlayers()){
-            if(getRank(p) == getRank(player)){
-                sameRank.add(p.getName());
-            }
-            allRanks.add(p);
-        }
-        int place;
-        int size;
-        if(sameRank.size() == 1){
-            allRanks.sort(Comparator.comparingInt(Ranks::getRank));
-            allRanks.forEach(p -> Bukkit.getLogger().warning(p.getName()));
-            place = allRanks.indexOf(player);
-            size = allRanks.size();
-        }else{
-            sameRank.sort(null);
-            place = sameRank.indexOf(player.getName());
-            size = sameRank.size();
-        }
-
-        for(int i = place-1; i < size; i++){
-            if(nextInLine(i) == null){
-                return;
-            }
-
-            nextInLine(i).setPlayerListOrder(i+1);
-        }
-         */
         HashMap<Integer, ArrayList<Player>> map = new HashMap<>();
         for(Player p : Bukkit.getOnlinePlayers()){
             if(!map.containsKey(getRank(p))){
