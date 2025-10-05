@@ -142,61 +142,50 @@ class WinLeaderboard {
 		if(t == null){
 			return text("null");
 		}
-
 		try (Connection conn = DriverManager.getConnection(t.url)) {
-			String query = "SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + "GROUP BY player_uuid;";
+			String query = "SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + " GROUP BY player_uuid ORDER BY SUM(" + t.dbColumn + ") DESC;";
 			ResultSet res = conn.createStatement().executeQuery(query);
 
 			Component leaderboard_rows = text("Game Leaderboard\n").color(GOLD).append(t.title);
-
-			NavigableMap<Integer, TextComponent> names = new TreeMap<>();
+			ArrayList<Integer> topKey = new ArrayList<>();
+			HashMap<Integer, TextComponent> top = new HashMap<>();
 			Integer rank = null;
 			Integer win = null;
 
 			int h = 0;
+			TextComponent longest = text("");
 			while (res.next()) {
 				h++;
 				UUID uuid = Leaderboards.convertBytesToUUID(res.getBytes("player_uuid"));
-				Component name = Ranks.getName(Bukkit.getOfflinePlayer(uuid));
+				TextComponent name = (TextComponent)Ranks.getName(Bukkit.getOfflinePlayer(uuid));
 				int wins = res.getInt("SUM(" + t.dbColumn + ")");
-				names.put(wins, (TextComponent)name);
+
+				if(balance(name.content()) > balance(longest.content())){
+					longest = name;
+				}
 
 				if(Bukkit.getOfflinePlayer(uuid).equals(p)){
 					win = wins;
 					rank = h;
+					if(balance(((TextComponent)Ranks.getName(p)).content()) > balance(longest.content())){
+						longest = (TextComponent)Ranks.getName(p);
+					}
+				}
+
+				if(h <= 10){
+					topKey.add(wins);
+					top.put(wins, name);
 				}
 			}
 
-			names.descendingMap();
-			TextComponent longest = names.firstEntry().getValue();
-			Integer key = names.firstKey();
-			for(int j = 1; j <= 10 && j <= names.size(); j++){
-				if(names.lowerEntry(key) == null){
-					break;
-				}
-				if(balance(names.lowerEntry(key).getValue().content()) > balance(longest.content())){
-					longest = names.lowerEntry(key).getValue();
-				}
-				key = names.lowerKey(key);
-			}
-
-			if(balance(((TextComponent)Ranks.getName(p)).content()) > balance(longest.content())){
-				longest = (TextComponent)Ranks.getName(p);
-			}
-
-			key = names.firstKey();
-			int total = balance(longest.content()) + 9;
-
-			int i = 0;
-			for(int j = 1; j <= names.size(); j++){
-				i++;
-				int padding = total - (balance(names.get(key).content()) + balance("" + key));
+			int total = balance(longest.content() + "......");
+			for(int j = 0; j <= topKey.size()-1; j++){
+				int padding = total - (balance(top.get(topKey.get(j)).content()) + balance("" + topKey.get(j)));
 				String dots = ".".repeat(padding);
-				Component num = Leaderboards.get_styles(i);
+				Component num = Leaderboards.get_styles(j+1);
 				leaderboard_rows = leaderboard_rows.append(text("\n")).append(num);
-				leaderboard_rows = leaderboard_rows.append(names.get(key)).append(text(dots).color(GRAY));
-				leaderboard_rows = leaderboard_rows.append(text("" + key)).color(GREEN);
-				key = names.lowerKey(key);
+				leaderboard_rows = leaderboard_rows.append(top.get(topKey.get(j))).append(text(dots).color(GRAY));
+				leaderboard_rows = leaderboard_rows.append(text("" + topKey.get(j))).color(GREEN);
 			}
 
 			if(rank == null){
