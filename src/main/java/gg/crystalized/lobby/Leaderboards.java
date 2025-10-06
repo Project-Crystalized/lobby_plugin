@@ -155,9 +155,12 @@ class WinLeaderboard {
 			int h = 0;
 			TextComponent longest = text("");
 			while (res.next()) {
-				h++;
 				UUID uuid = Leaderboards.convertBytesToUUID(res.getBytes("player_uuid"));
 				TextComponent name = (TextComponent)Ranks.getName(Bukkit.getOfflinePlayer(uuid));
+				if(top.containsValue(name)){
+					continue;
+				}
+				h++;
 				int wins = res.getInt("SUM(" + t.dbColumn + ")");
 
 				if(balance(name.content()) > balance(longest.content())){

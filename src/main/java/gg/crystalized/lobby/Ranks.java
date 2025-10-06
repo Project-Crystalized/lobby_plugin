@@ -171,7 +171,7 @@ public class Ranks {
             }
         }
 
-        int i = 0;
+        int i = 1;
 
         for(int in = 10; in >= 1; in--){
             if(!map.containsKey(in)){
