@@ -6,15 +6,13 @@ import java.util.*;
 import java.util.logging.Level;
 
 import net.kyori.adventure.text.TextComponent;
-import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.entity.Display.Billboard;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import net.kyori.adventure.text.Component;
@@ -93,22 +91,26 @@ public class Leaderboards {
 class WinLeaderboard {
 
 	public WinLeaderboard(String type, Location loc) {
-		/*
-		for(Player p : Bukkit.getOnlinePlayers()) {
-			createDisplay(p, loc, type);
-		}
-		 */
-		new BukkitRunnable() {
 
+		for(TextDisplay display : loc.getNearbyEntitiesByType(TextDisplay.class, 2.0)){
+			if(display.getPersistentDataContainer().get(new NamespacedKey("crystalized", "leaderboard"), PersistentDataType.STRING) == null){
+				continue;
+			}
+
+			if(display.getPersistentDataContainer().get(new NamespacedKey("crystalized", "leaderboard"), PersistentDataType.STRING).contains("_leaderboard")){
+				display.remove();
+			}
+		}
+
+		new BukkitRunnable() {
 			@Override
 			public void run() {
 				for(Player p : Bukkit.getOnlinePlayers()) {
-					Optional<TextDisplay> opt = loc.getNearbyEntitiesByType(TextDisplay.class, 2.0).stream().findAny();
-					if(!opt.isPresent()){
+					TextDisplay	display = findDisplay(p, loc);
+					if(display == null){
 						createDisplay(p, loc, type);
 						continue;
 					}
-					TextDisplay	display = opt.get();
 					display.teleport(loc);
 					display.text(generateText(p, type));
 					display.setShadowed(true);
@@ -130,10 +132,24 @@ class WinLeaderboard {
 		display.setShadowed(true);
 		display.setBillboard(Billboard.CENTER);
 		display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
+		display.getPersistentDataContainer().set(new NamespacedKey("crystalized", "leaderboard"), PersistentDataType.STRING, p.getName() + "_leaderboard");
 		for (Player player : Bukkit.getOnlinePlayers()) {
 			player.hideEntity(Lobby_plugin.getInstance(), display);
 		}
 		p.showEntity(Lobby_plugin.getInstance(), display);
+	}
+
+	static TextDisplay findDisplay(Player p, Location loc){
+		for(TextDisplay display : loc.getNearbyEntitiesByType(TextDisplay.class, 2.0)){
+			if(display.getPersistentDataContainer().get(new NamespacedKey("crystalized", "leaderboard"), PersistentDataType.STRING) == null){
+				continue;
+			}
+
+			if(display.getPersistentDataContainer().get(new NamespacedKey("crystalized", "leaderboard"), PersistentDataType.STRING).equals(p.getName() + "_leaderboard")){
+				return display;
+			}
+		}
+		return null;
 	}
 
 	public static Component generateText(Player p, String type){
@@ -147,8 +163,8 @@ class WinLeaderboard {
 			ResultSet res = conn.createStatement().executeQuery(query);
 
 			Component leaderboard_rows = text("Game Leaderboard\n").color(GOLD).append(t.title);
-			ArrayList<Integer> topKey = new ArrayList<>();
-			HashMap<Integer, TextComponent> top = new HashMap<>();
+			ArrayList<TextComponent> topKey = new ArrayList<>();
+			HashMap<TextComponent, Integer> top = new HashMap<>();
 			Integer rank = null;
 			Integer win = null;
 
@@ -176,19 +192,20 @@ class WinLeaderboard {
 				}
 
 				if(h <= 10){
-					topKey.add(wins);
-					top.put(wins, name);
+					topKey.add(name);
+					top.put(name, wins);
 				}
 			}
 
-			int total = balance(longest.content() + "......");
+			int total = balance(longest.content() + "......" + "1000000");
 			for(int j = 0; j <= topKey.size()-1; j++){
-				int padding = total - (balance(top.get(topKey.get(j)).content()) + balance("" + topKey.get(j)));
+				int padding = total - (balance(topKey.get(j).content()) + balance("" + top.get(topKey.get(j))));
+				//Bukkit.getLogger().warning(type + ": " + top.get(topKey.get(j)).content());
 				String dots = ".".repeat(padding);
 				Component num = Leaderboards.get_styles(j+1);
 				leaderboard_rows = leaderboard_rows.append(text("\n")).append(num);
-				leaderboard_rows = leaderboard_rows.append(top.get(topKey.get(j))).append(text(dots).color(GRAY));
-				leaderboard_rows = leaderboard_rows.append(text("" + topKey.get(j))).color(GREEN);
+				leaderboard_rows = leaderboard_rows.append(topKey.get(j)).append(text(dots).color(GRAY));
+				leaderboard_rows = leaderboard_rows.append(text("" + top.get(topKey.get(j)))).color(GREEN);
 			}
 
 			if(rank == null){

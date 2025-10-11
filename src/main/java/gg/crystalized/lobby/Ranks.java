@@ -136,8 +136,8 @@ public class Ranks {
         display.setBillboard(Display.Billboard.CENTER);
         display.setPersistent(false);
         display.getPersistentDataContainer().set(new NamespacedKey("crystalized", "nametag"), PersistentDataType.STRING, p.getName() + "_nametag");
-        p.hideEntity(Lobby_plugin.getInstance(), display);
         p.addPassenger(display);
+        p.hideEntity(Lobby_plugin.getInstance(), display);
     }
 
     public static void renderTabList(Player p){
