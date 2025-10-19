@@ -70,6 +70,7 @@ public class InventoryManager implements Listener {
 
         if(item == null){
             p.playSound(p, "crystalized:effect.scn3.click_basic", 1, 1);
+            /*
             App app = null;
             for(App a : App.values()){
                 if(a.slot != null && event.getSlot() == a.slot && a.self == null){
@@ -78,12 +79,7 @@ public class InventoryManager implements Listener {
                 }
             }
             if(app == null) return;
-            if(app.slot != 20) {
-                doScrolling(app, p, event.getView());
-                return;
-            }
-            goBack(identifyInv(event.getView()), p);
-            return;
+             */
         } else {
             p.playSound(p, "crystalized:effect.scn3.click", 1, 1); //assuming the item we have we're supposed to click on - Callum
         }
@@ -129,10 +125,21 @@ public class InventoryManager implements Listener {
                 Setting.changeSettings(app, p, event.getSlot());
                 return;
             }
+            if(app.toString().toLowerCase().contains("scroll")) {
+                doScrolling(app, p, event.getView());
+                return;
+            }
+            if(app.equals(App.Back)){
+                goBack(p);
+                return;
+            }
+            if(app.equals(App.Home)){
+                home(p);
+                return;
+            }
             app.action((Player) event.getWhoClicked());
         }else if(Cosmetic.identifyCosmetic(item) != null){
-            event.getInventory().setItem(event.getSlot(), Cosmetic.identifyCosmetic(item).build(!Cosmetic.identifyCosmetic(item).isWearing(p), false));
-            Cosmetic.identifyCosmetic(item).clicked(event.getClick(), p, event.getView()); //TODO
+            Cosmetic.identifyCosmetic(item).clicked(event.getClick(), p, event.getView());
         }else{
             App.useCases use = identifyInv(event.getView());
             if(use == null){
@@ -213,7 +220,7 @@ public class InventoryManager implements Listener {
 
     public static App.useCases identifyInv(InventoryView inv){
         for(App a : App.values()){
-            if(inv.title().equals(text("\uA000\uA00A"))){
+            if(inv.title().equals(Component.text("\uA000\uA00A").color(WHITE))){
                 return App.useCases.ShopPage;
             }
             if(!(a.extra instanceof String)){
@@ -289,7 +296,7 @@ public class InventoryManager implements Listener {
                 return;
             }
             int i = 1;
-            for(Cosmetic c : Cosmetic.values()){
+            for(Cosmetic c : Cosmetic.cosmetics){
                 if(Cosmetic.identifyCosmetic(view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(15, 51, 3, 1, 0))).equals(c)){
                     break;
                 }
@@ -307,10 +314,12 @@ public class InventoryManager implements Listener {
         }
     }
 
-    public static void goBack(App.useCases use, Player p){
-        if(use == App.useCases.ShopPage){
-            App.Shop.action(p);
-        }
+    public static void goBack(Player p){
+        App.Shop.action(p);
+    }
+
+    public static void home(Player p){
+        p.openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu, p));
     }
 
     public static boolean isLobbyInv(InventoryView view){

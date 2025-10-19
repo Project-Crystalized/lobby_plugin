@@ -130,6 +130,7 @@ public class Ranks {
 
     public static void renderNameTags(Player p){
         TextDisplay display = (TextDisplay) Bukkit.getWorld("world").spawnEntity(new Location(Bukkit.getWorld("world"), 0, 0, 0), TEXT_DISPLAY);
+        p.hideEntity(Lobby_plugin.getInstance(), display);
         Component text = getRankWithName(p).append(text("\n")).append(getColoredName(p)).append(text("\n"));
         display.text(text);
         display.setAlignment(CENTER);
@@ -137,7 +138,6 @@ public class Ranks {
         display.setPersistent(false);
         display.getPersistentDataContainer().set(new NamespacedKey("crystalized", "nametag"), PersistentDataType.STRING, p.getName() + "_nametag");
         p.addPassenger(display);
-        p.hideEntity(Lobby_plugin.getInstance(), display);
     }
 
     public static void renderTabList(Player p){

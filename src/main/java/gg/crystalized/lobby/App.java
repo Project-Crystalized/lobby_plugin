@@ -53,9 +53,12 @@ public enum App {
             "put URL to Website here"), //TODO
     ShardButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.translatable("crystalized.shardcore.shop.scn3").color(WHITE).decoration(ITALIC, false), new int[]{41, 3, 2},
             EquipmentSlot.HAND),
-    ScrollLeft("ui/invisible", new useCases[]{useCases.ShopPage, useCases.Friends}, Component.translatable("crystalized.shardcore.generic.scrollleft").color(WHITE).decoration(ITALIC, false), 21),
-    ScrollRight("ui/invisible", new useCases[]{useCases.ShopPage, useCases.Friends}, Component.translatable("crystalized.shardcore.generic.scrollright").color(WHITE).decoration(ITALIC, false), 23),
-    Back("ui/invisible", new useCases[]{useCases.ShopPage}, Component.text("Back").color(WHITE).decoration(ITALIC, false), 20),
+    ScrollLeft("ui/invisible", useCases.UI, Component.translatable("crystalized.shardcore.generic.scrollleft").color(WHITE).decoration(ITALIC, false), null),
+    ScrollRight("ui/invisible", useCases.UI, Component.translatable("crystalized.shardcore.generic.scrollright").color(WHITE).decoration(ITALIC, false), null),
+    ScrollUp("ui/invisible", useCases.UI, Component.translatable("scroll up").color(WHITE).decoration(ITALIC, false), null),
+    ScrollDown("ui/invisible", useCases.UI, Component.translatable("scroll down").color(WHITE).decoration(ITALIC, false), null),
+    Back("ui/invisible", useCases.UI, Component.text("Back").color(WHITE).decoration(ITALIC, false), null),
+    Home("ui/invisible", useCases.UI, Component.translatable("Home").color(WHITE).decoration(ITALIC, false), null),
     Requeue("ui/replay", useCases.Demand, Component.text("Requeue").color(WHITE).decoration(ITALIC, false), 7),
     BackToHub("ui/leave", useCases.Demand, Component.text("Return to Lobby").color(WHITE).decoration(ITALIC, false), 8),
     MsgSetting("ui/scn3/settings/msg", useCases.Set, new useCases[]{useCases.Settings}, Component.text("Allow direct messages").color(WHITE).decoration(ITALIC, false), 30, "dms"),
@@ -88,7 +91,8 @@ public enum App {
         Set,
         Achievements,
         Hotbar,
-        Demand,
+        UI,
+        Demand
     }
     final String model;
     useCases self;
@@ -117,14 +121,14 @@ public enum App {
         this.extra = extra;
     }
 
-    App(String model, useCases[] uses, Component name, int slot){
+    App(String model, useCases[] uses, Component name, Integer slot){
         this.model = model;
         this.uses = uses;
         this.name = name;
         this.slot = slot;
     }
 
-    App(String model, useCases use, Component name, int slot){
+    App(String model, useCases use, Component name, Integer slot){
         this.model = model;
         this.use = use;
         this.name = name;
@@ -181,7 +185,8 @@ public enum App {
 
     public static Inventory prepareInv(String name, int slots, useCases use, Player p){
         Inventory inv = Bukkit.getServer().createInventory(null, slots, Component.text(name).color(WHITE));
-        App.buildApps(inv, use, p);
+        UITemplates.createUI(inv, use);
+        buildApps(inv, use, p);
         return inv;
     }
 
@@ -194,6 +199,8 @@ public enum App {
                 queue = "litestrike";
             }else if(plugins.contains("Knockoff")){
                 queue = "knockoff";
+            }else if(plugins.contains("Crystal_blitz")){
+                queue = "crystalblitz";
             }
 
             if(queue == null){
@@ -240,6 +247,62 @@ public enum App {
                 Profile.prepareProfile(p, inv, p);
             }
             p.openInventory(inv);
+        }
+    }
+
+    enum UITemplates{
+        normal(null, null, null, null, null, null),
+        shop(21, 23,null, null, null,20),
+        friends(21, 23, null, null, 20, null),
+        settings(null, null, 20, 29, 47, null),
+        profile(null, null, null, null, 51, null);
+        final Integer scrollLeft;
+        final Integer scrollRight;
+        final Integer scrollUp;
+        final Integer scrollDown;
+        final Integer home;
+        final Integer goBack;
+        UITemplates(Integer scrollLeft, Integer scrollRight, Integer scrollUp, Integer scrollDown, Integer home, Integer goBack){
+            this.scrollLeft = scrollLeft;
+            this.scrollRight = scrollRight;
+            this.scrollUp = scrollUp;
+            this.scrollDown = scrollDown;
+            this.home = home;
+            this.goBack = goBack;
+        }
+
+        public static void createUI(Inventory inv, useCases use){
+            if(use == useCases.ShopPage){
+                shop.placeUI(inv);
+            }else if(use == useCases.Friends){
+                friends.placeUI(inv);
+            }else if(use == useCases.Settings){
+                settings.placeUI(inv);
+            }else if(use == useCases.Profiles){
+                profile.placeUI(inv);
+            }else{
+                normal.placeUI(inv);
+            }
+        }
+        public void placeUI(Inventory inv){
+            if(scrollLeft != null){
+                inv.setItem(scrollLeft, App.ScrollLeft.build());
+            }
+            if(scrollRight != null){
+                inv.setItem(scrollRight, App.ScrollRight.build());
+            }
+            if(scrollUp != null){
+                inv.setItem(scrollUp, App.ScrollUp.build());
+            }
+            if(scrollDown != null){
+                inv.setItem(scrollDown, App.ScrollDown.build());
+            }
+            if(home != null){
+                inv.setItem(home, App.Home.build());
+            }
+            if(goBack != null){
+                inv.setItem(goBack, App.Back.build());
+            }
         }
     }
 }

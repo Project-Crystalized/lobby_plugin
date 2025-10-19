@@ -176,7 +176,7 @@ public class LobbyDatabase {
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("INSERT INTO Cosmetics(player_uuid, cosmetic_id, currently_wearing) VALUES(?, ?, ?)");
             prep.setBytes(1, uuid_to_bytes(p));
-            prep.setInt(2, c.ordinal());
+            prep.setInt(2, c.id);
             int i = 0;
             if(wearing){
                 i = 1;
@@ -199,7 +199,7 @@ public class LobbyDatabase {
             }
             prep.setInt(1, i);
             prep.setBytes(2, uuid_to_bytes(p));
-            prep.setInt(3, c.ordinal());
+            prep.setInt(3, c.id);
             prep.executeUpdate();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());

@@ -57,7 +57,7 @@ public final class PlayerListener implements Listener {
 
 		if(!LobbyDatabase.isPlayerInDatabase(p)){
 			LobbyDatabase.makeNewLobbyPlayersEntry(p);
-			LobbyDatabase.addCosmetic(p, Cosmetic.BLUE_SHARDCORE, true);
+			LobbyDatabase.addCosmetic(p, Cosmetic.getCosmeticById(6), true);
 			LobbyDatabase.makeNewSettingsEntry(p);
 			//TODO Tutorial here maybe?
 		}
@@ -92,7 +92,7 @@ public final class PlayerListener implements Listener {
 			LevelManager.giveMoney(p, (Integer) map.get("money_amount"));
 		}
 		InventoryManager.giveLobbyItems(p);
-		for(Cosmetic c : Cosmetic.values()){
+		for(Cosmetic c : Cosmetic.cosmetics){
 			if(c.isWearing(p) && c.slot != EquipmentSlot.HAND){
 				p.sendEquipmentChange(p, c.slot, c.build(true, false));
 			}

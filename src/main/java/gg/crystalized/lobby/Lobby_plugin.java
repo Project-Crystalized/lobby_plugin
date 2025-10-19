@@ -2,6 +2,8 @@ package gg.crystalized.lobby;
 
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import gg.crystalized.lobby.minigames.CrystalizedChess;
 import gg.crystalized.lobby.minigames.CrystalizedChessListener;
 import net.kyori.adventure.text.Component;
@@ -57,6 +59,8 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 			return;
 		}
 
+		saveResource("cosmetics.json", false);
+		Cosmetic.createCosmetics(getResource("cosmetics.json"));
 		EntityRefresh.setupEntityRefresh();
 
 		this.getCommand("chess").setExecutor(dc);

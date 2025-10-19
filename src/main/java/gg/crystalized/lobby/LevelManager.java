@@ -59,7 +59,7 @@ public class LevelManager implements Listener {
         p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, SoundCategory.AMBIENT, 1, 1); //TODO add better soundeffect
         p.sendActionBar(Component.text("LEVEL UP!").color(AQUA).decoration(BOLD, true)); //TODO make a better like thing for this idk how to call it
 
-        for(Cosmetic c : Cosmetic.values()){
+        for(Cosmetic c : Cosmetic.cosmetics){
             if(c.obtainableLevel == null){
                 continue;
             }

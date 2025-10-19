@@ -1,0 +1,13 @@
+{
+  "HEADPHONES": {"id": 1, "model": "cosmetic/head/headphones", "level": 1, "price": null, "slot": "HEAD", "name": ""},
+  "BEANIE": {"id": 2, "model": "cosmetic/head/beanie", "level": 10, "price": null, "slot": "HEAD", "name": ""},
+  "FOX_BERET": {"id": 3, "model": "cosmetic/head/fox_beret", "level": null, "price": 50, "slot": "HEAD", "name": ""},
+  "COWBOY_HAT": {"id": 4, "model": "cosmetic/head/merica", "level": null, "price": 150, "slot": "HEAD", "name": ""},
+  "HANDBAG": {"id": 5, "model": "cosmetic/handheld/handbag", "level": null, "price": 200, "slot": "OFF_HAND", "name": ""},
+  "BLUE_SHARDCORE": {"id": 6, "model": "shardcorenexus3/blue", "level": null, "price": 200, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/blue"},
+  "GRAY_SHARDCORE": {"id": 7, "model": "shardcorenexus3/gray", "level": null, "price": 200, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/gray"},
+  "PURPLE_SHARDCORE": {"id": 8, "model": "shardcorenexus3/purple", "level": null, "price": 200, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/purple"},
+  "AUGUST_SHARDCORE": {"id": 9, "model": "shardcorenexus3/augustify", "level": null, "price": 200, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/augustify"},
+  "ABBY1_SHARDCORE": {"id": 10, "model": "shardcorenexus3/abby1", "level": null, "price": 200, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/abby1"},
+  "SHADOW1_SHARDCORE": {"id": 11, "model": "shardcorenexus3/shadow1", "level": null, "price": 200, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/shadow1"}
+}

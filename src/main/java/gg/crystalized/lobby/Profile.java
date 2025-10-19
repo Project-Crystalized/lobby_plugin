@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
+import static gg.crystalized.lobby.Cosmetic.cosmetics;
 import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
 import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
@@ -46,16 +47,14 @@ public class Profile {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't set head in player profile");
         }
-        /*
-        for(Cosmetic c : Cosmetic.values()){
+
+        for(Cosmetic c : cosmetics){
             if(c.isWearing(p) && c.ownsCosmetic(viewer)){
-                inv.setItem(getCosmeticSlot(c), c.build(c.isWearing(viewer), true));
-            }else{
-                inv.setItem(getCosmeticSlot(c), c.build(null, true));
+                inv.setItem(getCosmeticSlot(c), c.build(c.isWearing(viewer), false));
+            }else if(c.isWearing(p)){
+                inv.setItem(getCosmeticSlot(c), c.build(null, false));
             }
         }
-
-         */
 
         //TODO statistics (21,22,23,24)
 
