@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 
 public class LobbyDatabase {
     public static final String URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/lobby_db.sql";
@@ -174,7 +175,7 @@ public class LobbyDatabase {
 
     public static void addCosmetic(Player p, Cosmetic c, boolean wearing){
         try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("INSERT INTO Cosmetics(player_uuid, cosmetic_id, currently_wearing) VALUES(?, ?, ?)");
+            PreparedStatement prep = conn.prepareStatement("INSERT INTO Cosmetics(player_uuid, cosmetic_id, currently_wearing) VALUES(?, ?, ?);");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setInt(2, c.id);
             int i = 0;
@@ -192,7 +193,7 @@ public class LobbyDatabase {
     // 1 = true
     public static void cosmeticSetWearing(Player p, Cosmetic c, boolean wearing){
         try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("UPDATE Cosmetics SET currently_wearing = ? WHERE player_uuid = ? AND cosmetic_id = ?");
+            PreparedStatement prep = conn.prepareStatement("UPDATE Cosmetics SET currently_wearing = ? WHERE player_uuid = ? AND cosmetic_id = ?;");
             int i = 0;
             if(wearing){
                i = 1;
@@ -387,6 +388,63 @@ public class LobbyDatabase {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't check excistence in database for " + p.getName() + " UUID: " + p.getUniqueId());
             return false;
+        }
+    }
+
+    public static boolean ownsCosmetic(OfflinePlayer p, Cosmetic c){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT COUNT(*) AS count FROM Cosmetics WHERE player_uuid = ? AND cosmetic_id = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            prep.setInt(2, c.id);
+            if(prep.executeQuery().getInt("count") > 0){
+                return true;
+            }
+            return false;
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't whether player owns cosmetic");
+            return false;
+        }
+    }
+
+    public static boolean isWearing(OfflinePlayer p, Cosmetic c){
+        if(!ownsCosmetic(p, c)){
+            return false;
+        }
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT currently_wearing FROM Cosmetics WHERE player_uuid = ? AND cosmetic_id = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            prep.setInt(2, c.id);
+            if(prep.executeQuery().getInt("currently_wearing") == 1){
+                return true;
+            }
+            return false;
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't whether player owns cosmetic");
+            return false;
+        }
+    }
+
+    public static Cosmetic getShardcore(OfflinePlayer p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT cosmetic_id FROM Cosmetics WHERE player_uuid = ? AND currently_wearing = 1;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            ResultSet set = prep.executeQuery();
+            while(set.next()){
+                if(Cosmetic.getCosmeticById(set.getInt("cosmetic_id")) == null){
+                    continue;
+                }
+
+                if(Cosmetic.getCosmeticById(set.getInt("cosmetic_id")).slot == EquipmentSlot.HAND){
+                    return Cosmetic.getCosmeticById(set.getInt("cosmetic_id"));
+                }
+            }
+            return null;
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't couldn't get shardcore");
+            return null;
         }
     }
 

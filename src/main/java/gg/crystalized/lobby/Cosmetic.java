@@ -3,18 +3,24 @@ package gg.crystalized.lobby;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.papermc.paper.entity.LookAnchor;
+import net.citizensnpcs.api.CitizensAPI;
+import net.citizensnpcs.api.npc.NPC;
+import net.citizensnpcs.api.trait.trait.Equipment;
+import net.citizensnpcs.trait.MirrorTrait;
+import net.citizensnpcs.trait.SkinTrait;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -22,11 +28,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static io.papermc.paper.entity.TeleportFlag.EntityState.RETAIN_PASSENGERS;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
+import static org.bukkit.event.inventory.InventoryType.SlotType.ARMOR;
 
 public class Cosmetic {
+    public static final int DEFAULT_SHARDCORE = 6;
     public static ArrayList<Cosmetic> cosmetics = new ArrayList<>();
     final int id;
     final String itemModel;
@@ -139,7 +148,7 @@ public class Cosmetic {
     // 1 = true
     public static Cosmetic identifyCosmetic(ItemStack item) {
         for (Cosmetic c : cosmetics) {
-            if (item.getItemMeta() == null) {
+            if (item == null || item.getItemMeta() == null) {
                 continue;
             }
             if (Objects.equals(item.getItemMeta().getItemModel(), new NamespacedKey("crystalized", c.itemModel))) {
@@ -150,43 +159,15 @@ public class Cosmetic {
     }
 
     public boolean isWearing(OfflinePlayer p) {
-        if (!ownsCosmetic(p)) {
-            return false;
-        }
-        ArrayList<Object[]> list = LobbyDatabase.fetchCosmetics(p);
-        boolean wear = false;
-        for (Object[] o : list) {
-            if ((Integer) o[1] != id) {
-                continue;
-            }
-            if ((Integer) o[2] == 1) {
-                wear = true;
-                break;
-            }
-        }
-        return wear;
+        return LobbyDatabase.isWearing(p, this);
     }
 
     public boolean ownsCosmetic(OfflinePlayer p) {
-        ArrayList<Object[]> list = LobbyDatabase.fetchCosmetics(p);
-        boolean own = false;
-        for (Object[] o : list) {
-            if ((Integer) o[1] == id) {
-                own = true;
-                break;
-            }
-        }
-        return own;
+        return LobbyDatabase.ownsCosmetic(p, this);
     }
 
     public static Cosmetic getShardcore(Player p) {
-        ArrayList<Object[]> list = LobbyDatabase.fetchCosmetics(p);
-        for (Object[] o : list) {
-            if (cosmetics.get((Integer) o[1]).slot == EquipmentSlot.HAND && ((Integer) o[2]) == 1) {
-                return getCosmeticById((Integer) o[1]);
-            }
-        }
-        return null;
+        return LobbyDatabase.getShardcore(p);
     }
 
     public static Cosmetic getCosmeticById(int id) {
@@ -198,7 +179,15 @@ public class Cosmetic {
         return null;
     }
 
-    public void clicked(ClickType click, Player p, InventoryView view) {
+    public static void giveCosmetics(Player p){
+        for(Cosmetic c : Cosmetic.cosmetics){
+            if(c.isWearing(p) && c.slot != EquipmentSlot.HAND){
+                p.sendEquipmentChange(p, c.slot, c.build(true, false));
+            }
+        }
+    }
+
+    public void clicked(ClickType click, Player p, InventoryType.SlotType type, int slotNumber, Inventory inv) {
         if (click.isRightClick()) {
             if(!ownsCosmetic(p)) {
                 if (price == null) {
@@ -215,18 +204,169 @@ public class Cosmetic {
                 App.Shop.action(p);
             }else {
                 if (isWearing(p)) {
-                    p.sendEquipmentChange(p, slot, null);
+                    if (slot != EquipmentSlot.HAND) {
+                        p.sendEquipmentChange(p, slot, null);
+                    } else {
+                        p.getInventory().setItem(4, getCosmeticById(DEFAULT_SHARDCORE).build(false, true));
+                    }
+
                 } else {
                     if (slot != EquipmentSlot.HAND) {
                         p.sendEquipmentChange(p, slot, build(true, false));
                     } else {
-                        p.sendEquipmentChange(p, slot, build(true, true));
+                        p.getInventory().setItem(4, build(true, true));
                     }
                 }
                 LobbyDatabase.cosmeticSetWearing(p, this, !isWearing(p));
+                unEquipAllApartFrom(p);
+                if(type == ARMOR){
+                    return;
+                }
+                rebuild(inv, slotNumber, p);
             }
         } else if (click.isLeftClick()) {
-            //TODO add view feature
+            CosmeticView v = CosmeticView.getView(p);
+            if(v.isRunning()){
+                v.changeCosmetic(this);
+            }else {
+                v.startView(this);
+            }
         }
+    }
+
+    private void unEquipAllApartFrom(Player p){
+        for(Cosmetic c : cosmetics){
+            if(equals(c)){
+                continue;
+            }
+            if(slot == c.slot){
+                LobbyDatabase.cosmeticSetWearing(p, c, false);
+            }
+        }
+    }
+
+    public void rebuild(Inventory inv, int slot, Player p){
+        inv.setItem(slot, build(isWearing(p), false));
+    }
+}
+
+class CosmeticView{
+    public static ArrayList<CosmeticView> views = new ArrayList<>();
+    Player p;
+    private boolean running = false;
+    Cosmetic currentCosmetic = null;
+    NPC mannequin;
+    CosmeticView(Player player){
+        Location loc = LobbyConfig.Locations.get("clothing_room");
+        this.mannequin = CitizensAPI.getNPCRegistry().createNPC(EntityType.PLAYER, "You", loc);
+        this.p = player;
+    }
+    public void startView(Cosmetic c){
+        running = true;
+        if(c != null){
+            currentCosmetic = c;
+            mannequin.getOrAddTrait(Equipment.class).set(getEquipmentSlot(c.slot), c.build(false, false));
+        }
+        Location loc = LobbyConfig.Locations.get("clothing_room").clone();
+        SkinTrait skin = mannequin.getOrAddTrait(SkinTrait.class);
+        skin.setSkinPersistent(p);
+        skin.setSkinName(p.getName(), true);
+        mannequin.spawn(loc);
+
+        loc.setX(loc.getX() + 2);
+        p.teleport(loc, RETAIN_PASSENGERS);
+        p.lookAt(mannequin.getEntity(), LookAnchor.EYES, LookAnchor.EYES);
+        giveItems();
+        for(Player player : Bukkit.getOnlinePlayers()){
+            player.hideEntity(Lobby_plugin.getInstance(), mannequin.getEntity());
+        }
+        p.showEntity(Lobby_plugin.getInstance(), mannequin.getEntity());
+    }
+
+    public void changeCosmetic(Cosmetic c){
+        mannequin.getOrAddTrait(Equipment.class).set(getEquipmentSlot(c.slot), c.build(false, false));
+    }
+
+    public void endView(){
+        running = false;
+        views.remove(this);
+        mannequin.despawn();
+        p.setGameMode(GameMode.SURVIVAL);
+        p.teleport(LobbyConfig.Locations.get("spawn"), RETAIN_PASSENGERS);
+        p.getInventory().clear();
+        InventoryManager.giveLobbyItems(p);
+        Cosmetic.giveCosmetics(p);
+    }
+
+    public static CosmeticView getView(Player p){
+        if(findView(p) == null){
+            CosmeticView v = new CosmeticView(p);
+            CosmeticView.views.add(v);
+            return v;
+        }
+        return findView(p);
+    }
+    //TODO add ability to remove cosmetic from mannequin
+    public Inventory getWardrobe(App a, int page){
+        String titlePart = "\uA00F";
+        if(currentCosmetic != null || a != App.Wardrobe){
+            titlePart = "\uA010";
+        }
+
+        if(titlePart.equals("\uA00F")){
+            return App.prepareInv("\uA000" + titlePart, 54, App.useCases.Wardrobe, p);
+        }
+
+        Inventory inv = Bukkit.createInventory(null, 54, Component.text("\uA000" + titlePart).color(WHITE));
+        App.UITemplates.createUI(inv, App.useCases.ShopPage);
+        int i = (page - 1) * 15;
+        EquipmentSlot slot = (EquipmentSlot)a.extra;
+        if(currentCosmetic != null){
+            slot = currentCosmetic.slot;
+        }
+        for (Cosmetic c : Cosmetic.cosmetics) {
+            if (c.slot != slot || !c.ownsCosmetic(p)) {
+                continue;
+            }
+
+            if (InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0) != null) {
+                inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), c.build(LobbyDatabase.isWearing(p,c), false));
+            } else {
+                break;
+            }
+            i++;
+        }
+        return inv;
+    }
+
+    public void giveItems(){
+        Inventory inv = p.getInventory();
+        inv.setItem(0, App.Wardrobe.build());
+        inv.setItem(1, App.Shop.build());
+        inv.clear(2);
+        inv.clear(3);
+        inv.setItem(8, App.LeaveWardrobe.build());
+    }
+
+    private static Equipment.EquipmentSlot getEquipmentSlot(EquipmentSlot slot){
+        for(Equipment.EquipmentSlot equip : Equipment.EquipmentSlot.values()){
+            if(equip.toBukkit().equals(slot)){
+                return equip;
+            }
+        }
+        return null;
+    }
+
+    public static CosmeticView findView(Player p){
+        for(CosmeticView view : views){
+            if(view.p.equals(p)){
+                return view;
+            }
+        }
+        return null;
+    }
+
+    public boolean isRunning(){
+        return running;
     }
 }

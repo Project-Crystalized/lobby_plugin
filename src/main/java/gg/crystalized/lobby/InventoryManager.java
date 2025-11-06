@@ -1,12 +1,9 @@
 package gg.crystalized.lobby;
 
-import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.TranslatableComponent;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -22,17 +19,13 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.profile.PlayerTextures;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
-import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 
 public class InventoryManager implements Listener {
@@ -80,31 +73,30 @@ public class InventoryManager implements Listener {
             }
             if(app == null) return;
              */
+
         } else {
             p.playSound(p, "crystalized:effect.scn3.click", 1, 1); //assuming the item we have we're supposed to click on - Callum
-        }
-
-
-        if(item.getType() == Material.PLAYER_HEAD && identifyInv(event.getView()) == App.useCases.Friends){
-            if(event.getSlot() < 7){
-                FriendsMenu.clickedPartyMember(p, item, event.getClick());
+            if(item.getType() == Material.PLAYER_HEAD && identifyInv(event.getView()) == App.useCases.Friends){
+                if(event.getSlot() < 7){
+                    FriendsMenu.clickedPartyMember(p, item, event.getClick());
+                    return;
+                }
+                FriendsMenu.clickedFriend(item, p, event.getClick());
                 return;
             }
-            FriendsMenu.clickedFriend(item, p, event.getClick());
-            return;
-        }
 
-        if(event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(true, false)) || event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(true, true))){
-            event.getWhoClicked().openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu, (Player)event.getWhoClicked()));
-            for(int i = 0; i <= 54; i++){
-                if(p.getInventory().getItem(i) == null){
-                    continue;
+            if(event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(true, false)) || event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(true, true))){
+                event.getWhoClicked().openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu, (Player)event.getWhoClicked()));
+                for(int i = 0; i <= 54; i++){
+                    if(p.getInventory().getItem(i) == null){
+                        continue;
+                    }
+                    if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(true, false))){
+                        p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(true, true));
+                    }
                 }
-                if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(true, false))){
-                    p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(true, true));
-                }
+                return;
             }
-            return;
         }
 
         App app = App.identifyApp(item);
@@ -130,7 +122,7 @@ public class InventoryManager implements Listener {
                 return;
             }
             if(app.equals(App.Back)){
-                goBack(p);
+                goBack(identifyInv(event.getView()), p);
                 return;
             }
             if(app.equals(App.Home)){
@@ -139,15 +131,19 @@ public class InventoryManager implements Listener {
             }
             app.action((Player) event.getWhoClicked());
         }else if(Cosmetic.identifyCosmetic(item) != null){
-            Cosmetic.identifyCosmetic(item).clicked(event.getClick(), p, event.getView());
+            Cosmetic c = Cosmetic.identifyCosmetic(item);
+            c.clicked(event.getClick(), p, event.getSlotType(), event.getSlot(), event.getInventory());
         }else{
             App.useCases use = identifyInv(event.getView());
             if(use == null){
                 return;
             }
             for(App a : App.values()){
-                if(a.use == use && a.slots != null && isSlotInButton(event.getSlot(), a.slots)){
+                if(a.use == use && a.slots != null && isSlotInButton(event.getSlot(), a.slots) && use == App.useCases.Shop){
                     Cosmetic.placeCosmetics(p, a, 1);
+                    break;
+                }else if(a.use == use && a.slots != null && isSlotInButton(event.getSlot(), a.slots) && use == App.useCases.Wardrobe){
+                    p.openInventory(CosmeticView.getView(p).getWardrobe(a, 1));
                     break;
                 }
             }
@@ -219,17 +215,21 @@ public class InventoryManager implements Listener {
     }
 
     public static App.useCases identifyInv(InventoryView inv){
-        for(App a : App.values()){
-            if(inv.title().equals(Component.text("\uA000\uA00A").color(WHITE))){
-                return App.useCases.ShopPage;
+        try {
+            for (App a : App.values()) {
+                if (inv.title().equals(Component.text("\uA000\uA00A").color(WHITE))) {
+                    return App.useCases.ShopPage;
+                } else if (inv.title().equals(Component.text("\uA000\uA010").color(WHITE))) {
+                    return App.useCases.WardrobePage;
+                }
+                if (!(a.extra instanceof String)) {
+                    continue;
+                }
+                if (((TextComponent) inv.title()).content().equals(a.extra)) {
+                    return a.self;
+                }
             }
-            if(!(a.extra instanceof String)){
-                continue;
-            }
-            if(((TextComponent)inv.title()).content().equals(a.extra)){
-                return a.self;
-            }
-        }
+        }catch(ClassCastException e){}
         return null;
     }
     public static void giveLobbyItems(Player p){
@@ -287,7 +287,7 @@ public class InventoryManager implements Listener {
     //TODO this needs testing v
     public static void doScrolling(App a, Player p, InventoryView view){
         App.useCases use = identifyInv(view);
-        if(use == App.useCases.ShopPage){
+        if(use == App.useCases.ShopPage || use == App.useCases.WardrobePage){
             if(view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(0, 51, 4, 1, 0)) == null || view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(15, 51, 3, 1, 0)) == null){
                 return;
             }
@@ -314,8 +314,12 @@ public class InventoryManager implements Listener {
         }
     }
 
-    public static void goBack(Player p){
-        App.Shop.action(p);
+    public static void goBack(App.useCases use, Player p){
+        if(use == App.useCases.ShopPage) {
+            App.Shop.action(p);
+        }else if (use == App.useCases.WardrobePage){
+            App.Wardrobe.action(p);
+        }
     }
 
     public static void home(Player p){

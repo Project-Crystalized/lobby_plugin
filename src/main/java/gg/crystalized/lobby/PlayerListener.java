@@ -92,11 +92,11 @@ public final class PlayerListener implements Listener {
 			LevelManager.giveMoney(p, (Integer) map.get("money_amount"));
 		}
 		InventoryManager.giveLobbyItems(p);
-		for(Cosmetic c : Cosmetic.cosmetics){
-			if(c.isWearing(p) && c.slot != EquipmentSlot.HAND){
-				p.sendEquipmentChange(p, c.slot, c.build(true, false));
+		new BukkitRunnable(){
+			public void run(){
+				Cosmetic.giveCosmetics(p);
 			}
-		}
+		}.runTaskLater(Lobby_plugin.getInstance(), 3);
 		p.sendPlayerListHeaderAndFooter(
 				// Header
 				text("\nProject Crystalized Lobby\n").color(NamedTextColor.LIGHT_PURPLE),

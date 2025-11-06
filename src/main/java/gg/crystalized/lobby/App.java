@@ -4,10 +4,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import io.papermc.paper.entity.TeleportFlag;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
@@ -45,6 +42,8 @@ public enum App {
             "\uA000"),//TODO
     Shop("ui/scn3/shop", useCases.Shop, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.shop.name").color(WHITE).decoration(ITALIC, false), 33,
             "\uA000\uA004"),
+    Wardrobe("ui/scn3/wardrobe", useCases.Wardrobe, new useCases[]{useCases.Menu}, Component.translatable("").color(WHITE).decoration(ITALIC, false), 38,
+            "\uA000\uA00F"),
     HatsButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.translatable("crystalized.shardcore.shop.hats").color(WHITE).decoration(ITALIC, false), new int[]{28, 4, 1},
             EquipmentSlot.HEAD),
     HandButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.translatable("crystalized.shardcore.shop.handheld").color(WHITE).decoration(ITALIC, false), new int[]{37, 4, 2},
@@ -74,7 +73,14 @@ public enum App {
     ProfileScrollLeft("scn3/profile/info/left", useCases.Profiles, Component.text("Left").color(WHITE).decoration(ITALIC, false), 24),
     ProfileLsStats("scn3/profile/info/ls", useCases.Demand, Component.text("Litestrike Statistics").color(WHITE).decoration(ITALIC, false), 0),
     ProfileKoStats("scn3/profile/info/ko", useCases.Demand, Component.text("KnockOff Statistics").color(WHITE).decoration(ITALIC, false), 0),
-    ProfileCbStats("scn3/profile/info/ko", useCases.Demand, Component.text("CrystalBlitz Statistics").color(WHITE).decoration(ITALIC, false), 0);
+    ProfileCbStats("scn3/profile/info/ko", useCases.Demand, Component.text("CrystalBlitz Statistics").color(WHITE).decoration(ITALIC, false), 0),
+    LeaveWardrobe("ui/leave", useCases.Wardrobe, Component.text("Leave").color(WHITE).decoration(ITALIC, false), 9),
+    HatsButtonW("ui/invisible", useCases.WardrobePage, useCases.Wardrobe, Component.translatable("crystalized.shardcore.shop.hats").color(WHITE).decoration(ITALIC, false), new int[]{28, 7, 1},
+    EquipmentSlot.HEAD),
+    HandButtonW("ui/invisible", useCases.WardrobePage, useCases.Wardrobe, Component.translatable("crystalized.shardcore.shop.handheld").color(WHITE).decoration(ITALIC, false), new int[]{37, 7, 1},
+            EquipmentSlot.OFF_HAND),
+    ShardButtonW("ui/invisible", useCases.WardrobePage, useCases.Wardrobe, Component.translatable("crystalized.shardcore.shop.scn3").color(WHITE).decoration(ITALIC, false), new int[]{46, 7, 1},
+    EquipmentSlot.HAND);
 
 
     //how buttons work {top left corner, width, height}
@@ -92,6 +98,8 @@ public enum App {
         Achievements,
         Hotbar,
         UI,
+        Wardrobe,
+        WardrobePage,
         Demand
     }
     final String model;
@@ -222,7 +230,9 @@ public enum App {
             out.writeUTF("false");
             p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
         }
-
+        if(this == LeaveWardrobe){
+            CosmeticView.findView(p).endView();
+        }
         if(extra instanceof Location){
             if(Lobby_plugin.getInstance().passive_mode){
                 ByteArrayDataOutput out = ByteStreams.newDataOutput();
@@ -245,6 +255,8 @@ public enum App {
                 return;
             }else if(this == App.Profiles){
                 Profile.prepareProfile(p, inv, p);
+            }else if(this == App.Wardrobe){
+                CosmeticView.getView(p).startView(null);
             }
             p.openInventory(inv);
         }
@@ -274,7 +286,7 @@ public enum App {
         public static void createUI(Inventory inv, useCases use){
             if(use == useCases.ShopPage){
                 shop.placeUI(inv);
-            }else if(use == useCases.Friends){
+            }else if(use == useCases.Friends || use == useCases.Wardrobe){
                 friends.placeUI(inv);
             }else if(use == useCases.Settings){
                 settings.placeUI(inv);
