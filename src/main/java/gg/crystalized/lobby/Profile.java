@@ -50,9 +50,9 @@ public class Profile {
 
         for(Cosmetic c : cosmetics){
             if(c.isWearing(p) && c.ownsCosmetic(viewer)){
-                inv.setItem(getCosmeticSlot(c), c.build(c.isWearing(viewer), false));
+                inv.setItem(getCosmeticSlot(c), c.build(c.isWearing(viewer), false, CosmeticView.isViewing(p.getPlayer(), c)));
             }else if(c.isWearing(p)){
-                inv.setItem(getCosmeticSlot(c), c.build(null, false));
+                inv.setItem(getCosmeticSlot(c), c.build(null, false, CosmeticView.isViewing(p.getPlayer(), c)));
             }
         }
 

@@ -37,14 +37,14 @@ public class InventoryManager implements Listener {
         }
         if(event.getItem() == null) return;
         Player p = event.getPlayer();
-        if(event.getItem().equals(Cosmetic.getShardcore(p).build(true, false))){
+        if(event.getItem().equals(Cosmetic.getShardcore(p).build(true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))))){
             p.openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu, event.getPlayer()));
             for(int i = 0; i <= 54; i++){
                 if(p.getInventory().getItem(i) == null){
                     continue;
                 }
-                if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(true, false))){
-                    p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(true, true));
+                if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))))){
+                    p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(true, true, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))));
                 }
             }
             return;
@@ -85,14 +85,14 @@ public class InventoryManager implements Listener {
                 return;
             }
 
-            if(event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(true, false)) || event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(true, true))){
+            if(event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p)))) || event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(true, true, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))))){
                 event.getWhoClicked().openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu, (Player)event.getWhoClicked()));
                 for(int i = 0; i <= 54; i++){
                     if(p.getInventory().getItem(i) == null){
                         continue;
                     }
-                    if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(true, false))){
-                        p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(true, true));
+                    if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))))){
+                        p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(true, true, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))));
                     }
                 }
                 return;
@@ -169,8 +169,8 @@ public class InventoryManager implements Listener {
             if(p.getInventory().getItem(i) == null){
                 continue;
             }
-            if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(true, false))){
-                p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(true, true));
+            if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))))){
+                p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(true, true, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))));
             }
         }
     }
@@ -185,8 +185,8 @@ public class InventoryManager implements Listener {
             if(p.getInventory().getItem(i) == null){
                 continue;
             }
-            if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(true, true))){
-                p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(true, false));
+            if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(true, true, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))))){
+                p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))));
             }
         }
     }
@@ -244,7 +244,7 @@ public class InventoryManager implements Listener {
                 in++;
             }
         }
-        p.getInventory().setItem(4, Cosmetic.getShardcore(p).build(true, false));
+        p.getInventory().setItem(4, Cosmetic.getShardcore(p).build(true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))));
     }
 
     public static Integer placeOnRightSlot(int iterator, int end, int line, int borderrw, int borderlw){

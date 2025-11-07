@@ -123,6 +123,10 @@ public final class PlayerListener implements Listener {
 				ent.remove();
 			}
 		}
+		CosmeticView view = CosmeticView.findView(e.getPlayer());
+		if(view != null && view.isRunning()){
+			view.endView();
+		}
 	}
 
 	@EventHandler

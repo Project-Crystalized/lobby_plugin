@@ -7,7 +7,6 @@ import io.papermc.paper.entity.LookAnchor;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.api.trait.trait.Equipment;
-import net.citizensnpcs.trait.MirrorTrait;
 import net.citizensnpcs.trait.SkinTrait;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
@@ -17,7 +16,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -82,7 +80,7 @@ public class Cosmetic {
         };
     }
 
-    public ItemStack build(Boolean wearing, Boolean open) {
+    public ItemStack build(Boolean wearing, Boolean open, boolean viewing) {
         ItemStack item = new ItemStack(Material.COAL);
         ItemMeta meta = item.getItemMeta();
         meta.setItemModel(new NamespacedKey("crystalized", itemModel));
@@ -96,13 +94,13 @@ public class Cosmetic {
             }
         } else {
             meta.displayName(name.color(WHITE).decoration(ITALIC, false));
-            meta.lore(getDescription(wearing));
+            meta.lore(getDescription(wearing, viewing));
         }
         item.setItemMeta(meta);
         return item;
     }
 
-    public ArrayList<Component> getDescription(Boolean wearing) {
+    public ArrayList<Component> getDescription(Boolean wearing, boolean viewing) {
         ArrayList<Component> desc = new ArrayList<>();
         if (wearing != null && wearing) {
             desc.add(Component.text("[Right-click] take off").color(WHITE).decoration(ITALIC, false));
@@ -113,7 +111,11 @@ public class Cosmetic {
         } else {
             desc.add(Component.text("[Right-click] price: " + price).color(WHITE).decoration(ITALIC, false));
         }
-        desc.add(Component.text("[Left-click] view").color(WHITE).decoration(ITALIC, false));
+        if(viewing){
+            desc.add(Component.text("[Left-click] end view").color(WHITE).decoration(ITALIC, false));
+        }else {
+            desc.add(Component.text("[Left-click] view").color(WHITE).decoration(ITALIC, false));
+        }
         desc.add(Component.text(slot.toString()).color(BLUE).decoration(ITALIC, false));
         return desc;
     }
@@ -134,7 +136,7 @@ public class Cosmetic {
             }
 
             if (InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0) != null) {
-                inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), c.build(null, false));
+                inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), c.build(null, false, CosmeticView.isViewing(p, c)));
             } else {
                 break;
             }
@@ -142,7 +144,6 @@ public class Cosmetic {
         }
         p.openInventory(inv);
     }
-    //TODO make shardcores equippable
 
     // 0 = false
     // 1 = true
@@ -182,7 +183,7 @@ public class Cosmetic {
     public static void giveCosmetics(Player p){
         for(Cosmetic c : Cosmetic.cosmetics){
             if(c.isWearing(p) && c.slot != EquipmentSlot.HAND){
-                p.sendEquipmentChange(p, c.slot, c.build(true, false));
+                p.sendEquipmentChange(p, c.slot, c.build(true, false, CosmeticView.isViewing(p, c)));
             }
         }
     }
@@ -207,30 +208,37 @@ public class Cosmetic {
                     if (slot != EquipmentSlot.HAND) {
                         p.sendEquipmentChange(p, slot, null);
                     } else {
-                        p.getInventory().setItem(4, getCosmeticById(DEFAULT_SHARDCORE).build(false, true));
+                        p.getInventory().setItem(4, getCosmeticById(DEFAULT_SHARDCORE).build(false, true, CosmeticView.isViewing(p, this)));
                     }
 
                 } else {
                     if (slot != EquipmentSlot.HAND) {
-                        p.sendEquipmentChange(p, slot, build(true, false));
+                        p.sendEquipmentChange(p, slot, build(true, false, CosmeticView.isViewing(p, this)));
                     } else {
-                        p.getInventory().setItem(4, build(true, true));
+                        p.getInventory().setItem(4, build(true, true, CosmeticView.isViewing(p, this)));
                     }
                 }
                 LobbyDatabase.cosmeticSetWearing(p, this, !isWearing(p));
                 unEquipAllApartFrom(p);
-                if(type == ARMOR){
-                    return;
-                }
-                rebuild(inv, slotNumber, p);
             }
         } else if (click.isLeftClick()) {
             CosmeticView v = CosmeticView.getView(p);
             if(v.isRunning()){
-                v.changeCosmetic(this);
+                if(CosmeticView.isViewing(p, this)){
+                    v.removeCosmetic();
+                }else {
+                    v.changeCosmetic(this);
+                }
             }else {
                 v.startView(this);
             }
+            if(type != ARMOR){
+                inv.close();
+            }
+        }
+
+        if(type != ARMOR){
+            rebuild(inv, slotNumber, p);
         }
     }
 
@@ -246,7 +254,7 @@ public class Cosmetic {
     }
 
     public void rebuild(Inventory inv, int slot, Player p){
-        inv.setItem(slot, build(isWearing(p), false));
+        inv.setItem(slot, build(isWearing(p), false, CosmeticView.isViewing(p, this)));
     }
 }
 
@@ -265,7 +273,7 @@ class CosmeticView{
         running = true;
         if(c != null){
             currentCosmetic = c;
-            mannequin.getOrAddTrait(Equipment.class).set(getEquipmentSlot(c.slot), c.build(false, false));
+            mannequin.getOrAddTrait(Equipment.class).set(getEquipmentSlot(c.slot), c.build(false, false, isViewing(p, c)));
         }
         Location loc = LobbyConfig.Locations.get("clothing_room").clone();
         SkinTrait skin = mannequin.getOrAddTrait(SkinTrait.class);
@@ -284,7 +292,20 @@ class CosmeticView{
     }
 
     public void changeCosmetic(Cosmetic c){
-        mannequin.getOrAddTrait(Equipment.class).set(getEquipmentSlot(c.slot), c.build(false, false));
+        currentCosmetic = c;
+        Map<Equipment.EquipmentSlot, ItemStack> equipment = mannequin.getOrAddTrait(Equipment.class).getEquipmentBySlot();
+        for(Equipment.EquipmentSlot key : equipment.keySet()){
+            mannequin.getOrAddTrait(Equipment.class).set(key, null);
+        }
+        mannequin.getOrAddTrait(Equipment.class).set(getEquipmentSlot(c.slot), c.build(false, false, isViewing(p, c)));
+    }
+
+    public void removeCosmetic(){
+        currentCosmetic = null;
+        Map<Equipment.EquipmentSlot, ItemStack> equipment = mannequin.getOrAddTrait(Equipment.class).getEquipmentBySlot();
+        for(Equipment.EquipmentSlot key : equipment.keySet()){
+            mannequin.getOrAddTrait(Equipment.class).set(key, null);
+        }
     }
 
     public void endView(){
@@ -295,7 +316,11 @@ class CosmeticView{
         p.teleport(LobbyConfig.Locations.get("spawn"), RETAIN_PASSENGERS);
         p.getInventory().clear();
         InventoryManager.giveLobbyItems(p);
-        Cosmetic.giveCosmetics(p);
+        new BukkitRunnable(){
+            public void run(){
+                Cosmetic.giveCosmetics(p);
+            }
+        }.runTaskLater(Lobby_plugin.getInstance(), 1);
     }
 
     public static CosmeticView getView(Player p){
@@ -306,7 +331,7 @@ class CosmeticView{
         }
         return findView(p);
     }
-    //TODO add ability to remove cosmetic from mannequin
+
     public Inventory getWardrobe(App a, int page){
         String titlePart = "\uA00F";
         if(currentCosmetic != null || a != App.Wardrobe){
@@ -320,17 +345,13 @@ class CosmeticView{
         Inventory inv = Bukkit.createInventory(null, 54, Component.text("\uA000" + titlePart).color(WHITE));
         App.UITemplates.createUI(inv, App.useCases.ShopPage);
         int i = (page - 1) * 15;
-        EquipmentSlot slot = (EquipmentSlot)a.extra;
-        if(currentCosmetic != null){
-            slot = currentCosmetic.slot;
-        }
         for (Cosmetic c : Cosmetic.cosmetics) {
-            if (c.slot != slot || !c.ownsCosmetic(p)) {
+            if (!(a.extra instanceof EquipmentSlot) || !c.slot.equals(a.extra) || !c.ownsCosmetic(p)) {
                 continue;
             }
 
             if (InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0) != null) {
-                inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), c.build(LobbyDatabase.isWearing(p,c), false));
+                inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), c.build(LobbyDatabase.isWearing(p,c), false, isViewing(p, c)));
             } else {
                 break;
             }
@@ -358,6 +379,9 @@ class CosmeticView{
     }
 
     public static CosmeticView findView(Player p){
+        if(p == null){
+            return null;
+        }
         for(CosmeticView view : views){
             if(view.p.equals(p)){
                 return view;
@@ -368,5 +392,19 @@ class CosmeticView{
 
     public boolean isRunning(){
         return running;
+    }
+    public static boolean isViewing(Player p, Cosmetic c){
+        if(findView(p) == null || !findView(p).isRunning()){
+            return false;
+        }
+
+        if(findView(p).currentCosmetic == null){
+            return false;
+        }
+
+        if(findView(p).currentCosmetic.equals(c)){
+            return true;
+        }
+        return false;
     }
 }
