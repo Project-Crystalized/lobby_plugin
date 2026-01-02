@@ -2,8 +2,10 @@ package gg.crystalized.lobby;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import gg.crystalized.lobby.statistics.StatView;
 import io.papermc.paper.entity.TeleportFlag;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
@@ -69,11 +71,11 @@ public enum App {
     SettingsToggleOff("ui/scn3/settings/toggle_off", useCases.Set, new useCases[]{useCases.Demand}, Component.text("Off").color(RED).decoration(ITALIC, false), 0,0),
     SettingsToggleOn("ui/scn3/settings/toggle_on", useCases.Set, new useCases[]{useCases.Demand}, Component.text("On").color(GREEN).decoration(ITALIC, false), 0, 1),
     SettingsToggleMid("ui/scn3/settings/toggle_mid", useCases.Set, new useCases[]{useCases.Demand}, Component.text("Mid").color(YELLOW).decoration(ITALIC, false), 0, 0.5),
-    ProfileScrollRight("scn3/profile/info/right", useCases.Profiles, Component.text("Right").color(WHITE).decoration(ITALIC, false), 21),
-    ProfileScrollLeft("scn3/profile/info/left", useCases.Profiles, Component.text("Left").color(WHITE).decoration(ITALIC, false), 24),
-    ProfileLsStats("scn3/profile/info/ls", useCases.Demand, Component.text("Litestrike Statistics").color(WHITE).decoration(ITALIC, false), 0),
-    ProfileKoStats("scn3/profile/info/ko", useCases.Demand, Component.text("KnockOff Statistics").color(WHITE).decoration(ITALIC, false), 0),
-    ProfileCbStats("scn3/profile/info/ko", useCases.Demand, Component.text("CrystalBlitz Statistics").color(WHITE).decoration(ITALIC, false), 0),
+    ProfileScrollRight("ui/scn3/profile/info/right", useCases.Profiles, Component.text("Right").color(WHITE).decoration(ITALIC, false), 21),
+    ProfileScrollLeft("ui/scn3/profile/info/left", useCases.Profiles, Component.text("Left").color(WHITE).decoration(ITALIC, false), 24),
+    ProfileLsStats("ui/scn3/profile/info/ls",useCases.Demand, new useCases[]{useCases.Stats}, Component.text("Litestrike Statistics").color(WHITE).decoration(ITALIC, false), 0, "ls"),
+    ProfileKoStats("ui/scn3/profile/info/ko", useCases.Demand, new useCases[]{useCases.Stats}, Component.text("KnockOff Statistics").color(WHITE).decoration(ITALIC, false), 0, "ko"),
+    ProfileCbStats("ui/scn3/profile/info/cb", useCases.Demand, new useCases[]{useCases.Stats}, Component.text("CrystalBlitz Statistics").color(WHITE).decoration(ITALIC, false), 0, "cb"),
     LeaveWardrobe("ui/leave", useCases.Wardrobe, Component.text("Leave").color(WHITE).decoration(ITALIC, false), 9),
     HatsButtonW("ui/invisible", useCases.WardrobePage, useCases.Wardrobe, Component.translatable("crystalized.shardcore.shop.hats").color(WHITE).decoration(ITALIC, false), new int[]{28, 7, 1},
     EquipmentSlot.HEAD),
@@ -100,7 +102,8 @@ public enum App {
         UI,
         Wardrobe,
         WardrobePage,
-        Demand
+        Demand,
+        Stats
     }
     final String model;
     useCases self;
@@ -232,6 +235,10 @@ public enum App {
         }
         if(this == LeaveWardrobe){
             CosmeticView.findView(p).endView();
+        }
+        if(this.toString().contains("Stats")){
+            new StatView(p).startPlayerView((String)extra, p.getOpenInventory().getTopInventory());
+            return;
         }
         if(extra instanceof Location){
             if(Lobby_plugin.getInstance().passive_mode){

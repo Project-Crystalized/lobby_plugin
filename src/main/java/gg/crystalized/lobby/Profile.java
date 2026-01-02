@@ -12,6 +12,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.profile.PlayerTextures;
 
 import java.net.MalformedURLException;
@@ -42,6 +43,7 @@ public class Profile {
             lore.add(Component.text("Money: " + data.get("money")).color(WHITE).decoration(ITALIC, false));
             meta.lore(lore);
             head.setItemMeta(meta);
+            head.editPersistentDataContainer(pdc -> pdc.set(new NamespacedKey("crystalized", "profile_holder"), PersistentDataType.STRING, p.getName()));
             inv.setItem(2, head);
         }catch(MalformedURLException e){
             Bukkit.getLogger().warning(e.getMessage());
@@ -56,7 +58,9 @@ public class Profile {
             }
         }
 
-        //TODO statistics (21,22,23,24)
+        inv.setItem(30, App.ProfileLsStats.build());
+        inv.setItem(31, App.ProfileKoStats.build());
+        inv.setItem(32, App.ProfileCbStats.build());
 
         if(p.getPlayer() == null){
             return;

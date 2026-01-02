@@ -1,5 +1,7 @@
 package gg.crystalized.lobby;
 
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 import com.google.gson.JsonObject;
@@ -40,6 +42,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 
 	List<CrystalizedChess> ChessGames = new ArrayList<>();
 	public boolean passive_mode = false;
+	public static ProtocolManager protocolManager;
 	@Override
 	public void onEnable() {
 		LobbyDatabase.setup_databases();
@@ -62,6 +65,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		saveResource("cosmetics.json", false);
 		Cosmetic.createCosmetics(getResource("cosmetics.json"));
 		EntityRefresh.setupEntityRefresh();
+		protocolManager = ProtocolLibrary.getProtocolManager();
 
 		this.getCommand("chess").setExecutor(dc);
 		this.getCommand("pig_hunt").setExecutor(dc);

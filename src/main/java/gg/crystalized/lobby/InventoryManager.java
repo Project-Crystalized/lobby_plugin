@@ -2,6 +2,7 @@ package gg.crystalized.lobby;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import gg.crystalized.lobby.statistics.StatView;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Location;
@@ -189,6 +190,7 @@ public class InventoryManager implements Listener {
                 p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))));
             }
         }
+        StatView.stopView((Player)event.getPlayer());
     }
     public static boolean isSlotInButton(int slot, int[] button){
         for(int i = button[0]; i <= button[0] + button[1] - 1; i++){

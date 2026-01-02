@@ -39,6 +39,8 @@ dependencies {
 
     implementation("io.github.colonelparrot:jchessify:1.0.2")
     compileOnly ("com.github.bhlangonijr:chesslib:1.3.4")
+
+    compileOnly ("net.dmulloy2:ProtocolLib:5.4.0")
 }
 
 
