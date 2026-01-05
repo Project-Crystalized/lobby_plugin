@@ -190,7 +190,10 @@ public class InventoryManager implements Listener {
                 p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))));
             }
         }
-        StatView.stopView((Player)event.getPlayer());
+        StatView view = StatView.getView((Player) event.getPlayer());
+        if(view != null){
+            view.stopView();
+        }
     }
     public static boolean isSlotInButton(int slot, int[] button){
         for(int i = button[0]; i <= button[0] + button[1] - 1; i++){

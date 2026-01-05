@@ -26,7 +26,7 @@ public class StatItem {
     public StatItem(StatUnit<?>[] stat, String gameAlias, boolean isLifetime){
         this.stat = stat;
 
-        ItemStack item = getBase(gameAlias);
+        ItemStack item = getBase(gameAlias, stat);
         if(getItemName(0, isLifetime) != null) {
             ItemMeta meta = item.getItemMeta();
             meta.displayName(style(getItemName(0, isLifetime), gameAlias));
@@ -59,21 +59,17 @@ public class StatItem {
             case "breaker_wins" -> Component.text("Breaker wins: ").decoration(ITALIC, false);
             case "map" -> Component.text("Map: ").decoration(ITALIC, false);
             case "winner" -> Component.text("Winner: ").decoration(ITALIC, false);
-            case "other team" -> Component.text("Other team: ").decoration(ITALIC, false);
+            case "other_team" -> Component.text("Other team: ").decoration(ITALIC, false);
             case "percent" -> Component.text("Percentage of won games: ").decoration(ITALIC, false);
             case "name" -> Component.text("Player: ").decoration(ITALIC, false);
             default -> Component.text(stat[i].name).decoration(ITALIC, false);
         };
+        //TODO names for lifetime
         //TODO ko and cb stuff
     }
 
     public Component style(Component c, String alias){
-        return switch(alias){
-            case "ls" -> c.color(GREEN);
-            case "ko" -> c.color(GOLD);
-            case "cb" -> c.color(LIGHT_PURPLE);
-            default -> c;
-        };
+        return (Component) GameDistributor.distribute(GameDistributor.types.style, alias, c, false, 0);
     }
 
 
@@ -115,11 +111,8 @@ public class StatItem {
         return items;
     }
 
-    public ItemStack getBase(String alias){
-        return switch(alias){
-            case "ls" -> LsGroup.getBase(stat);
-            default -> new ItemStack(COAL);
-        };
+    public ItemStack getBase(String alias, StatUnit<?>[] stats){
+        return (ItemStack) GameDistributor.distribute(GameDistributor.types.getBase, alias, stats, false, 0);
     }
 
     public static short[] convertByteToShort(byte[] b){
@@ -221,10 +214,7 @@ class StatUnit<T> {
     }
 
     public static ArrayList<StatUnit<?>[]> organiseForGroup(ArrayList<StatUnit<?>> units, String alias){
-        return switch(alias){
-            case "ls" -> LsGroup.organise(units);
-            default -> null;
-        };
+        return (ArrayList<StatUnit<?>[]>) GameDistributor.distribute(GameDistributor.types.organiseForGroup, alias, units, false, 0);
     }
 
 

@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import gg.crystalized.lobby.minigames.CrystalizedChess;
 import gg.crystalized.lobby.minigames.CrystalizedChessListener;
+import gg.crystalized.lobby.statistics.StatView;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -52,6 +53,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		this.getServer().getPluginManager().registerEvents(new CrystalizedChessListener(), this);
 		this.getServer().getPluginManager().registerEvents(new InventoryManager(), this);
 		this.getServer().getPluginManager().registerEvents(new EntityRefresh(), this);
+		this.getServer().getPluginManager().registerEvents(new StatView(null, "ls"), this);
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "crystalized:main");
 		this.getServer().getMessenger().registerIncomingPluginChannel(this, "crystalized:main", this);
 

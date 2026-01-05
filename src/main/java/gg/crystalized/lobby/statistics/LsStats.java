@@ -95,17 +95,21 @@ public class LsStats {
         }
     }
 
-    public static int getGameId(int page, OfflinePlayer p){
+    public static Integer getGameId(int page, OfflinePlayer p){
         try(Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("SELECT game FROM LsGamesPlayers WHERE player_uuid = ? ORDER BY game DESC;");
             prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
             set.next();
-            if(page == -1){
-                return set.getInt("game");
+            int total = set.getInt("game");
+            if(page <= -1){
+                return total;
             }
-            for(int i = 1; i <= page; i++){
-                if(i == page){
+            if(page > total){
+                return 0;
+            }
+            for(int i = total; i > total-page; i--){
+                if(i == total-page){
                     return set.getInt("game");
                 }
                 set.next();

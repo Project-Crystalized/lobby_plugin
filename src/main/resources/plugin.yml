@@ -4,8 +4,7 @@ main: gg.crystalized.lobby.Lobby_plugin
 api-version: '1.21.1'
 load: POSTWORLD
 
-depend: [Citizens]
-softdepend: [Floodgate]
+softdepend: [Floodgate, Citizens]
 
 commands:
   chess:
