@@ -101,7 +101,7 @@ public class LsStats {
             prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
             set.next();
-            int total = set.getInt("game");
+            int total = getTotalGames(p);
             if(page <= -1){
                 return total;
             }
@@ -114,6 +114,20 @@ public class LsStats {
                 }
                 set.next();
             }
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't get gameId");
+        }
+        return -1;
+    }
+
+    public static Integer getTotalGames(OfflinePlayer p){
+        try(Connection conn = DriverManager.getConnection(URL)) {
+            PreparedStatement prep = conn.prepareStatement("SELECT COUNT(game) AS game FROM LsGamesPlayers WHERE player_uuid = ?;");
+            prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
+            ResultSet set = prep.executeQuery();
+            set.next();
+            return set.getInt("game");
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't get gameId");
@@ -155,7 +169,7 @@ public class LsStats {
             return set.getString("map");
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get team");
+            Bukkit.getLogger().warning("couldn't get map");
             return null;
         }
     }
@@ -233,9 +247,21 @@ enum LsGroup {
         this.isLifetime = isLifetime;
     }
 
-    public static LsGroup getGroup(String s, boolean lifetime) {
+    public static LsGroup getGroup(String name, boolean lifetime) {
+        LsGroup group = group(name, lifetime);
+        if(group != null){
+            return group;
+        }
+        group = group(name, !lifetime);
+        if(!(!lifetime && group != null && StatItem.notIndividual(group))) {
+            return null;
+        }
+        return group;
+    }
+
+    public static LsGroup group(String name, boolean lifetime){
         for (LsGroup group : LsGroup.values()) {
-            if (List.of(group.columns).contains(s) && group.isLifetime == lifetime) {
+            if (List.of(group.columns).contains(name) && group.isLifetime == lifetime) {
                 return group;
             }
         }
@@ -245,21 +271,25 @@ enum LsGroup {
     public static ArrayList<StatUnit<?>[]> organise(ArrayList<StatUnit<?>> units){
         ArrayList<StatUnit<?>[]> fin = new ArrayList<>();
         ArrayList<ArrayList<StatUnit<?>>> arrays = new ArrayList<>();
+        boolean lifetime = units.getFirst().isLifetime;
         for(StatUnit<?> unit : units){
             LsGroup group = getGroup(unit.name, unit.isLifetime);
-            if(group == null){
+            if (group == null) {
                 continue;
             }
+            boolean life = group.isLifetime;
             boolean doesntexist = true;
-            for(ArrayList<StatUnit<?>> arr : arrays){
-                if(getGroup(arr.getFirst().name, arr.getFirst().isLifetime).equals(group)){
+            for (ArrayList<StatUnit<?>> arr : arrays) {
+                if(getGroup(arr.getFirst().name, life) == null){
+                    continue;
+                }
+                if (getGroup(arr.getFirst().name, life).equals(group)) {
                     arr.add(unit);
                     doesntexist = false;
                     break;
                 }
             }
-
-            if(doesntexist) {
+            if (doesntexist) {
                 ArrayList<StatUnit<?>> unitArray = new ArrayList<>();
                 unitArray.add(unit);
                 arrays.add(unitArray);
@@ -268,7 +298,7 @@ enum LsGroup {
         for(ArrayList<StatUnit<?>> list : arrays){
             fin.add(StatUnit.toArray(list));
         }
-        fin = sortByPriority(fin);
+        fin = sortByPriority(fin, lifetime);
         return fin;
     }
 

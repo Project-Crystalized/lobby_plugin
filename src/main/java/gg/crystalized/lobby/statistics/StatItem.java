@@ -189,6 +189,10 @@ public class StatItem {
         };
         return f;
     }
+
+    public static boolean notIndividual(Object o){
+        return !o.equals(LsGroup.GAMES);
+    }
 }
 
 class StatUnit<T> {
