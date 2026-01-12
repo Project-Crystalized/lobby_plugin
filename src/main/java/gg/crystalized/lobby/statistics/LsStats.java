@@ -50,9 +50,7 @@ public class LsStats {
         try(Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM LsGamesPlayers WHERE player_uuid = ? AND game = ?;");
             int gameId = getGameId(page, p);
-
             prep.setInt(2, gameId);
-
             if(isLifetime){
                 prep = conn.prepareStatement("SELECT * FROM LsGamesPlayers WHERE player_uuid = ?;");
             }
@@ -65,19 +63,19 @@ public class LsStats {
             ArrayList<StatUnit<?>> units = new ArrayList<>();
             for(int i = 1; i <= count; i++){
                 Function<ResultSet, ?> fun = StatItem.getMethod(data.getColumnTypeName(i), data.getColumnLabel(i));
-
+                if(isLifetime && data.getColumnLabel(i).equals("game")){
+                    units.add(new StatUnit<>(p, data.getColumnLabel(i), gameId, "ls", isLifetime));
+                    continue;
+                }else if(isLifetime && data.getColumnLabel(i).equals("was_winner")){
+                    units.add(new StatUnit<>(p, data.getColumnLabel(i), countGames(p, true), "ls", isLifetime));
+                    continue;
+                }
                 if(isLifetime && fun.apply(set) instanceof Integer){
                     units.add(new StatUnit<>(p, data.getColumnLabel(i), sumColumns(data.getColumnLabel(i), p), "ls", isLifetime));
                     continue;
                 }
-                if(data.getColumnLabel(i).equals("game") && isLifetime){
-                    units.add(new StatUnit<>(p, data.getColumnLabel(i), countGames(p, false), "ls", isLifetime));
-                    continue;
-                }else if(data.getColumnLabel(i).equals("was_winner") && isLifetime){
-                    units.add(new StatUnit<>(p, data.getColumnLabel(i), countGames(p, true), "ls", isLifetime));
-                    continue;
-                }
-                units.add(new StatUnit<>(p, data.getColumnLabel(i),fun.apply(set), "ls", isLifetime));
+                units.add(new StatUnit<>(p, data.getColumnLabel(i), fun.apply(set), "ls", isLifetime));
+                set.next();
             }
             if(isLifetime){
                 units.add(new StatUnit<>(p, "percent", calculatePercent(p), "ls", isLifetime));
@@ -108,7 +106,7 @@ public class LsStats {
             if(page > total){
                 return 0;
             }
-            for(int i = total; i > total-page; i--){
+            for(int i = total; i >= total-page; i--){
                 if(i == total-page){
                     return set.getInt("game");
                 }
@@ -298,7 +296,7 @@ enum LsGroup {
         for(ArrayList<StatUnit<?>> list : arrays){
             fin.add(StatUnit.toArray(list));
         }
-        fin = sortByPriority(fin, lifetime);
+        fin = sortByPriority(fin);
         return fin;
     }
 

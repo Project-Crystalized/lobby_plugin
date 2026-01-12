@@ -207,6 +207,7 @@ public class Ranks {
                 }
             }
         }
+        new Nametag(p);
         /*
         UUID uuid = UUID.randomUUID();
         PacketContainer spawnEntity = new PacketContainer(PacketType.Play.Server.SPAWN_ENTITY);

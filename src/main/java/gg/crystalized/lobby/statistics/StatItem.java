@@ -186,7 +186,7 @@ public class StatItem {
                         throw new RuntimeException();
                     }
                 };
-        };
+        }
         return f;
     }
 
