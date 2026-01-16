@@ -14,8 +14,7 @@ import java.util.*;
 import java.util.function.Function;
 
 import static net.kyori.adventure.text.Component.translatable;
-import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
-import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 import static org.bukkit.Material.*;
 
@@ -61,21 +60,17 @@ public class LsStats {
             ResultSetMetaData data = set.getMetaData();
             int count = data.getColumnCount();
             ArrayList<StatUnit<?>> units = new ArrayList<>();
-            for(int i = 1; i <= count; i++){
+            for (int i = 1; i <= count; i++) {
                 Function<ResultSet, ?> fun = StatItem.getMethod(data.getColumnTypeName(i), data.getColumnLabel(i));
-                if(isLifetime && data.getColumnLabel(i).equals("game")){
+                if (isLifetime && data.getColumnLabel(i).equals("game")) {
                     units.add(new StatUnit<>(p, data.getColumnLabel(i), gameId, "ls", isLifetime));
-                    continue;
-                }else if(isLifetime && data.getColumnLabel(i).equals("was_winner")){
+                } else if (isLifetime && data.getColumnLabel(i).equals("was_winner")) {
                     units.add(new StatUnit<>(p, data.getColumnLabel(i), countGames(p, true), "ls", isLifetime));
-                    continue;
-                }
-                if(isLifetime && fun.apply(set) instanceof Integer){
+                }else if (isLifetime && fun.apply(set) instanceof Integer) {
                     units.add(new StatUnit<>(p, data.getColumnLabel(i), sumColumns(data.getColumnLabel(i), p), "ls", isLifetime));
-                    continue;
+                }else {
+                    units.add(new StatUnit<>(p, data.getColumnLabel(i), fun.apply(set), "ls", isLifetime));
                 }
-                units.add(new StatUnit<>(p, data.getColumnLabel(i), fun.apply(set), "ls", isLifetime));
-                set.next();
             }
             if(isLifetime){
                 units.add(new StatUnit<>(p, "percent", calculatePercent(p), "ls", isLifetime));
@@ -215,6 +210,10 @@ public class LsStats {
 
     public static ArrayList<Component> loreForItems(short[] items){
         ArrayList<Component> components = new ArrayList<>();
+        if(items.length == 0){
+            components.add(Component.text("This player didn't buy any items").decoration(ITALIC, false).color(RED));
+            return components;
+        }
         int i = 1;
         for(short s : items){
             if(LsItem[s] == null){

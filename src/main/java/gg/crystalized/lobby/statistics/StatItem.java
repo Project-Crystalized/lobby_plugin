@@ -6,8 +6,10 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.ShortBuffer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -15,8 +17,6 @@ import java.util.function.Function;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
-import static org.bukkit.Material.COAL;
-
 public class StatItem {
 
     public ItemStack item;
@@ -81,7 +81,7 @@ public class StatItem {
         ArrayList<Component> lore;
         if(stat[0].value instanceof byte[]){
             if(stat[0].name.contains("bought_items") && alias.equals("ls")){
-                lore = LsStats.loreForItems(convertByteToShort((byte[])stat[0].value));
+                lore = LsStats.loreForItems(convertByteToShort((byte[]) stat[0].value));
             } else {
                 lore = new ArrayList<>();
             }
@@ -116,17 +116,18 @@ public class StatItem {
     }
 
     public static short[] convertByteToShort(byte[] b){
-        short[] array = new short[b.length/2];
-        int j = 0;
-        for(int i = 0; i < b.length; i = i+2){
-            ByteBuffer bb = ByteBuffer.allocate(2);
-            bb.order(ByteOrder.LITTLE_ENDIAN);
-            bb.put(b[i]);
-            bb.put(b[i+1]);
-            array[j] = bb.getShort();
-            j++;
+        if(b.length == 0){
+            return new short[]{};
         }
-        return array;
+        ByteBuffer bb = ByteBuffer.allocate(b.length);
+        for (byte value : b) {
+            bb.put(value);
+        }
+        ShortBuffer sb = bb.asShortBuffer();
+        if (!sb.hasArray()) {
+            return new short[]{};
+        }
+        return sb.array();
     }
 
     public static Function<ResultSet, ?> getMethod(String s, String label){
@@ -141,10 +142,10 @@ public class StatItem {
                         throw new RuntimeException();
                     }
                 };
-            case "BLOB", "BYTES":
+            case "BLOB":
                 f = set -> {
                     try {
-                        return set.getBytes(label);
+                        return set.getBlob(label);
                     } catch (SQLException e) {
                         Bukkit.getLogger().severe(e.getMessage());
                         throw new RuntimeException();
@@ -172,6 +173,15 @@ public class StatItem {
                 f = set -> {
                     try {
                         return set.getFloat(label);
+                    } catch (SQLException e) {
+                        Bukkit.getLogger().severe(e.getMessage());
+                        throw new RuntimeException();
+                    }
+                };
+            case "BYTES":
+                f = set ->{
+                    try {
+                        return set.getBytes(label);
                     } catch (SQLException e) {
                         Bukkit.getLogger().severe(e.getMessage());
                         throw new RuntimeException();
