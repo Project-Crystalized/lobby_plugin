@@ -45,6 +45,9 @@ public class StatView implements Listener {
                line++;
                slot = nextLine[line];
            }
+           if(slot == 49){
+               inv.setItem(slot+2, s.item);
+           }
            inv.setItem(slot, s.item);
            slot = slot + 2;
         }

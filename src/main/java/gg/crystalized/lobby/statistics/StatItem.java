@@ -1,7 +1,9 @@
 package gg.crystalized.lobby.statistics;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -25,9 +27,9 @@ public class StatItem {
 
     public StatItem(StatUnit<?>[] stat, String gameAlias, boolean isLifetime){
         this.stat = stat;
-
-        ItemStack item = getBase(gameAlias, stat);
-        if(getItemName(0, isLifetime) != null) {
+        ItemStack item = makeNoneItem();
+        if(getItemName(0, isLifetime) != null && stat != null) {
+            item = getBase(gameAlias, stat);
             ItemMeta meta = item.getItemMeta();
             meta.displayName(style(getItemName(0, isLifetime), gameAlias));
             meta.lore(getLore(stat, gameAlias, isLifetime));
@@ -54,7 +56,7 @@ public class StatItem {
             case "did_leave" -> Component.text("Times disconnected: ").decoration(ITALIC, false);
             case "jumps" -> Component.text("Jumps: ").decoration(ITALIC, false);
             case "hits_dealt" -> Component.text("Dealt hits: ").decoration(ITALIC, false);
-            case "game_id", "game" -> isLifetime ? Component.text("Games played: ").decoration(ITALIC, false) :  Component.text("Games ID: ").decoration(ITALIC, false);
+            case "game_id", "game" -> isLifetime ? Component.text("Games played: ").decoration(ITALIC, false) :  Component.text("Game ID: ").decoration(ITALIC, false);
             case "placer_wins" -> Component.text("Placer wins: ").decoration(ITALIC, false);
             case "breaker_wins" -> Component.text("Breaker wins: ").decoration(ITALIC, false);
             case "map" -> Component.text("Map: ").decoration(ITALIC, false);
@@ -72,7 +74,13 @@ public class StatItem {
         return (Component) GameDistributor.distribute(GameDistributor.types.style, alias, c, false, 0);
     }
 
-
+    public ItemStack makeNoneItem(){
+        ItemStack item = new ItemStack(Material.BARRIER);
+        ItemMeta meta = item.getItemMeta();
+        meta.displayName(Component.text("This player hasn't player this game before").color(RED).decoration(ITALIC, false));
+        item.setItemMeta(meta);
+        return item;
+    }
 
     public ArrayList<Component> getLore(StatUnit<?>[] stat, String alias, boolean isLifetime){
         if(stat.length == 0){
@@ -88,9 +96,15 @@ public class StatItem {
             return lore;
         }else {
             lore = new ArrayList<>();
-            if(stat[0].value instanceof ArrayList){
+            if (stat[0].value instanceof ArrayList){
                 ArrayList<?> list = (ArrayList<?>) stat[0].value;
                 list.forEach(e -> lore.add(Component.text(e + "").color(WHITE).decoration(ITALIC, false)));
+                for(int i = 1; i < stat.length; i++){
+                    list = (ArrayList<?>) stat[i].value;
+                    lore.add(style(getItemName(i, isLifetime), alias));
+                    list.forEach(e -> lore.add(Component.text(e + "").color(WHITE).decoration(ITALIC, false)));
+                }
+                return lore;
             }
         }
         Component com = Component.text(stat[0].value + "").color(WHITE).decoration(ITALIC, false);

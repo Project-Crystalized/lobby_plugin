@@ -49,6 +49,11 @@ public class LsStats {
         try(Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM LsGamesPlayers WHERE player_uuid = ? AND game = ?;");
             int gameId = getGameId(page, p);
+            if(gameId == -1){
+                ArrayList<StatItem> none = new ArrayList<>();
+                none.add(new StatItem(null, "ls", false));
+                return none;
+            }
             prep.setInt(2, gameId);
             if(isLifetime){
                 prep = conn.prepareStatement("SELECT * FROM LsGamesPlayers WHERE player_uuid = ?;");
@@ -62,6 +67,10 @@ public class LsStats {
             ArrayList<StatUnit<?>> units = new ArrayList<>();
             for (int i = 1; i <= count; i++) {
                 Function<ResultSet, ?> fun = StatItem.getMethod(data.getColumnTypeName(i), data.getColumnLabel(i));
+                if(fun.apply(set) == null){
+                    units.add(new StatUnit<>(p, data.getColumnLabel(i), 0, "ls", isLifetime));
+                    continue;
+                }
                 if (isLifetime && data.getColumnLabel(i).equals("game")) {
                     units.add(new StatUnit<>(p, data.getColumnLabel(i), gameId, "ls", isLifetime));
                 } else if (isLifetime && data.getColumnLabel(i).equals("was_winner")) {
@@ -93,7 +102,9 @@ public class LsStats {
             PreparedStatement prep = conn.prepareStatement("SELECT game FROM LsGamesPlayers WHERE player_uuid = ? ORDER BY game DESC;");
             prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
-            set.next();
+            if(!set.next()){
+                return -1;
+            }
             int total = getTotalGames(p);
             if(page <= -1){
                 return total;
@@ -203,7 +214,7 @@ public class LsStats {
         int total = countGames(p, false);
         int won = countGames(p, true);
         if(total < 10){
-            return "Play at least 10 games see your percentage";
+            return "Play at least 10 games to see your percentage";
         }
         return ((won / total) * 100) + "%";
     }
@@ -211,7 +222,7 @@ public class LsStats {
     public static ArrayList<Component> loreForItems(short[] items){
         ArrayList<Component> components = new ArrayList<>();
         if(items.length == 0){
-            components.add(Component.text("This player didn't buy any items").decoration(ITALIC, false).color(RED));
+            components.add(Component.text("This player didn't buy any items").decoration(ITALIC, false).color(WHITE));
             return components;
         }
         int i = 1;
