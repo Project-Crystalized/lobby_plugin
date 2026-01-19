@@ -45,11 +45,11 @@ public class StatView implements Listener {
                line++;
                slot = nextLine[line];
            }
-           if(slot == 49){
-               inv.setItem(slot+2, s.item);
+           if(slot != 49){
+               inv.setItem(slot, s.item);
            }
-           inv.setItem(slot, s.item);
            slot = slot + 2;
+            inv.setItem(slot, s.item);
         }
         if(!isLifetime){
             inv.setItem(48, App.ProfileScrollLeft.build());
