@@ -6,6 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import gg.crystalized.lobby.statistics.StatView;
 import io.papermc.paper.entity.TeleportFlag;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
@@ -255,7 +256,7 @@ class NPCData{
                 return;
             }
 
-            if(getKeyName(k, "connect").toLowerCase().contains(keyName) && k.contains("connect")){
+            if(getKeyName(k, "connect").toLowerCase().contains(keyName) && k.contains("connect") || getKeyName(k, "statistics").toLowerCase().contains(keyName) && k.contains("statistics")){
                 action = map.get(k).getAsString();
                 return;
             }
@@ -276,6 +277,8 @@ class NPCData{
             re = "connect";
         }else if(key.toLowerCase().contains("teleport")){
             re = "teleport";
+        }else if(key.toLowerCase().contains("statistics")){
+            re = "statistics";
         }
         return re;
     }
@@ -307,6 +310,10 @@ class NPCData{
 
     public void action(Player p){
         if(action instanceof String){
+            if(((String)action).length() <= 3){
+                StatView.create(p, (String)action).startGameView();
+                return;
+            }
             ByteArrayDataOutput out = ByteStreams.newDataOutput();
             out.writeUTF("Connect");
             out.writeUTF((String)action);

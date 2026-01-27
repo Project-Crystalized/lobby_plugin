@@ -1,12 +1,17 @@
 package gg.crystalized.lobby.statistics;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
 import gg.crystalized.lobby.LobbyDatabase;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.profile.PlayerTextures;
 
 import java.nio.ByteBuffer;
 import java.sql.*;
@@ -97,7 +102,68 @@ public class LsStats {
         }
     }
 
+    public static ArrayList<PlayerItem> getGameStats(int page){
+        try(Connection conn = DriverManager.getConnection(URL)) {
+            int gameId = getGameId(page);
+            PreparedStatement prep = conn.prepareStatement("SELECT player_uuid, kills, assists, deaths, damage_dealt, was_winner FROM LsGamesPlayers WHERE game = ?;");
+            prep.setInt(1, gameId);
+            ResultSet set = prep.executeQuery();
+            ArrayList<PlayerItem> players = new ArrayList<>();
+            while(set.next()){
+                ByteBuffer bb = ByteBuffer.wrap(set.getBytes("player_uuid"));
+                OfflinePlayer player = Bukkit.getOfflinePlayer(new UUID(bb.getLong(), bb.getLong()));
+
+                ItemStack member = new ItemStack(Material.PLAYER_HEAD, 1);
+                SkullMeta skull = (SkullMeta) member.getItemMeta();
+                PlayerProfile profile = (PlayerProfile) Bukkit.createPlayerProfile(UUID.randomUUID());
+                PlayerTextures texture = profile.getTextures();
+                texture.setSkin(player.getPlayerProfile().getTextures().getSkin());
+                profile.setTextures(texture);
+                skull.setPlayerProfile(profile);
+                member.setItemMeta(skull);
+                ItemMeta meta = member.getItemMeta();
+                ArrayList<Component> lore = new ArrayList<>();
+                lore.add(Component.text("Kills: " + set.getInt("kills")).color(WHITE).decoration(ITALIC, false));
+                lore.add(Component.text("Assists: " + set.getInt("assists")).color(WHITE).decoration(ITALIC, false));
+                lore.add(Component.text("Deaths: " + set.getInt("deaths")).color(WHITE).decoration(ITALIC, false));
+                lore.add(Component.text("Damage: " + set.getInt("damage_dealt")).color(WHITE).decoration(ITALIC, false));
+                meta.lore(lore);
+
+                NamedTextColor color = RED;
+                String add = "";
+                if(set.getInt("was_winner") == 1){
+                    color = GREEN;
+                    add = "[w]";
+                    players.add(new PlayerItem(member, 1));
+                }else{
+                    players.add(new PlayerItem(member, 2));
+                }
+                meta.displayName(Component.text(add + player.getName()).color(color).decoration(ITALIC, false));
+                member.setItemMeta(meta);
+            }
+
+            ItemStack info = new ItemStack(Material.IRON_BLOCK);
+            ItemMeta meta = info.getItemMeta();
+            meta.displayName(Component.text("Game: " + gameId).color(WHITE).decoration(ITALIC, false));
+            ArrayList<Component> lore = new ArrayList<>();
+            lore.add(Component.text("Map: " + getMap(gameId)).color(WHITE).decoration(ITALIC, false));
+            lore.add(Component.text("Placer wins: " + getWins(gameId, true)).color(WHITE).decoration(ITALIC, false));
+            lore.add(Component.text("Breaker wins: " + getWins(gameId, false)).color(WHITE).decoration(ITALIC, false));
+            meta.lore(lore);
+            info.setItemMeta(meta);
+            players.add(new PlayerItem(info, 0));
+            return players;
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't get game stats");
+            return null;
+        }
+    }
+
     public static Integer getGameId(int page, OfflinePlayer p){
+        if(p == null){
+            return getGameId(page);
+        }
         try(Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("SELECT game FROM LsGamesPlayers WHERE player_uuid = ? ORDER BY game DESC;");
             prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
@@ -125,10 +191,50 @@ public class LsStats {
         return -1;
     }
 
+    public static Integer getGameId(int page){
+        try(Connection conn = DriverManager.getConnection(URL)) {
+            PreparedStatement prep = conn.prepareStatement("SELECT game FROM LsGamesPlayers ORDER BY game DESC;");
+            ResultSet set = prep.executeQuery();
+            if(!set.next()){
+                return -1;
+            }
+            int total = getTotalGames();
+            if(page <= -1){
+                return total;
+            }
+            if(page > total){
+                return 0;
+            }
+            for(int i = total; i >= total-page; i--){
+                if(i == total-page){
+                    return set.getInt("game");
+                }
+                set.next();
+            }
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't get gameId");
+        }
+        return -1;
+    }
+
     public static Integer getTotalGames(OfflinePlayer p){
         try(Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("SELECT COUNT(game) AS game FROM LsGamesPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
+            ResultSet set = prep.executeQuery();
+            set.next();
+            return set.getInt("game");
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't get gameId");
+        }
+        return -1;
+    }
+
+    public static Integer getTotalGames(){
+        try(Connection conn = DriverManager.getConnection(URL)) {
+            PreparedStatement prep = conn.prepareStatement("SELECT COUNT(game) AS game FROM LsGamesPlayers;");
             ResultSet set = prep.executeQuery();
             set.next();
             return set.getInt("game");
@@ -168,13 +274,30 @@ public class LsStats {
             PreparedStatement prep = conn.prepareStatement("SELECT map FROM LiteStrikeGames WHERE game_id = ?;");
             prep.setInt(1, gameId);
             ResultSet set = prep.executeQuery();
-            ArrayList<String> names = new ArrayList<>();
             set.next();
             return set.getString("map");
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't get map");
             return null;
+        }
+    }
+
+    public static int getWins(int gameId, boolean placer){
+        try(Connection conn = DriverManager.getConnection(URL)) {
+            String type = "breaker_wins";
+            if(placer){
+                type = "placer_wins";
+            }
+            PreparedStatement prep = conn.prepareStatement("SELECT " + type + " FROM LiteStrikeGames WHERE game_id = ?;");
+            prep.setInt(1, gameId);
+            ResultSet set = prep.executeQuery();
+            set.next();
+            return set.getInt(type);
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't get map");
+            return 0;
         }
     }
 
@@ -205,7 +328,7 @@ public class LsStats {
             return set.getInt("count");
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get team");
+            Bukkit.getLogger().warning("couldn't count games");
             return 0;
         }
     }
@@ -361,6 +484,8 @@ enum LsGroup {
                 return new ItemStack(DIAMOND_CHESTPLATE);
             case JUMPS:
                 return new ItemStack(LEATHER_BOOTS);
+            case TEAM:
+                return new ItemStack(PUMPKIN_SEEDS);
             default: return new ItemStack(COAL);
         }
     }

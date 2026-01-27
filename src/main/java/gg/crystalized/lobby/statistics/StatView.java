@@ -1,6 +1,7 @@
 package gg.crystalized.lobby.statistics;
 
 import gg.crystalized.lobby.App;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
@@ -12,6 +13,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 
 public class StatView implements Listener {
     static ArrayList<StatView> views = new ArrayList<>();
@@ -31,7 +35,7 @@ public class StatView implements Listener {
         return view;
     }
     public void startPlayerView(Inventory profile){
-        Inventory inv = Bukkit.createInventory(viewer, 54, "\uA000\uA006");
+        Inventory inv = Bukkit.createInventory(viewer, 54, Component.text("\uA000\uA006").color(WHITE));
         OfflinePlayer p = Bukkit.getOfflinePlayer(profile.getItem(2).getPersistentDataContainer().get(new NamespacedKey("crystalized", "profile_holder"), PersistentDataType.STRING));
         stats = p;
         boolean isLifetime = page == -1;
@@ -61,7 +65,7 @@ public class StatView implements Listener {
     }
 
     public void restartPlayerView(){
-        Inventory inv = Bukkit.createInventory(viewer, 54, "\uA000\uA006");
+        Inventory inv = Bukkit.createInventory(viewer, 54, Component.text("\uA000\uA006").color(WHITE));
         boolean isLifetime = page == -1;
         ArrayList<StatItem> stats = getForGame(alias, this.stats, isLifetime, page);
         int[] border = {8, 17, 26, 35, 44, 53};
@@ -79,6 +83,41 @@ public class StatView implements Listener {
         if(!isLifetime){
             inv.setItem(48, App.ProfileScrollLeft.build());
         }
+        inv.setItem(50, App.ProfileScrollRight.build());
+        viewer.openInventory(inv);
+        isInView = true;
+        views.add(this);
+    }
+
+    public void startGameView(){
+        Inventory inv = Bukkit.createInventory(viewer, 54, Component.text("\uA000\uA006").color(WHITE));
+        ArrayList<PlayerItem> stats = getGame(alias, page);
+        int teamNumber = getTeamNumber(stats);
+        ArrayList<ArrayList<PlayerItem>> teams = separateItems(stats, teamNumber);
+        int[] middle = {4, 13, 22, 31, 40, 49};
+        boolean isSoloOrDuo = isSoloOrDuoTeamed(teams);
+        inv.setItem(4, teams.getFirst().getFirst().item);
+        int i = 1;
+        int slot = 0;
+        for(ArrayList<PlayerItem> list : teams){
+            if((i == 1 && !(list.size() > 7)) || (isSoloOrDuo && teams.size() > 20)){
+                i++;
+                slot = 0;
+            }
+            for(PlayerItem item : list){
+                inv.setItem(middle[i] + slot, item.item);
+                if(slot == Math.floor((double) list.size() /2) || slot == -Math.floor((double) list.size() /2)){
+                    slot = 0;
+                    i++;
+                }
+                slot++;
+            }
+            if(!isSoloOrDuo){
+                i++;
+                slot = 0;
+            }
+        }
+        inv.setItem(48, App.ProfileScrollLeft.build());
         inv.setItem(50, App.ProfileScrollRight.build());
         viewer.openInventory(inv);
         isInView = true;
@@ -106,8 +145,46 @@ public class StatView implements Listener {
         return (ArrayList<StatItem>) GameDistributor.distribute(GameDistributor.types.getForGame, alias, p, isLifetime, page);
     }
 
+    public static ArrayList<PlayerItem> getGame(String alias, int page){
+        return (ArrayList<PlayerItem>) GameDistributor.distribute(GameDistributor.types.getGame, alias, null, false, page);
+    }
+
     public static Integer getTotal(String alias, OfflinePlayer p){
         return (Integer) GameDistributor.distribute(GameDistributor.types.getTotal, alias, p, false, -1);
+    }
+
+    public static int getTeamNumber(ArrayList<PlayerItem> items){
+        int teamNumber = 1;
+        for(PlayerItem i : items){
+            if(i.team > teamNumber){
+                teamNumber = i.team;
+            }
+        }
+        return teamNumber;
+    }
+
+    public static ArrayList<ArrayList<PlayerItem>> separateItems(ArrayList<PlayerItem> items, int teamnumber){
+        ArrayList<ArrayList<PlayerItem>> list = new ArrayList<>();
+        for(int i = 0; i <= teamnumber +1; i++ ){
+            list.add(new ArrayList<>());
+        }
+        for(PlayerItem i : items){
+            list.get(i.team).add(i);
+        }
+        return list;
+    }
+
+    public static boolean isSoloOrDuoTeamed(ArrayList<ArrayList<PlayerItem>> teams){
+        int number = 0;
+        for(ArrayList<PlayerItem> list : teams){
+            if(list.size() == 1 || list.size() == 2){
+                number++;
+            }
+        }
+        if((double) number /teams.size() > 0.4 && teams.size() >= 2){
+            return true;
+        }
+        return false;
     }
 
     @EventHandler

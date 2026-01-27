@@ -50,7 +50,7 @@ public class StatItem {
             case "gained_money" -> Component.text("Money earned: ").decoration(ITALIC, false);
             case "spent_money" -> Component.text("Money spent: ").decoration(ITALIC, false);
             case "bought_items" -> Component.text("Items bought: ").decoration(ITALIC, false);
-            case "was_winner" -> Component.text("Games won: ").decoration(ITALIC, false);
+            case "was_winner", "games_won" -> Component.text("Games won: ").decoration(ITALIC, false);
             case "damage_dealt" -> Component.text("Damage dealt: ").decoration(ITALIC, false);
             case "deaths" -> Component.text("Deaths: ").decoration(ITALIC, false);
             case "did_leave" -> Component.text("Times disconnected: ").decoration(ITALIC, false);
@@ -64,10 +64,16 @@ public class StatItem {
             case "other_team" -> Component.text("Other team: ").decoration(ITALIC, false);
             case "percent" -> Component.text("Percentage of won games: ").decoration(ITALIC, false);
             case "name" -> Component.text("Player: ").decoration(ITALIC, false);
+            case "blocks_broken" -> Component.text("Blocks broken: ").decoration(ITALIC, false);
+            case "blocks_placed" -> Component.text("Blocks placed: ").decoration(ITALIC, false);
+            case "items_collected" -> Component.text("Items collected: ").decoration(ITALIC, false);
+            case "items_used" -> Component.text("Items used: ").decoration(ITALIC, false);
+            case "gametype" -> Component.text("Gametype: ").decoration(ITALIC, false);
             default -> Component.text(stat[i].name).decoration(ITALIC, false);
         };
         //TODO names for lifetime
         //TODO ko and cb stuff
+        //TODO translations
     }
 
     public Component style(Component c, String alias){
@@ -215,7 +221,7 @@ public class StatItem {
     }
 
     public static boolean notIndividual(Object o){
-        return !o.equals(LsGroup.GAMES);
+        return !o.equals(LsGroup.GAMES) && !o.equals(KoGroup.GAMES);
     }
 }
 
@@ -244,6 +250,14 @@ class StatUnit<T> {
     public static ArrayList<StatUnit<?>[]> organiseForGroup(ArrayList<StatUnit<?>> units, String alias){
         return (ArrayList<StatUnit<?>[]>) GameDistributor.distribute(GameDistributor.types.organiseForGroup, alias, units, false, 0);
     }
+}
 
+class PlayerItem{
+    public ItemStack item;
+    public int team;
 
+    public PlayerItem(ItemStack item, int team){
+        this.item = item;
+        this.team = team;
+    }
 }
