@@ -311,7 +311,7 @@ class NPCData{
     public void action(Player p){
         if(action instanceof String){
             if(((String)action).length() <= 3){
-                StatView.create(p, (String)action).startGameView();
+                StatView.create(p, (String)action).startGameView(true);
                 return;
             }
             ByteArrayDataOutput out = ByteStreams.newDataOutput();

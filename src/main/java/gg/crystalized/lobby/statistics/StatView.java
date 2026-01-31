@@ -24,6 +24,7 @@ public class StatView implements Listener {
     Player viewer;
     OfflinePlayer stats;
     boolean isInView = false;
+    boolean isGameView = false;
 
     public StatView(Player viewer, String alias){
         this.viewer = viewer;
@@ -89,7 +90,11 @@ public class StatView implements Listener {
         views.add(this);
     }
 
-    public void startGameView(){
+    public void startGameView(boolean first){
+        isGameView = true;
+        if(first){
+            page = 0;
+        }
         Inventory inv = Bukkit.createInventory(viewer, 54, Component.text("\uA000\uA006").color(WHITE));
         ArrayList<PlayerItem> stats = getGame(alias, page);
         int teamNumber = getTeamNumber(stats);
@@ -103,6 +108,7 @@ public class StatView implements Listener {
             if((i == 1 && !(list.size() > 7)) || (isSoloOrDuo && teams.size() > 20)){
                 i++;
                 slot = 0;
+                continue;
             }
             for(PlayerItem item : list){
                 inv.setItem(middle[i] + slot, item.item);
@@ -117,7 +123,9 @@ public class StatView implements Listener {
                 slot = 0;
             }
         }
-        inv.setItem(48, App.ProfileScrollLeft.build());
+        if(page != 0) {
+            inv.setItem(48, App.ProfileScrollLeft.build());
+        }
         inv.setItem(50, App.ProfileScrollRight.build());
         viewer.openInventory(inv);
         isInView = true;
@@ -201,15 +209,20 @@ public class StatView implements Listener {
         if(e.getCurrentItem() == null){
             return;
         }
+
         if(e.getCurrentItem().equals(App.ProfileScrollRight.build())){
-            if(!(view.page >= games)) {
+            if(!(view.page > games)) {
                 view.page++;
             }
-            view.restartPlayerView();
         }else if(e.getCurrentItem().equals(App.ProfileScrollLeft.build())){
             if (!(view.page <= -1)) {
                 view.page--;
             }
+        }
+
+        if(view.isGameView) {
+            view.startGameView(false);
+        }else{
             view.restartPlayerView();
         }
     }
