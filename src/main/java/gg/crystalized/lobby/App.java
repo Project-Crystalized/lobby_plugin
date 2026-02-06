@@ -237,7 +237,7 @@ public enum App {
             CosmeticView.findView(p).endView();
         }
         if(this.toString().contains("Stats")){
-            StatView.create(p, (String)extra).startPlayerView(p.getOpenInventory().getTopInventory());
+            StatView.create(p, (String)extra).startPlayerView(p.getOpenInventory().getTopInventory().getItem(2));
             return;
         }
         if(extra instanceof Location){

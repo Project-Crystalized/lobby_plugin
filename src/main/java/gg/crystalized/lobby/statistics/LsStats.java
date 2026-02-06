@@ -4,6 +4,7 @@ import com.destroystokyo.paper.profile.PlayerProfile;
 import gg.crystalized.lobby.LobbyDatabase;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -23,8 +24,8 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 import static org.bukkit.Material.*;
 
-public class LsStats {
-    public static final String URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/litestrike_db.sql";
+public class LsStats extends Statistics{
+    static String URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/litestrike_db.sql";
     static String[] LsItem = new String[]{
         null,
         "item.minecraft.diamond_chestplate",
@@ -50,237 +51,56 @@ public class LsStats {
         "crystalized.sword.underdog.name",
         "item.minecraft.crossbow"
     };
-    public static ArrayList<StatItem> getLsPlayerStats(OfflinePlayer p, int page, boolean isLifetime){
-        try(Connection conn = DriverManager.getConnection(URL)) {
-            PreparedStatement prep = conn.prepareStatement("SELECT * FROM LsGamesPlayers WHERE player_uuid = ? AND game = ?;");
-            int gameId = getGameId(page, p);
-            if(gameId == -1){
-                ArrayList<StatItem> none = new ArrayList<>();
-                none.add(new StatItem(null, "ls", false));
-                return none;
-            }
-            prep.setInt(2, gameId);
-            if(isLifetime){
-                prep = conn.prepareStatement("SELECT * FROM LsGamesPlayers WHERE player_uuid = ?;");
-            }
-            prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
 
-            ResultSet set = prep.executeQuery();
-            set.next();
-            ResultSetMetaData data = set.getMetaData();
-            int count = data.getColumnCount();
-            ArrayList<StatUnit<?>> units = new ArrayList<>();
-            for (int i = 1; i <= count; i++) {
-                Function<ResultSet, ?> fun = StatItem.getMethod(data.getColumnTypeName(i), data.getColumnLabel(i));
-                if(fun.apply(set) == null){
-                    units.add(new StatUnit<>(p, data.getColumnLabel(i), 0, "ls", isLifetime));
+    public LsStats(Statistics stat) {
+        super(stat);
+    }
+
+
+    @Override
+    public void extraNoLifetimeStats(OfflinePlayer p, ArrayList<StatUnit<?>> units, int gameId, boolean isLifetime){
+        units.add(new StatUnit<>(p, "other_team", Statistics.stats.get("ls").getTeam(gameId, false), "ls", isLifetime));
+    }
+
+    @Override
+    public void addExtraGameStats(ArrayList<Component> lore, int gameId){
+        lore.add(StatItem.getItemName("placer_wins", false).color(WHITE).append(Component.text(getWins(gameId, true)).color(WHITE).decoration(ITALIC, false)));
+        lore.add(StatItem.getItemName("breaker_wins", false).color(WHITE).append(Component.text(getWins(gameId, false)).color(WHITE).decoration(ITALIC, false)));
+    }
+
+    @Override
+    public ArrayList<StatUnit<?>[]> organise(ArrayList<StatUnit<?>> units){
+        ArrayList<StatUnit<?>[]> fin = new ArrayList<>();
+        ArrayList<ArrayList<StatUnit<?>>> arrays = new ArrayList<>();
+        boolean lifetime = units.getFirst().isLifetime;
+        for(StatUnit<?> unit : units){
+            Group group = Group.getGroup(unit.name, unit.isLifetime);
+            if (group == null) {
+                continue;
+            }
+            boolean life = group.isLifetime;
+            boolean doesntexist = true;
+            for (ArrayList<StatUnit<?>> arr : arrays) {
+                if(Group.getGroup(arr.getFirst().name, life) == null){
                     continue;
                 }
-                if (isLifetime && data.getColumnLabel(i).equals("game")) {
-                    units.add(new StatUnit<>(p, data.getColumnLabel(i), gameId, "ls", isLifetime));
-                } else if (isLifetime && data.getColumnLabel(i).equals("was_winner")) {
-                    units.add(new StatUnit<>(p, data.getColumnLabel(i), countGames(p, true), "ls", isLifetime));
-                }else if (isLifetime && fun.apply(set) instanceof Integer) {
-                    units.add(new StatUnit<>(p, data.getColumnLabel(i), sumColumns(data.getColumnLabel(i), p), "ls", isLifetime));
-                }else {
-                    units.add(new StatUnit<>(p, data.getColumnLabel(i), fun.apply(set), "ls", isLifetime));
+                if (Group.getGroup(arr.getFirst().name, life).equals(group)) {
+                    arr.add(unit);
+                    doesntexist = false;
+                    break;
                 }
             }
-            if(isLifetime){
-                units.add(new StatUnit<>(p, "percent", calculatePercent(p), "ls", isLifetime));
-            }else{
-                units.add(new StatUnit<>(p, "winner", getTeam(gameId, true), "ls", isLifetime));
-                units.add(new StatUnit<>(p, "other_team", getTeam(gameId, false), "ls", isLifetime));
-                units.add(new StatUnit<>(p, "map", getMap(gameId), "ls", isLifetime));
+            if (doesntexist) {
+                ArrayList<StatUnit<?>> unitArray = new ArrayList<>();
+                unitArray.add(unit);
+                arrays.add(unitArray);
             }
-            units.add(new StatUnit<>(p, "name", p.getName(), "ls", isLifetime));
-            return StatItem.makeItemFromUnit(units, "ls", isLifetime);
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get stat data for ls player: " + p.getName());
-            return null;
         }
-    }
-
-    public static ArrayList<PlayerItem> getGameStats(int page){
-        try(Connection conn = DriverManager.getConnection(URL)) {
-            int gameId = getGameId(page);
-            PreparedStatement prep = conn.prepareStatement("SELECT player_uuid, kills, assists, deaths, damage_dealt, was_winner FROM LsGamesPlayers WHERE game = ?;");
-            prep.setInt(1, gameId);
-            ResultSet set = prep.executeQuery();
-            ArrayList<PlayerItem> players = new ArrayList<>();
-            while(set.next()){
-                ByteBuffer bb = ByteBuffer.wrap(set.getBytes("player_uuid"));
-                OfflinePlayer player = Bukkit.getOfflinePlayer(new UUID(bb.getLong(), bb.getLong()));
-
-                ItemStack member = new ItemStack(Material.PLAYER_HEAD, 1);
-                SkullMeta skull = (SkullMeta) member.getItemMeta();
-                PlayerProfile profile = (PlayerProfile) Bukkit.createPlayerProfile(UUID.randomUUID());
-                PlayerTextures texture = profile.getTextures();
-                texture.setSkin(player.getPlayerProfile().getTextures().getSkin());
-                profile.setTextures(texture);
-                skull.setPlayerProfile(profile);
-                member.setItemMeta(skull);
-                ItemMeta meta = member.getItemMeta();
-                ArrayList<Component> lore = new ArrayList<>();
-                lore.add(Component.text("Kills: " + set.getInt("kills")).color(WHITE).decoration(ITALIC, false));
-                lore.add(Component.text("Assists: " + set.getInt("assists")).color(WHITE).decoration(ITALIC, false));
-                lore.add(Component.text("Deaths: " + set.getInt("deaths")).color(WHITE).decoration(ITALIC, false));
-                lore.add(Component.text("Damage: " + set.getInt("damage_dealt")).color(WHITE).decoration(ITALIC, false));
-                meta.lore(lore);
-
-                NamedTextColor color = RED;
-                String add = "";
-                if(set.getInt("was_winner") == 1){
-                    color = GREEN;
-                    add = "[w]";
-                    players.add(new PlayerItem(member, 1));
-                }else{
-                    players.add(new PlayerItem(member, 2));
-                }
-                meta.displayName(Component.text(add + player.getName()).color(color).decoration(ITALIC, false));
-                member.setItemMeta(meta);
-            }
-
-            ItemStack info = new ItemStack(Material.IRON_BLOCK);
-            ItemMeta meta = info.getItemMeta();
-            meta.displayName(Component.text("Game: " + gameId).color(WHITE).decoration(ITALIC, false));
-            ArrayList<Component> lore = new ArrayList<>();
-            lore.add(Component.text("Map: " + getMap(gameId)).color(WHITE).decoration(ITALIC, false));
-            lore.add(Component.text("Placer wins: " + getWins(gameId, true)).color(WHITE).decoration(ITALIC, false));
-            lore.add(Component.text("Breaker wins: " + getWins(gameId, false)).color(WHITE).decoration(ITALIC, false));
-            meta.lore(lore);
-            info.setItemMeta(meta);
-            players.add(new PlayerItem(info, 0));
-            return players;
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get game stats");
-            return null;
+        for(ArrayList<StatUnit<?>> list : arrays){
+            fin.add(StatUnit.toArray(list));
         }
-    }
-
-    public static Integer getGameId(int page, OfflinePlayer p){
-        if(p == null){
-            return getGameId(page);
-        }
-        try(Connection conn = DriverManager.getConnection(URL)) {
-            PreparedStatement prep = conn.prepareStatement("SELECT game FROM LsGamesPlayers WHERE player_uuid = ? ORDER BY game DESC;");
-            prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
-            ResultSet set = prep.executeQuery();
-            if(!set.next()){
-                return -1;
-            }
-            int total = getTotalGames(p);
-            if(page <= -1){
-                return total;
-            }
-            if(page > total){
-                return 0;
-            }
-            for(int i = total; i >= total-page; i--){
-                if(i == total-page){
-                    return set.getInt("game");
-                }
-                set.next();
-            }
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get gameId");
-        }
-        return -1;
-    }
-
-    public static Integer getGameId(int page){
-        try(Connection conn = DriverManager.getConnection(URL)) {
-            PreparedStatement prep = conn.prepareStatement("SELECT game FROM LsGamesPlayers ORDER BY game DESC;");
-            ResultSet set = prep.executeQuery();
-            if(!set.next()){
-                return -1;
-            }
-            int total = getTotalGames();
-            if(page <= -1){
-                return total;
-            }
-            if(page > total){
-                return 0;
-            }
-            for(int i = total; i >= total-page; i--){
-                if(i == total-page){
-                    return set.getInt("game");
-                }
-                set.next();
-            }
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get gameId");
-        }
-        return -1;
-    }
-
-    public static Integer getTotalGames(OfflinePlayer p){
-        try(Connection conn = DriverManager.getConnection(URL)) {
-            PreparedStatement prep = conn.prepareStatement("SELECT COUNT(game) AS game FROM LsGamesPlayers WHERE player_uuid = ?;");
-            prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
-            ResultSet set = prep.executeQuery();
-            set.next();
-            return set.getInt("game");
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get gameId");
-        }
-        return -1;
-    }
-
-    public static Integer getTotalGames(){
-        try(Connection conn = DriverManager.getConnection(URL)) {
-            PreparedStatement prep = conn.prepareStatement("SELECT COUNT(game) AS game FROM LsGamesPlayers;");
-            ResultSet set = prep.executeQuery();
-            set.next();
-            return set.getInt("game");
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get gameId");
-        }
-        return -1;
-    }
-
-    public static ArrayList<String> getTeam(int gameId, boolean won){
-        try(Connection conn = DriverManager.getConnection(URL)) {
-            PreparedStatement prep = conn.prepareStatement("SELECT player_uuid FROM LsGamesPlayers WHERE was_winner = ? AND game = ?;");
-            if (won) {
-                prep.setInt(1, 1);
-            } else {
-                prep.setInt(1, 0);
-            }
-            prep.setInt(2, gameId);
-            ResultSet set = prep.executeQuery();
-            ArrayList<String> names = new ArrayList<>();
-            while(set.next()){
-                ByteBuffer bb = ByteBuffer.wrap(set.getBytes("player_uuid"));
-                OfflinePlayer player = Bukkit.getOfflinePlayer(new UUID(bb.getLong(), bb.getLong()));
-                names.add(player.getName());
-            }
-            return names;
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get team");
-            return null;
-        }
-    }
-
-    public static String getMap(int gameId){
-        try(Connection conn = DriverManager.getConnection(URL)) {
-            PreparedStatement prep = conn.prepareStatement("SELECT map FROM LiteStrikeGames WHERE game_id = ?;");
-            prep.setInt(1, gameId);
-            ResultSet set = prep.executeQuery();
-            set.next();
-            return set.getString("map");
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get map");
-            return null;
-        }
+        fin = Group.sortByPriority(fin);
+        return fin;
     }
 
     public static int getWins(int gameId, boolean placer){
@@ -301,47 +121,6 @@ public class LsStats {
         }
     }
 
-    public static int sumColumns(String column, OfflinePlayer p){
-        try(Connection conn = DriverManager.getConnection(URL)) {
-            PreparedStatement prep = conn.prepareStatement("SELECT SUM(" + column + ") AS sum FROM LsGamesPlayers WHERE player_uuid = ?;");
-            prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
-            ResultSet set = prep.executeQuery();
-            set.next();
-            return set.getInt("sum");
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get team");
-            return 0;
-        }
-    }
-
-    public static int countGames(OfflinePlayer p, boolean withWinning){
-        try(Connection conn = DriverManager.getConnection(URL)) {
-            String add = "";
-            if(withWinning){
-                add = " AND was_winner = 1";
-            }
-            PreparedStatement prep = conn.prepareStatement("SELECT COUNT(game) AS count FROM LsGamesPlayers WHERE player_uuid = ?" + add + ";");
-            prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
-            ResultSet set = prep.executeQuery();
-            set.next();
-            return set.getInt("count");
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't count games");
-            return 0;
-        }
-    }
-
-    public static String calculatePercent(OfflinePlayer p){
-        int total = countGames(p, false);
-        int won = countGames(p, true);
-        if(total < 10){
-            return "Play at least 10 games to see your percentage";
-        }
-        return ((won / total) * 100) + "%";
-    }
-
     public static ArrayList<Component> loreForItems(short[] items){
         ArrayList<Component> components = new ArrayList<>();
         if(items.length == 0){
@@ -357,113 +136,12 @@ public class LsStats {
         }
         return components;
     }
-}
 
-
-enum LsGroup {
-    GAMES(new String[]{"name", "game", "was_winner", "percent"}, true),
-    GAME(new String[]{"game", "map", "name"}, false),
-    TEAM(new String[]{"winner", "other_team"}, false),
-    WIN(new String[]{"placer_wins", "breaker_wins"}, false),
-    DEATHS(new String[]{"kills", "assists", "deaths", "did_leave"}, true),
-    DAMAGE(new String[]{"damage_dealt", "hits_dealt"}, true),
-    BOMBS(new String[]{"placed_bombs", "broken_bombs"}, true),
-    MONEY(new String[]{"gained_money", "spent_money"}, true),
-    ITEMS(new String[]{"bought_items"}, false),
-    JUMPS(new String[]{"jumps"}, true);
-    final String[] columns;
-    final boolean isLifetime;
-    LsGroup(String[] columns, boolean isLifetime) {
-        this.columns = columns;
-        this.isLifetime = isLifetime;
-    }
-
-    public static LsGroup getGroup(String name, boolean lifetime) {
-        LsGroup group = group(name, lifetime);
-        if(group != null){
-            return group;
-        }
-        group = group(name, !lifetime);
-        if(!(!lifetime && group != null && StatItem.notIndividual(group))) {
-            return null;
-        }
-        return group;
-    }
-
-    public static LsGroup group(String name, boolean lifetime){
-        for (LsGroup group : LsGroup.values()) {
-            if (List.of(group.columns).contains(name) && group.isLifetime == lifetime) {
-                return group;
-            }
-        }
-        return null;
-    }
-
-    public static ArrayList<StatUnit<?>[]> organise(ArrayList<StatUnit<?>> units){
-        ArrayList<StatUnit<?>[]> fin = new ArrayList<>();
-        ArrayList<ArrayList<StatUnit<?>>> arrays = new ArrayList<>();
-        boolean lifetime = units.getFirst().isLifetime;
-        for(StatUnit<?> unit : units){
-            LsGroup group = getGroup(unit.name, unit.isLifetime);
-            if (group == null) {
-                continue;
-            }
-            boolean life = group.isLifetime;
-            boolean doesntexist = true;
-            for (ArrayList<StatUnit<?>> arr : arrays) {
-                if(getGroup(arr.getFirst().name, life) == null){
-                    continue;
-                }
-                if (getGroup(arr.getFirst().name, life).equals(group)) {
-                    arr.add(unit);
-                    doesntexist = false;
-                    break;
-                }
-            }
-            if (doesntexist) {
-                ArrayList<StatUnit<?>> unitArray = new ArrayList<>();
-                unitArray.add(unit);
-                arrays.add(unitArray);
-            }
-        }
-        for(ArrayList<StatUnit<?>> list : arrays){
-            fin.add(StatUnit.toArray(list));
-        }
-        fin = sortByPriority(fin);
-        return fin;
-    }
-
-    public static ArrayList<StatUnit<?>[]> sortByPriority(ArrayList<StatUnit<?>[]> stat){
-        for(StatUnit<?>[] unit : stat){
-            if(unit.length == 1 || unit.length == 0){
-                continue;
-            }
-            LsGroup group = getGroup(unit[0].name, unit[0].isLifetime);
-            unit = sortWithTemplate(unit, group);
-        }
-        
-        stat.sort((un1, un2) -> un1.length != 0 && un2.length != 0 ? getGroup(un1[0].name, un1[0].isLifetime).ordinal() > getGroup(un2[0].name, un2[0].isLifetime).ordinal() ? 1 : -1 : 0);
-        return stat;
-    }
-
-    public static StatUnit<?>[] sortWithTemplate(StatUnit<?>[] unit, LsGroup group){
-        List<String> c = Arrays.asList(group.columns);
-        StatUnit<?>[] stats = new StatUnit[group.columns.length];
-        for(StatUnit<?> stat : unit){
-            for(String s : group.columns){
-                if(stat.name.equals(s)){
-                    stats[c.indexOf(s)] = stat;
-                }
-            }
-        }
-        return stats;
-    }
-
-    public static ItemStack getBase(StatUnit<?>[] stat){
+    public ItemStack getBase(StatUnit<?>[] stat){
         if(stat.length == 0){
             return new ItemStack(COAL);
         }
-        switch(getGroup(stat[0].name, stat[0].isLifetime)){
+        switch(Group.getGroup(stat[0].name, stat[0].isLifetime)){
             case GAMES, GAME:
                 return new ItemStack(COMPASS);
             case WIN:
@@ -488,6 +166,75 @@ enum LsGroup {
                 return new ItemStack(PUMPKIN_SEEDS);
             default: return new ItemStack(COAL);
         }
+    }
+
+    enum Group {
+        GAMES(new String[]{"name", "game", "was_winner", "percent"}, true),
+        GAME(new String[]{"game", "map", "name"}, false),
+        TEAM(new String[]{"winner", "other_team"}, false),
+        WIN(new String[]{"placer_wins", "breaker_wins"}, false),
+        DEATHS(new String[]{"kills", "assists", "deaths", "did_leave"}, true),
+        DAMAGE(new String[]{"damage_dealt", "hits_dealt"}, true),
+        BOMBS(new String[]{"placed_bombs", "broken_bombs"}, true),
+        MONEY(new String[]{"gained_money", "spent_money"}, true),
+        ITEMS(new String[]{"bought_items"}, false),
+        JUMPS(new String[]{"jumps"}, true);
+        final String[] columns;
+        final boolean isLifetime;
+        Group(String[] columns, boolean isLifetime) {
+            this.columns = columns;
+            this.isLifetime = isLifetime;
+        }
+
+        public static Group getGroup(String name, boolean lifetime) {
+            Group group = group(name, lifetime);
+            if(group != null){
+                return group;
+            }
+            group = group(name, !lifetime);
+            if(!(!lifetime && group != null && StatItem.notIndividual(group))) {
+                return null;
+            }
+            return group;
+        }
+
+        public static Group group(String name, boolean lifetime){
+            for (Group group : Group.values()) {
+                if (List.of(group.columns).contains(name) && group.isLifetime == lifetime) {
+                    return group;
+                }
+            }
+            return null;
+        }
+
+
+
+        public static ArrayList<StatUnit<?>[]> sortByPriority(ArrayList<StatUnit<?>[]> stat){
+            for(StatUnit<?>[] unit : stat){
+                if(unit.length == 1 || unit.length == 0){
+                    continue;
+                }
+                Group group = getGroup(unit[0].name, unit[0].isLifetime);
+                unit = sortWithTemplate(unit, group);
+            }
+
+            stat.sort((un1, un2) -> un1.length != 0 && un2.length != 0 ? getGroup(un1[0].name, un1[0].isLifetime).ordinal() > getGroup(un2[0].name, un2[0].isLifetime).ordinal() ? 1 : -1 : 0);
+            return stat;
+        }
+
+        public static StatUnit<?>[] sortWithTemplate(StatUnit<?>[] unit, Group group){
+            List<String> c = Arrays.asList(group.columns);
+            StatUnit<?>[] stats = new StatUnit[group.columns.length];
+            for(StatUnit<?> stat : unit){
+                for(String s : group.columns){
+                    if(stat.name.equals(s)){
+                        stats[c.indexOf(s)] = stat;
+                    }
+                }
+            }
+            return stats;
+        }
+
     }
 }
 

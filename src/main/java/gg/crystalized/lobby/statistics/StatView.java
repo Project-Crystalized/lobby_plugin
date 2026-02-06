@@ -3,6 +3,7 @@ package gg.crystalized.lobby.statistics;
 import gg.crystalized.lobby.App;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -10,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ public class StatView implements Listener {
     OfflinePlayer stats;
     boolean isInView = false;
     boolean isGameView = false;
+    boolean onSide = false;
 
     public StatView(Player viewer, String alias){
         this.viewer = viewer;
@@ -35,12 +38,18 @@ public class StatView implements Listener {
         StatView view = new StatView(viewer, alias);
         return view;
     }
-    public void startPlayerView(Inventory profile){
+    public void startPlayerView(ItemStack player){
         Inventory inv = Bukkit.createInventory(viewer, 54, Component.text("\uA000\uA006").color(WHITE));
-        OfflinePlayer p = Bukkit.getOfflinePlayer(profile.getItem(2).getPersistentDataContainer().get(new NamespacedKey("crystalized", "profile_holder"), PersistentDataType.STRING));
+        OfflinePlayer p = Bukkit.getOfflinePlayer(player.getPersistentDataContainer().get(new NamespacedKey("crystalized", "profile_holder"), PersistentDataType.STRING));
         stats = p;
         boolean isLifetime = page == -1;
-        ArrayList<StatItem> stats = getForGame(alias, p, isLifetime, page);
+        Statistics sta = Statistics.stats.get(alias);
+        ArrayList<StatItem> stats;
+        if(isGameView){
+            stats = sta.getPlayerStats(alias, p, sta.getGameId(page), isLifetime);
+        }else {
+            stats = sta.getPlayerStats(alias, p, sta.getGameId(page, p), isLifetime);
+        }
         int[] border = {8, 17, 26, 35, 44, 53};
         int[] nextLine = {2, 11, 20, 29, 38, 47};
         int slot = 29;
@@ -50,16 +59,19 @@ public class StatView implements Listener {
                line++;
                slot = nextLine[line];
            }
-           if(slot != 49){
-               inv.setItem(slot, s.item);
+           if(slot == 49){
+               slot = slot + 2;
            }
+
+           inv.setItem(slot, s.item);
            slot = slot + 2;
-            inv.setItem(slot, s.item);
         }
         if(!isLifetime){
             inv.setItem(48, App.ProfileScrollLeft.build());
         }
-        inv.setItem(50, App.ProfileScrollRight.build());
+        if(!isGameView) {
+            inv.setItem(50, App.ProfileScrollRight.build());
+        }
         viewer.openInventory(inv);
         isInView = true;
         views.add(this);
@@ -68,7 +80,8 @@ public class StatView implements Listener {
     public void restartPlayerView(){
         Inventory inv = Bukkit.createInventory(viewer, 54, Component.text("\uA000\uA006").color(WHITE));
         boolean isLifetime = page == -1;
-        ArrayList<StatItem> stats = getForGame(alias, this.stats, isLifetime, page);
+        Statistics sta = Statistics.stats.get(alias);
+        ArrayList<StatItem> stats = sta.getPlayerStats(alias, this.stats, sta.getGameId(page, this.stats), isLifetime);
         int[] border = {8, 17, 26, 35, 44, 53};
         int[] nextLine = {2, 11, 20, 29, 38, 47};
         int slot = 29;
@@ -78,6 +91,10 @@ public class StatView implements Listener {
                 line++;
                 slot = nextLine[line];
             }
+            if(slot == 49){
+                slot = slot + 2;
+            }
+
             inv.setItem(slot, s.item);
             slot = slot + 2;
         }
@@ -92,11 +109,13 @@ public class StatView implements Listener {
 
     public void startGameView(boolean first){
         isGameView = true;
+        onSide = false;
         if(first){
             page = 0;
         }
         Inventory inv = Bukkit.createInventory(viewer, 54, Component.text("\uA000\uA006").color(WHITE));
-        ArrayList<PlayerItem> stats = getGame(alias, page);
+        Statistics sta = Statistics.stats.get(alias);
+        ArrayList<PlayerItem> stats = sta.getGameStats(page);
         int teamNumber = getTeamNumber(stats);
         ArrayList<ArrayList<PlayerItem>> teams = separateItems(stats, teamNumber);
         int[] middle = {4, 13, 22, 31, 40, 49};
@@ -149,18 +168,6 @@ public class StatView implements Listener {
         return null;
     }
 
-    public static ArrayList<StatItem> getForGame(String alias, OfflinePlayer p, boolean isLifetime, int page){
-        return (ArrayList<StatItem>) GameDistributor.distribute(GameDistributor.types.getForGame, alias, p, isLifetime, page);
-    }
-
-    public static ArrayList<PlayerItem> getGame(String alias, int page){
-        return (ArrayList<PlayerItem>) GameDistributor.distribute(GameDistributor.types.getGame, alias, null, false, page);
-    }
-
-    public static Integer getTotal(String alias, OfflinePlayer p){
-        return (Integer) GameDistributor.distribute(GameDistributor.types.getTotal, alias, p, false, -1);
-    }
-
     public static int getTeamNumber(ArrayList<PlayerItem> items){
         int teamNumber = 1;
         for(PlayerItem i : items){
@@ -202,7 +209,8 @@ public class StatView implements Listener {
         if(view == null){
             return;
         }
-        int games = getTotal(view.alias, view.stats);
+        Statistics sta = Statistics.stats.get(alias);
+        int games = sta.getTotalGames();
         if(!view.isInView){
             return;
         }
@@ -211,13 +219,17 @@ public class StatView implements Listener {
         }
 
         if(e.getCurrentItem().equals(App.ProfileScrollRight.build())){
-            if(!(view.page > games)) {
+            if(!(view.page >= games)) {
                 view.page++;
             }
         }else if(e.getCurrentItem().equals(App.ProfileScrollLeft.build())){
-            if (!(view.page <= -1)) {
+            if (!(view.page <= -1) && !onSide) {
                 view.page--;
             }
+        }else if(e.getCurrentItem().getType() == Material.PLAYER_HEAD){
+            view.startPlayerView(e.getCurrentItem());
+            onSide = true;
+            return;
         }
 
         if(view.isGameView) {

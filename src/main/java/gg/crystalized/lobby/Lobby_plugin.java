@@ -34,6 +34,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Level;
 
+import static gg.crystalized.lobby.statistics.Statistics.createStatistics;
 import static net.kyori.adventure.text.format.NamedTextColor.DARK_AQUA;
 import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 import static org.bukkit.Color.TEAL;
@@ -67,6 +68,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		saveResource("cosmetics.json", false);
 		Cosmetic.createCosmetics(getResource("cosmetics.json"));
 		EntityRefresh.setupEntityRefresh();
+		createStatistics();
 		protocolManager = ProtocolLibrary.getProtocolManager();
 
 		this.getCommand("chess").setExecutor(dc);

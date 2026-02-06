@@ -28,21 +28,18 @@ public class StatItem {
     public StatItem(StatUnit<?>[] stat, String gameAlias, boolean isLifetime){
         this.stat = stat;
         ItemStack item = makeNoneItem();
-        if(getItemName(0, isLifetime) != null && stat != null) {
-            item = getBase(gameAlias, stat);
+        if(getItemName(stat[0].name, isLifetime) != null && stat != null) {
+            item = Statistics.stats.get(gameAlias).statClass.cast(Statistics.stats.get(gameAlias).newInst()).getBase(stat);
             ItemMeta meta = item.getItemMeta();
-            meta.displayName(style(getItemName(0, isLifetime), gameAlias));
+            meta.displayName(style(getItemName(stat[0].name, isLifetime), gameAlias));
             meta.lore(getLore(stat, gameAlias, isLifetime));
             item.setItemMeta(meta);
         }
         this.item = item;
     }
 
-    public Component getItemName(int i, boolean isLifetime){
-        if(stat.length == 0){
-            return null;
-        }
-        return switch (stat[i].name) {
+    public static Component getItemName(String s, boolean isLifetime){
+        return switch (s) {
             case "placed_bombs" -> Component.text("Bombs placed: ").decoration(ITALIC, false);
             case "broken_bombs" -> Component.text("Bombs broken: ").decoration(ITALIC, false);
             case "kills" -> Component.text("Kills: ").decoration(ITALIC, false);
@@ -69,7 +66,7 @@ public class StatItem {
             case "items_collected" -> Component.text("Items collected: ").decoration(ITALIC, false);
             case "items_used" -> Component.text("Items used: ").decoration(ITALIC, false);
             case "gametype" -> Component.text("Gametype: ").decoration(ITALIC, false);
-            default -> Component.text(stat[i].name).decoration(ITALIC, false);
+            default -> Component.text(s).decoration(ITALIC, false);
         };
         //TODO names for lifetime
         //TODO ko and cb stuff
@@ -77,7 +74,8 @@ public class StatItem {
     }
 
     public Component style(Component c, String alias){
-        return (Component) GameDistributor.distribute(GameDistributor.types.style, alias, c, false, 0);
+        Statistics sta = Statistics.stats.get(alias);
+        return c.color(sta.color);
     }
 
     public ItemStack makeNoneItem(){
@@ -107,7 +105,7 @@ public class StatItem {
                 list.forEach(e -> lore.add(Component.text(e + "").color(WHITE).decoration(ITALIC, false)));
                 for(int i = 1; i < stat.length; i++){
                     list = (ArrayList<?>) stat[i].value;
-                    lore.add(style(getItemName(i, isLifetime), alias));
+                    lore.add(style(getItemName(stat[i].name, isLifetime), alias));
                     list.forEach(e -> lore.add(Component.text(e + "").color(WHITE).decoration(ITALIC, false)));
                 }
                 return lore;
@@ -116,23 +114,19 @@ public class StatItem {
         Component com = Component.text(stat[0].value + "").color(WHITE).decoration(ITALIC, false);
         lore.add(com);
         for(int i = 1; i < stat.length; i++){
-            lore.add(style(getItemName(i, isLifetime), alias));
+            lore.add(style(getItemName(stat[i].name, isLifetime), alias));
             Component value = Component.text(stat[i].value + "").color(WHITE).decoration(ITALIC, false);
             lore.add(value);
         }
         return lore;
     }
 
-    public static ArrayList<StatItem> makeItemFromUnit(ArrayList<StatUnit<?>> units, String alias, boolean isLifetime){
+    public static ArrayList<StatItem> makeItemFromUnit(ArrayList<StatUnit<?>> units, String alias, boolean isLifetime) {
         ArrayList<StatItem> items = new ArrayList<>();
-        for(StatUnit<?>[] stats : StatUnit.organiseForGroup(units, alias)){
+        for (StatUnit<?>[] stats : Statistics.stats.get(alias).statClass.cast(Statistics.stats.get(alias).newInst()).organise(units)) {
             items.add(new StatItem(stats, alias, isLifetime));
         }
         return items;
-    }
-
-    public ItemStack getBase(String alias, StatUnit<?>[] stats){
-        return (ItemStack) GameDistributor.distribute(GameDistributor.types.getBase, alias, stats, false, 0);
     }
 
     public static short[] convertByteToShort(byte[] b){
@@ -221,7 +215,7 @@ public class StatItem {
     }
 
     public static boolean notIndividual(Object o){
-        return !o.equals(LsGroup.GAMES) && !o.equals(KoGroup.GAMES);
+        return !o.equals(LsStats.Group.GAMES) && !o.equals(KoStats.Group.GAMES);
     }
 }
 
@@ -245,10 +239,6 @@ class StatUnit<T> {
             array[i] = list.get(i);
         }
         return array;
-    }
-
-    public static ArrayList<StatUnit<?>[]> organiseForGroup(ArrayList<StatUnit<?>> units, String alias){
-        return (ArrayList<StatUnit<?>[]>) GameDistributor.distribute(GameDistributor.types.organiseForGroup, alias, units, false, 0);
     }
 }
 

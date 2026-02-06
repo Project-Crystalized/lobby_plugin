@@ -174,6 +174,17 @@ public final class PlayerListener implements Listener {
 				fw.setFireworkMeta(fwm);
 		}
 		e.setCancelled(true);
+		if (!CitizensAPI.getNPCRegistry().isNPC(e.getRightClicked())) {
+			return;
+		}
+		NPC npc = CitizensAPI.getNPCRegistry().getNPC(e.getRightClicked());
+		World w = e.getPlayer().getWorld();
+		for(NPCData data : LobbyConfig.NPCs.values()){
+			if(!data.loc.equals(e.getRightClicked().getLocation())){
+				continue;
+			}
+			data.action(e.getPlayer());
+		}
 	}
 
 	@EventHandler
@@ -191,9 +202,8 @@ public final class PlayerListener implements Listener {
 			if(!data.loc.equals(e.getEntity().getLocation())){
 				continue;
 			}
-			data.action((Player) e.getDamager());
+			data.action((Player)e.getDamager());
 		}
-
 	}
 
 	@EventHandler
