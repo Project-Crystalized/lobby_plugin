@@ -40,36 +40,35 @@ public class StatItem {
 
     public static Component getItemName(String s, boolean isLifetime){
         return switch (s) {
-            case "placed_bombs" -> Component.text("Bombs placed: ").decoration(ITALIC, false);
-            case "broken_bombs" -> Component.text("Bombs broken: ").decoration(ITALIC, false);
-            case "kills" -> Component.text("Kills: ").decoration(ITALIC, false);
-            case "assists" -> Component.text("Assists: ").decoration(ITALIC, false);
-            case "gained_money" -> Component.text("Money earned: ").decoration(ITALIC, false);
-            case "spent_money" -> Component.text("Money spent: ").decoration(ITALIC, false);
-            case "bought_items" -> Component.text("Items bought: ").decoration(ITALIC, false);
-            case "was_winner", "games_won" -> Component.text("Games won: ").decoration(ITALIC, false);
-            case "damage_dealt" -> Component.text("Damage dealt: ").decoration(ITALIC, false);
-            case "deaths" -> Component.text("Deaths: ").decoration(ITALIC, false);
-            case "did_leave" -> Component.text("Times disconnected: ").decoration(ITALIC, false);
-            case "jumps" -> Component.text("Jumps: ").decoration(ITALIC, false);
-            case "hits_dealt" -> Component.text("Dealt hits: ").decoration(ITALIC, false);
-            case "game_id", "game" -> isLifetime ? Component.text("Games played: ").decoration(ITALIC, false) :  Component.text("Game ID: ").decoration(ITALIC, false);
-            case "placer_wins" -> Component.text("Placer wins: ").decoration(ITALIC, false);
-            case "breaker_wins" -> Component.text("Breaker wins: ").decoration(ITALIC, false);
-            case "map" -> Component.text("Map: ").decoration(ITALIC, false);
-            case "winner" -> Component.text("Winner: ").decoration(ITALIC, false);
-            case "other_team" -> Component.text("Other team: ").decoration(ITALIC, false);
-            case "percent" -> Component.text("Percentage of won games: ").decoration(ITALIC, false);
-            case "name" -> Component.text("Player: ").decoration(ITALIC, false);
-            case "blocks_broken" -> Component.text("Blocks broken: ").decoration(ITALIC, false);
-            case "blocks_placed" -> Component.text("Blocks placed: ").decoration(ITALIC, false);
-            case "items_collected" -> Component.text("Items collected: ").decoration(ITALIC, false);
-            case "items_used" -> Component.text("Items used: ").decoration(ITALIC, false);
-            case "gametype" -> Component.text("Gametype: ").decoration(ITALIC, false);
+            case "placed_bombs" -> Component.translatable("crystalized.shardcore.stats.placed_bombs").decoration(ITALIC, false);
+            case "broken_bombs" -> Component.translatable("crystalized.shardcore.stats.broken_bombs").decoration(ITALIC, false);
+            case "kills" -> Component.translatable("crystalized.shardcore.stats.kills").decoration(ITALIC, false);
+            case "assists" -> Component.translatable("crystalized.shardcore.stats.assists").decoration(ITALIC, false);
+            case "gained_money" -> Component.translatable("crystalized.shardcore.stats.gained_money").decoration(ITALIC, false);
+            case "spent_money" -> Component.translatable("crystalized.shardcore.stats.spent_money").decoration(ITALIC, false);
+            case "bought_items" -> Component.translatable("crystalized.shardcore.stats.bought_items").decoration(ITALIC, false);
+            case "was_winner", "games_won" -> Component.translatable("crystalized.shardcore.stats.games_won").decoration(ITALIC, false);
+            case "damage_dealt" -> Component.translatable("crystalized.shardcore.stats.damage_dealt").decoration(ITALIC, false);
+            case "deaths" -> Component.translatable("crystalized.shardcore.stats.deaths").decoration(ITALIC, false);
+            case "did_leave" -> Component.translatable("crystalized.shardcore.stats.did_leave").decoration(ITALIC, false);
+            case "jumps" -> Component.translatable("crystalized.shardcore.stats.jumps").decoration(ITALIC, false);
+            case "hits_dealt" -> Component.translatable("crystalized.shardcore.stats.hits_dealt").decoration(ITALIC, false);
+            case "game_id", "game" -> isLifetime ? Component.translatable("crystalized.shardcore.stats.games_played").decoration(ITALIC, false) :  Component.translatable("crystalized.shardcore.stats.game_id").decoration(ITALIC, false);
+            case "placer_wins" -> Component.translatable("crystalized.shardcore.stats.placer_wins").decoration(ITALIC, false);
+            case "breaker_wins" -> Component.translatable("crystalized.shardcore.stats.breaker_wins").decoration(ITALIC, false);
+            case "map" -> Component.translatable("crystalized.shardcore.stats.map").decoration(ITALIC, false);
+            case "winner" -> Component.translatable("crystalized.shardcore.stats.winner").decoration(ITALIC, false);
+            case "other_team" -> Component.translatable("crystalized.shardcore.stats.other_team").decoration(ITALIC, false);
+            case "percent" -> Component.translatable("crystalized.shardcore.stats.percent").decoration(ITALIC, false);
+            case "name" -> Component.translatable("crystalized.shardcore.stats.name").decoration(ITALIC, false);
+            case "blocks_broken" -> Component.translatable("crystalized.shardcore.stats.blocks_broken").decoration(ITALIC, false);
+            case "blocks_placed" -> Component.translatable("crystalized.shardcore.stats.blocks_placed").decoration(ITALIC, false);
+            case "items_collected" -> Component.translatable("crystalized.shardcore.stats.items_collected").decoration(ITALIC, false);
+            case "items_used" -> Component.translatable("crystalized.shardcore.stats.items_used").decoration(ITALIC, false);
+            case "gametype" -> Component.translatable("crystalized.shardcore.stats.gametype").decoration(ITALIC, false);
             default -> Component.text(s).decoration(ITALIC, false);
         };
-        //TODO names for lifetime
-        //TODO ko and cb stuff
+        //TODO cb stuff
         //TODO translations
     }
 
@@ -81,7 +80,7 @@ public class StatItem {
     public ItemStack makeNoneItem(){
         ItemStack item = new ItemStack(Material.BARRIER);
         ItemMeta meta = item.getItemMeta();
-        meta.displayName(Component.text("This player hasn't player this game before").color(RED).decoration(ITALIC, false));
+        meta.displayName(Component.translatable("crystalized.shardcore.stats.never_played").color(RED).decoration(ITALIC, false));
         item.setItemMeta(meta);
         return item;
     }

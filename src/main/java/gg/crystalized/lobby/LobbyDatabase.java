@@ -1,6 +1,9 @@
 package gg.crystalized.lobby;
 import java.nio.ByteBuffer;
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
@@ -23,6 +26,7 @@ public class LobbyDatabase {
             + "rank_id     INTEGER,"
             + "pay_rank_id   INTEGER,"
             + "skin_url    STRING"
+            + "last_login   INTEGER"
             + ");";
 
     String createFriendsTable = "CREATE TABLE IF NOT EXISTS Friends ("
@@ -124,6 +128,23 @@ public class LobbyDatabase {
             Bukkit.getLogger().warning(e.getMessage());
             //Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
             return null;
+        }
+    }
+
+    public static boolean loggedInToday(Player player){
+        try(Connection conn = DriverManager.getConnection(URL)) {
+            PreparedStatement prep = conn.prepareStatement("SELECT * FROM LobbyPlayers WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(player));
+            ResultSet set = prep.executeQuery();
+            set.next();
+            int seconds = set.getInt("last_login");
+            LocalDateTime lastLogin = LocalDateTime.parse(new Date(Long.parseLong("" + seconds) * 1000).toString());
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            return lastLogin.getDayOfYear() == currentDateTime.getDayOfYear() && lastLogin.getYear() == currentDateTime.getYear();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            //Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
+            return false;
         }
     }
 
@@ -249,8 +270,8 @@ public class LobbyDatabase {
 
     public static void makeNewLobbyPlayersEntry(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
-            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id, pay_rank_id, skin_url)"
-                    + "VALUES (?, ?, 1, 0, 0, 0, 0, 0, ?)";
+            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id, pay_rank_id, skin_url, last_login)"
+                    + "VALUES (?, ?, 1, 0, 0, 0, 0, 0, ?, unixepoch())";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.setString(2, p.getName());

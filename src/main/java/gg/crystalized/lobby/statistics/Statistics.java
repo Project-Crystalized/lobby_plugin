@@ -175,15 +175,13 @@ public class Statistics implements Methods{
                 meta.lore(lore);
 
                 NamedTextColor color = RED;
-                String add = "";
                 if(set.getInt(wasWinner) == 1){
                     color = GREEN;
-                    add = "[w]";
                     players.add(new PlayerItem(member, 1));
                 }else{
                     players.add(new PlayerItem(member, 2));
                 }
-                meta.displayName(Component.text(add + player.getName()).color(color).decoration(ITALIC, false));
+                meta.displayName(Component.text(player.getName()).color(color).decoration(ITALIC, false));
                 member.setItemMeta(meta);
             }
 
