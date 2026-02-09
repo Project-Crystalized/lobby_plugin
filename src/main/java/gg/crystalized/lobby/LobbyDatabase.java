@@ -1,9 +1,11 @@
 package gg.crystalized.lobby;
 import java.nio.ByteBuffer;
 import java.sql.*;
+import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
@@ -12,6 +14,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
+
+import javax.swing.text.DateFormatter;
 
 public class LobbyDatabase {
     public static final String URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/lobby_db.sql";
@@ -25,8 +29,10 @@ public class LobbyDatabase {
             + "online     INTEGER,"
             + "rank_id     INTEGER,"
             + "pay_rank_id   INTEGER,"
-            + "skin_url    STRING"
-            + "last_login   INTEGER"
+            + "skin_url    STRING,"
+            + "first_login   INTEGER,"
+            + "last_login   INTEGER,"
+            + "times_logged_in   INTEGER"
             + ");";
 
     String createFriendsTable = "CREATE TABLE IF NOT EXISTS Friends ("
@@ -133,14 +139,86 @@ public class LobbyDatabase {
 
     public static boolean loggedInToday(Player player){
         try(Connection conn = DriverManager.getConnection(URL)) {
-            PreparedStatement prep = conn.prepareStatement("SELECT * FROM LobbyPlayers WHERE player_uuid = ?;");
+            PreparedStatement prep = conn.prepareStatement("SELECT last_login FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(player));
             ResultSet set = prep.executeQuery();
             set.next();
             int seconds = set.getInt("last_login");
-            LocalDateTime lastLogin = LocalDateTime.parse(new Date(Long.parseLong("" + seconds) * 1000).toString());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate lastLogin = LocalDate.parse(new Date(Long.parseLong("" + seconds) * 1000).toString(), formatter);
+            LocalDate currentDate = LocalDate.now();
+            return lastLogin.getDayOfYear() == currentDate.getDayOfYear() && lastLogin.getYear() == currentDate.getYear();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            //Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
+            return false;
+        }
+    }
+
+    public static boolean loggedInYesterday(Player player){
+        try(Connection conn = DriverManager.getConnection(URL)) {
+            PreparedStatement prep = conn.prepareStatement("SELECT last_login FROM LobbyPlayers WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(player));
+            ResultSet set = prep.executeQuery();
+            set.next();
+            int seconds = set.getInt("last_login");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate lastLogin = LocalDate.parse(new Date(Long.parseLong("" + seconds) * 1000).toString(), formatter);
             LocalDateTime currentDateTime = LocalDateTime.now();
-            return lastLogin.getDayOfYear() == currentDateTime.getDayOfYear() && lastLogin.getYear() == currentDateTime.getYear();
+            return lastLogin.getDayOfYear() == currentDateTime.getDayOfYear() -1 && lastLogin.getYear() == currentDateTime.getYear();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            //Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
+            return false;
+        }
+    }
+
+    public static void updateLastLogin(Player player){
+        try(Connection conn = DriverManager.getConnection(URL)) {
+            PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET last_login = unixepoch() WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(player));
+            prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            //Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
+        }
+    }
+
+    public static void updateLoginTimes(Player player){
+        try(Connection conn = DriverManager.getConnection(URL)) {
+            PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET times_logged_in = ? WHERE player_uuid = ?;");
+            prep.setInt(1, getTimesLoggedIn(player) + 1);
+            prep.setBytes(2, uuid_to_bytes(player));
+            prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            //Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
+        }
+    }
+
+    public static int getTimesLoggedIn(Player player){
+        try(Connection conn = DriverManager.getConnection(URL)) {
+            PreparedStatement prep = conn.prepareStatement("SELECT times_logged_in FROM LobbyPlayers WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(player));
+            ResultSet set = prep.executeQuery();
+            set.next();
+            return set.getInt("times_logged_in");
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            //Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
+            return 0;
+        }
+    }
+
+    public static boolean wasFirstLogin(Player player){
+        try(Connection conn = DriverManager.getConnection(URL)) {
+            PreparedStatement prep = conn.prepareStatement("SELECT last_login, first_login FROM LobbyPlayers WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(player));
+            ResultSet set = prep.executeQuery();
+            set.next();
+            int last = set.getInt("last_login");
+            int first = set.getInt("first_login");
+            return last == first;
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             //Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
@@ -270,8 +348,8 @@ public class LobbyDatabase {
 
     public static void makeNewLobbyPlayersEntry(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
-            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id, pay_rank_id, skin_url, last_login)"
-                    + "VALUES (?, ?, 1, 0, 0, 0, 0, 0, ?, unixepoch())";
+            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id, pay_rank_id, skin_url, first_login, last_login, times_logged_in)"
+                    + "VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?, unixepoch(), unixepoch(), 1)";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.setString(2, p.getName());

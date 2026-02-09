@@ -87,4 +87,16 @@ public class LevelManager implements Listener {
             Bukkit.getLogger().warning("couldn't update xp or level of " + p.getName());
         }
     }
+
+    public static void rewardForLogin(Player p){
+        if(LobbyDatabase.loggedInToday(p) && LobbyDatabase.getTimesLoggedIn(p) > 1){
+            return;
+        }
+
+        if(LobbyDatabase.loggedInYesterday(p) || LobbyDatabase.getTimesLoggedIn(p) == 1){
+            giveExperience(p, 4);
+            return;
+        }
+        giveExperience(p, 2);
+    }
 }

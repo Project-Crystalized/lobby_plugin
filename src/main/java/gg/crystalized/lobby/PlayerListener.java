@@ -59,7 +59,6 @@ public final class PlayerListener implements Listener {
 			LobbyDatabase.makeNewLobbyPlayersEntry(p);
 			LobbyDatabase.addCosmetic(p, Cosmetic.getCosmeticById(6), true);
 			LobbyDatabase.makeNewSettingsEntry(p);
-			//TODO Tutorial here maybe?
 		}
 
 		e.joinMessage(Ranks.getJoinMessage(p));
@@ -84,6 +83,9 @@ public final class PlayerListener implements Listener {
 		Setting.updatePlayerHeight(p);
 
 		LevelManager.updateLevel(p);
+		LevelManager.rewardForLogin(p);
+		LobbyDatabase.updateLastLogin(p);
+		LobbyDatabase.updateLoginTimes(p);
 		HashMap<String, Object> map = LobbyDatabase.fetchAndDeleteTemporaryData(p);
 		if(map.get("xp_amount") != null) {
 			LevelManager.giveExperience(p, (Integer) map.get("xp_amount"));
