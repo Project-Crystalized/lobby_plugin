@@ -208,6 +208,7 @@ public class Ranks {
 
     public static void renderNameTags(Player p){
         Scoreboard s = p.getScoreboard();
+        /*
         for(int i = 0; i <= 7; i++){
             Team team  = s.registerNewTeam(getTeamName(i));
             team.color(NamedTextColor.namedColor(getColor(i).value()));

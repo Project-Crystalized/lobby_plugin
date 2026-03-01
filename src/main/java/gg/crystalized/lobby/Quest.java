@@ -189,9 +189,18 @@ public class Quest {
             return set.getInt(category.columnName);
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't fetch quests");
+            Bukkit.getLogger().warning("couldn't get progress");
         }
         return 0;
+    }
+
+    public static void checkAndComplete(Player p){
+        ArrayList<Quest> quests = getQuests(p);
+        for(Quest q : quests){
+            if(q.done) continue;
+            int progress = q.getProgress();
+            if(progress >= q.amount) q.done = true;
+        }
     }
 
     public static void setQuests(Inventory inv, Player p){
