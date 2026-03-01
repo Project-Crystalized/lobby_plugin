@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static gg.crystalized.lobby.Quest.setQuests;
 import static java.util.Arrays.stream;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
@@ -37,11 +38,13 @@ public enum App {
     Friends("ui/scn3/friends", useCases.Friends, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.translatable("crystalized.shardcore.party.name").color(WHITE).decoration(ITALIC, false), 30,
             "\uA000\uA005"),
     Maps("ui/scn3/maps", useCases.Map, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.translatable("crystalized.shardcore.maps.name").color(WHITE).decoration(ITALIC, false), 31,
-            "\uA000"), //TODO
+            "\uA000"), //TODO + inv
     Settings("ui/scn3/settings", useCases.Settings, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.settings.name").color(WHITE).decoration(ITALIC, false), 20,
               "\uA000\uA009"),
     Achieve("ui/scn3/achivements", useCases.Achievements, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.translatable("crystalized.shardcore.achivements.name").color(WHITE).decoration(ITALIC, false), 32,
-            "\uA000"),//TODO
+            "\uA000\uA011"),
+    Quest("", useCases.Quests, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.shardcore.quests.name").color(WHITE).decoration(ITALIC, false), 32,
+            "\uA000"),//TODO model + slot + name
     Shop("ui/scn3/shop", useCases.Shop, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.shop.name").color(WHITE).decoration(ITALIC, false), 33,
             "\uA000\uA004"),
     Wardrobe("ui/scn3/wardrobe", useCases.Wardrobe, new useCases[]{useCases.Menu}, Component.translatable("").color(WHITE).decoration(ITALIC, false), 38,
@@ -98,6 +101,7 @@ public enum App {
         Settings,
         Set,
         Achievements,
+        Quests,
         Hotbar,
         UI,
         Wardrobe,
@@ -264,6 +268,8 @@ public enum App {
                 Profile.prepareProfile(p, inv, p);
             }else if(this == App.Wardrobe){
                 CosmeticView.getView(p).startView(null);
+            }else if(this == App.Quest){
+                setQuests(inv, p);
             }
             p.openInventory(inv);
         }

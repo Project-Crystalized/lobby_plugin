@@ -50,6 +50,16 @@ public class Ranks {
         return getIcon(p).append(text(" ")).append(getColoredName(p));
     }
 
+    private static String getPName(OfflinePlayer p){
+        if(p.getName() != null){
+            return p.getName();
+        }
+        if(LobbyDatabase.getPlayerName(p) != null) {
+            return LobbyDatabase.getPlayerName(p);
+        }
+        return "null";
+    }
+
     public static Component getNameWithName(OfflinePlayer p){
         return getRankWithName(p).append(text(" ")).append(getColoredName(p));
     }
@@ -68,7 +78,7 @@ public class Ranks {
         } else if(rank == 5) {
             hexColor = "#087544";
         }
-        return Component.text(p.getName()).color(TextColor.fromHexString(hexColor)).decoration(ITALIC, false);
+        return Component.text(getPName(p)).color(TextColor.fromHexString(hexColor)).decoration(ITALIC, false);
     }
 
     public static TextColor getColor(int i){

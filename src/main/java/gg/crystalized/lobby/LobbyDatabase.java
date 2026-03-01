@@ -32,7 +32,8 @@ public class LobbyDatabase {
             + "skin_url    STRING,"
             + "first_login   INTEGER,"
             + "last_login   INTEGER,"
-            + "times_logged_in   INTEGER"
+            + "times_logged_in   INTEGER,"
+            + "last_quest_roll    INTEGER"
             + ");";
 
     String createFriendsTable = "CREATE TABLE IF NOT EXISTS Friends ("
@@ -64,6 +65,13 @@ public class LobbyDatabase {
             + "money_amount      INTEGER"
             +");";
 
+    String createQuestsTable = "CREATE TABLE IF NOT EXISTS Quests ("
+            + "player_uuid        BLOB,"
+            + "quest        TEXT,"
+            + "done      INTEGER,"
+            + "claimed    INTEGER"
+            +");";
+
         try (Connection conn = DriverManager.getConnection(URL)) {
             Statement stmt = conn.createStatement();
             stmt.execute(createLobbyPlayerTable);
@@ -71,6 +79,7 @@ public class LobbyDatabase {
             stmt.execute(createCosmeticsTable);
             stmt.execute(createSettingsTable);
             stmt.execute(createTemporaryData);
+            stmt.execute(createQuestsTable);
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("continuing without database");
@@ -207,6 +216,20 @@ public class LobbyDatabase {
             Bukkit.getLogger().warning(e.getMessage());
             //Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
             return 0;
+        }
+    }
+
+    public static String getPlayerName(OfflinePlayer player){
+        try(Connection conn = DriverManager.getConnection(URL)) {
+            PreparedStatement prep = conn.prepareStatement("SELECT player_name FROM LobbyPlayers WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(player));
+            ResultSet set = prep.executeQuery();
+            set.next();
+            return set.getString("player_name");
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            //Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
+            return "null";
         }
     }
 
@@ -348,8 +371,8 @@ public class LobbyDatabase {
 
     public static void makeNewLobbyPlayersEntry(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
-            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id, pay_rank_id, skin_url, first_login, last_login, times_logged_in)"
-                    + "VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?, unixepoch(), unixepoch(), 1)";
+            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id, pay_rank_id, skin_url, first_login, last_login, times_logged_in, last_quest_roll)"
+                    + "VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?, unixepoch(), unixepoch(), 1, unixepoch());";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.setString(2, p.getName());
@@ -544,6 +567,104 @@ public class LobbyDatabase {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't couldn't get shardcore");
             return null;
+        }
+    }
+
+    public static void rollOrFetchQuests(Player p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT last_quest_roll FROM LobbyPlayers WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            ResultSet set = prep.executeQuery();
+            set.next();
+            int seconds = set.getInt("last_quest_roll");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate lastRoll = LocalDate.parse(new Date(Long.parseLong("" + seconds) * 1000).toString(), formatter);
+            LocalDate currentDate = LocalDate.now();
+            if(currentDate.getDayOfYear() - lastRoll.getDayOfYear() >= 7 || currentDate.getYear() != lastRoll.getYear()){
+                PreparedStatement pr = conn.prepareStatement("UPDATE LobbyPlayers SET last_quest_roll = unixepoch() WHERE player_uuid = ?;");
+                pr.setBytes(1, uuid_to_bytes(p));
+                pr.executeUpdate();
+                rollQuests(p);
+                return;
+            }
+            fetchQuests(p);
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't roll or fetch quests");
+        }
+    }
+
+    public static void rollQuests(Player p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            Quest.removeQuests(p);
+            PreparedStatement prep = conn.prepareStatement("DELETE FROM Quests WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            prep.executeUpdate();
+            Quest[] quests = Quest.rollQuests(p);
+            PreparedStatement pr = conn.prepareStatement("INSERT INTO Quests(player_uuid, quest, done, claimed) VALUES (?, ?, 0, 0)");
+            for(Quest q : quests){
+                pr.setBytes(1, uuid_to_bytes(p));
+                pr.setString(2, q.questNumber);
+                pr.executeUpdate();
+            }
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't roll quests");
+        }
+    }
+
+    public static void fetchQuests(Player p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT * FROM Quests WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            ResultSet set = prep.executeQuery();
+            while(set.next()){
+                String number = set.getString("quest");
+                int done = set.getInt("done");
+                int claimed = set.getInt("claimed");
+                Quest.allQuests.add(new Quest(p, number, done == 1, claimed == 1));
+            }
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't fetch quests");
+        }
+    }
+
+    public static int getLastQuestRoll(Player p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT last_quest_roll FROM LobbyPlayers WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            ResultSet set = prep.executeQuery();
+            set.next();
+            return set.getInt("last_quest_roll");
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't roll or fetch quests");
+        }
+        return -1;
+    }
+
+    public static void questCompleted(Player p, String quest){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("UPDATE Quests SET done = 1 WHERE player_uuid = ? AND quest = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            prep.setString(2, quest);
+            prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't fetch quests");
+        }
+    }
+
+    public static void questClaimed(Player p, String quest){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("UPDATE Quests SET claimed = 1 WHERE player_uuid = ? AND quest = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            prep.setString(2, quest);
+            prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't fetch quests");
         }
     }
 

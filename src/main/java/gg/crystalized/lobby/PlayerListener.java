@@ -55,8 +55,10 @@ public final class PlayerListener implements Listener {
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
 
-		if(!LobbyDatabase.isPlayerInDatabase(p)){
+		boolean inDatabase = LobbyDatabase.isPlayerInDatabase(p);
+		if(!inDatabase){
 			LobbyDatabase.makeNewLobbyPlayersEntry(p);
+			LobbyDatabase.rollQuests(p);
 			LobbyDatabase.addCosmetic(p, Cosmetic.getCosmeticById(6), true);
 			LobbyDatabase.makeNewSettingsEntry(p);
 		}
@@ -86,6 +88,7 @@ public final class PlayerListener implements Listener {
 		LevelManager.rewardForLogin(p);
 		LobbyDatabase.updateLastLogin(p);
 		LobbyDatabase.updateLoginTimes(p);
+		if(inDatabase)LobbyDatabase.rollOrFetchQuests(p);
 		HashMap<String, Object> map = LobbyDatabase.fetchAndDeleteTemporaryData(p);
 		if(map.get("xp_amount") != null) {
 			LevelManager.giveExperience(p, (Integer) map.get("xp_amount"));
@@ -129,6 +132,8 @@ public final class PlayerListener implements Listener {
 		if(view != null && view.isRunning()){
 			view.endView();
 		}
+
+		Quest.removeQuests(e.getPlayer());
 	}
 
 	@EventHandler
