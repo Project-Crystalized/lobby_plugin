@@ -37,7 +37,7 @@ public class Setting {
         for(App app : App.values()){
             if(isThatToggle(app, value)){
                 int i = a.slot + 1;
-                inv.setItem(i, app.build());
+                inv.setItem(i, app.build(p));
                 return;
             }
         }
@@ -53,10 +53,10 @@ public class Setting {
 
     public static ItemStack addDescription(App a, Player p){
         if(a.self != App.useCases.Set){
-            return a.build();
+            return a.build(p);
         }
         double value = getValue((String)a.extra, p);
-        ItemStack item = a.build();
+        ItemStack item = a.build(p);
         if(getDescription(a, value) == null){
             return item;
         }

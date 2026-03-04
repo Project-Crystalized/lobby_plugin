@@ -1,5 +1,7 @@
 package gg.crystalized.lobby;
 
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.CustomModelData;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -127,6 +129,14 @@ public class Quest {
     public void claim(){
         LobbyDatabase.questClaimed(player, questNumber);
         claimed = true;
+        LevelManager.giveExperience(player, difficulty.exp);
+        LevelManager.giveMoney(player, difficulty.money);
+
+        for(Quest q : getQuests(player)){
+            if(q.done && !q.claimed) return;
+        }
+
+        App.Quest.deactivateApps(player);
     }
 
     public void complete(){
@@ -149,8 +159,10 @@ public class Quest {
             lore.add(Component.text(getProgress() + "/" + amount).color(GRAY).decoration(ITALIC, false));
         }
         lore.add(Component.text("Reward: " + difficulty.money + "[m]   " + difficulty.exp + "xp").color(GRAY).decoration(ITALIC, false));
+        lore.add(Component.text("Difficulty: " + difficulty).color(GRAY).decoration(ITALIC, false));
         meta.lore(lore);
         item.setItemMeta(meta);
+        if(done) item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(2).build());
         return item;
     }
 
@@ -188,8 +200,8 @@ public class Quest {
             set.next();
             return set.getInt(category.columnName);
         }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get progress");
+            //Bukkit.getLogger().warning(e.getMessage());
+            //Bukkit.getLogger().warning("couldn't get progress");
         }
         return 0;
     }
@@ -199,8 +211,21 @@ public class Quest {
         for(Quest q : quests){
             if(q.done) continue;
             int progress = q.getProgress();
-            if(progress >= q.amount) q.done = true;
+            if(progress >= q.amount){
+                q.complete();
+                App.Quest.activateApps(p);
+            }
         }
+    }
+
+    public static Quest identifyQuest(Player p, ItemStack i){
+        for(Quest q : getQuests(p)){
+            if(q.claimed) continue;
+            if(q.build().equals(i)){
+                return q;
+            }
+        }
+        return null;
     }
 
     public static void setQuests(Inventory inv, Player p){
@@ -217,7 +242,8 @@ public class Quest {
                 inv.setItem(4, q.build());
                 continue;
             }
-            if(q.build() == null){
+            if(q.claimed || q.build() == null){
+                slot = slot + 2;
                 continue;
             }
             inv.setItem(slot, q.build());
@@ -287,9 +313,10 @@ public class Quest {
         }
     }
     enum Difficulty{
-        EASY(25, 30),
-        MEDIUM(50, 60),
-        HARD(100, 90);
+        EASY(10, 5),
+        MEDIUM(30, 10),
+        HARD(50, 20),
+        EXPERT(80, 30);
         final int money;
         final int exp;
         Difficulty(int money, int exp){
@@ -301,15 +328,19 @@ public class Quest {
             double q1 = (min + q2) /2;
             double q3 = (max + q2) /2;
 
-            if((value >= min && value < q1) || baseDiff == HARD){
+            if((value >= min && value < q1) || baseDiff == EXPERT){
                 return baseDiff;
             }
 
-            if((value >= q1 && value < q3) || baseDiff == MEDIUM){
+            if((value >= q1 && value < q2) || baseDiff == HARD){
                 return Difficulty.values()[baseDiff.ordinal() +1];
             }
 
-            return Difficulty.values()[baseDiff.ordinal() +2];
+            if((value >= q2 && value < q3) || baseDiff == EASY){
+                return Difficulty.values()[baseDiff.ordinal() +2];
+            }
+
+            return Difficulty.values()[baseDiff.ordinal() +3];
         }
     }
 }

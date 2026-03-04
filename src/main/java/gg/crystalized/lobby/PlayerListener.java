@@ -77,6 +77,7 @@ public final class PlayerListener implements Listener {
 		p.getInventory().clear();
 		LobbyDatabase.updatePlayerNames(p);
 		LobbyDatabase.updateSkin(p);
+		App.active.put(p, new ArrayList<>());
 
 		Ranks.renderNameTags(p);
 		Ranks.renderTabList(p);
@@ -135,6 +136,7 @@ public final class PlayerListener implements Listener {
 		}
 
 		Quest.removeQuests(e.getPlayer());
+		App.active.remove(e.getPlayer());
 	}
 
 	@EventHandler

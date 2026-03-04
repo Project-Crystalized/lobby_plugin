@@ -52,15 +52,15 @@ public class Profile {
 
         for(Cosmetic c : cosmetics){
             if(c.isWearing(p) && c.ownsCosmetic(viewer)){
-                inv.setItem(getCosmeticSlot(c), c.build(c.isWearing(viewer), false, CosmeticView.isViewing(p.getPlayer(), c)));
+                inv.setItem(getCosmeticSlot(c), c.build(viewer, c.isWearing(viewer), false, CosmeticView.isViewing(p.getPlayer(), c)));
             }else if(c.isWearing(p)){
-                inv.setItem(getCosmeticSlot(c), c.build(null, false, CosmeticView.isViewing(p.getPlayer(), c)));
+                inv.setItem(getCosmeticSlot(c), c.build(viewer, null, false, CosmeticView.isViewing(p.getPlayer(), c)));
             }
         }
 
-        inv.setItem(30, App.ProfileLsStats.build());
-        inv.setItem(31, App.ProfileKoStats.build());
-        inv.setItem(32, App.ProfileCbStats.build());
+        inv.setItem(30, App.ProfileLsStats.build(viewer));
+        inv.setItem(31, App.ProfileKoStats.build(viewer));
+        inv.setItem(32, App.ProfileCbStats.build(viewer));
 
         if(p.getPlayer() == null){
             return;

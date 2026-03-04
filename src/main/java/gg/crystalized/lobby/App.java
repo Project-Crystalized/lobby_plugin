@@ -3,6 +3,8 @@ package gg.crystalized.lobby;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import gg.crystalized.lobby.statistics.StatView;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.CustomModelData;
 import io.papermc.paper.entity.TeleportFlag;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -19,6 +21,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -43,8 +46,8 @@ public enum App {
               "\uA000\uA009"),
     Achieve("ui/scn3/achivements", useCases.Achievements, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.translatable("crystalized.shardcore.achivements.name").color(WHITE).decoration(ITALIC, false), 32,
             "\uA000\uA011"),
-    Quest("", useCases.Quests, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.shardcore.quests.name").color(WHITE).decoration(ITALIC, false), 32,
-            "\uA000"),//TODO model + slot + name
+    Quest("ui/scn3/quests", useCases.Quests, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.shardcore.quests.name").color(WHITE).decoration(ITALIC, false), 32,
+            "\uA000"),//TODO slot + name
     Shop("ui/scn3/shop", useCases.Shop, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.shop.name").color(WHITE).decoration(ITALIC, false), 33,
             "\uA000\uA004"),
     Wardrobe("ui/scn3/wardrobe", useCases.Wardrobe, new useCases[]{useCases.Menu}, Component.translatable("").color(WHITE).decoration(ITALIC, false), 38,
@@ -117,6 +120,7 @@ public enum App {
     public Integer slot;
     int[] slots;
     Object extra;
+    static HashMap<OfflinePlayer, ArrayList<App>> active = new HashMap<>();
 
     App(String model,useCases self ,useCases[] uses, Component name, Integer slot, Object extra){
         this.model = model;
@@ -161,6 +165,17 @@ public enum App {
         }
     }
 
+    public ItemStack build(OfflinePlayer p){
+        ItemStack i = new ItemStack(Material.COAL);
+        ItemMeta meta = i.getItemMeta();
+        meta.setItemModel(new NamespacedKey("crystalized", model));
+        meta.displayName(name);
+        i.setItemMeta(meta);
+        if(active.get(p).contains(this)) i.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(2).build());
+        this.addPDC(i);
+        return i;
+    }
+
     public ItemStack build(){
         ItemStack i = new ItemStack(Material.COAL);
         ItemMeta meta = i.getItemMeta();
@@ -187,10 +202,10 @@ public enum App {
         item.editPersistentDataContainer(c);
     }
 
-    public static App identifyApp(ItemStack item){
+    public static App identifyApp(ItemStack item, Player p){
         App app = null;
         for(App a : App.values()){
-            if(a.build().equals(item)){
+            if(a.build().equals(item) || a.build(p).equals(item)){
                 app = a;
                 break;
             }
@@ -203,6 +218,59 @@ public enum App {
         UITemplates.createUI(inv, use);
         buildApps(inv, use, p);
         return inv;
+    }
+
+    public void activateApps(OfflinePlayer p){
+        if(active.get(p).contains(this)) return;
+        ArrayList<App> toAdd = new ArrayList<>();
+        active.get(p).add(this);
+        if(uses == null){
+            for(App app : App.values()){
+                if(app.self != null && app.use != null && app.self == use){
+                    toAdd.add(app);
+                }
+            }
+
+        }
+
+        for(App app : App.values()){
+            if(Arrays.asList(uses).contains(app.self)){
+                toAdd.add(app);
+            }
+        }
+
+        active.get(p).addAll(toAdd);
+
+        if(p.getPlayer() != null) {
+            InventoryManager.giveLobbyItems(p.getPlayer());
+        }
+    }
+
+    public void deactivateApps(OfflinePlayer p){
+        ArrayList<App> toRemove = new ArrayList<>();
+        active.get(p).remove(this);
+        if(uses == null){
+            for(App app : App.values()){
+                if(app.self != null && app.use != null && app.self == use){
+                    toRemove.add(app);
+                }
+            }
+            return;
+        }
+
+        for(App app : App.values()){
+            if(Arrays.asList(uses).contains(app.self)){
+                toRemove.add(app);
+            }
+        }
+
+        for(App a : toRemove){
+            active.get(p).remove(a);
+        }
+
+        if(p.getPlayer() != null) {
+            InventoryManager.giveLobbyItems(p.getPlayer());
+        }
     }
 
     public void action(Player p){
@@ -305,6 +373,8 @@ public enum App {
                 settings.placeUI(inv);
             }else if(use == useCases.Profiles){
                 profile.placeUI(inv);
+            }else if(use == useCases.Achievements){
+                friends.placeUI(inv);
             }else{
                 normal.placeUI(inv);
             }

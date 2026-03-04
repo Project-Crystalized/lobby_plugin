@@ -3,6 +3,8 @@ package gg.crystalized.lobby;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.CustomModelData;
 import io.papermc.paper.entity.LookAnchor;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
@@ -80,7 +82,7 @@ public class Cosmetic {
         };
     }
 
-    public ItemStack build(Boolean wearing, Boolean open, boolean viewing) {
+    public ItemStack build(OfflinePlayer p, Boolean wearing, Boolean open, boolean viewing) {
         ItemStack item = new ItemStack(Material.COAL);
         ItemMeta meta = item.getItemMeta();
         meta.setItemModel(new NamespacedKey("crystalized", itemModel));
@@ -90,13 +92,15 @@ public class Cosmetic {
             lore.add(Component.translatable("crystalized.item.shardcore3.desc").color(WHITE).decoration(ITALIC, false));
             meta.lore(lore);
             if (open) {
-                meta.setCustomModelData(1);
+                item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(1).build());;
             }
         } else {
             meta.displayName(name.color(WHITE).decoration(ITALIC, false));
             meta.lore(getDescription(wearing, viewing));
         }
         item.setItemMeta(meta);
+        if((wearing != null && wearing && slot == EquipmentSlot.HAND) && (!open && !App.active.get(p).isEmpty())) item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(2).build());
+        if((wearing != null && wearing && slot == EquipmentSlot.HAND) && open) item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(1).build());
         return item;
     }
 
@@ -136,7 +140,7 @@ public class Cosmetic {
             }
 
             if (InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0) != null) {
-                inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), c.build(null, false, CosmeticView.isViewing(p, c)));
+                inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), c.build(p, null, false, CosmeticView.isViewing(p, c)));
             } else {
                 break;
             }
@@ -183,7 +187,7 @@ public class Cosmetic {
     public static void giveCosmetics(Player p){
         for(Cosmetic c : Cosmetic.cosmetics){
             if(c.isWearing(p) && c.slot != EquipmentSlot.HAND){
-                p.sendEquipmentChange(p, c.slot, c.build(true, false, CosmeticView.isViewing(p, c)));
+                p.sendEquipmentChange(p, c.slot, c.build(p, true, false, CosmeticView.isViewing(p, c)));
             }
         }
     }
@@ -208,14 +212,14 @@ public class Cosmetic {
                     if (slot != EquipmentSlot.HAND) {
                         p.sendEquipmentChange(p, slot, null);
                     } else {
-                        p.getInventory().setItem(4, getCosmeticById(DEFAULT_SHARDCORE).build(false, true, CosmeticView.isViewing(p, this)));
+                        p.getInventory().setItem(4, getCosmeticById(DEFAULT_SHARDCORE).build(p, false, true, CosmeticView.isViewing(p, this)));
                     }
 
                 } else {
                     if (slot != EquipmentSlot.HAND) {
-                        p.sendEquipmentChange(p, slot, build(true, false, CosmeticView.isViewing(p, this)));
+                        p.sendEquipmentChange(p, slot, build(p, true, false, CosmeticView.isViewing(p, this)));
                     } else {
-                        p.getInventory().setItem(4, build(true, true, CosmeticView.isViewing(p, this)));
+                        p.getInventory().setItem(4, build(p, true, true, CosmeticView.isViewing(p, this)));
                     }
                 }
                 LobbyDatabase.cosmeticSetWearing(p, this, !isWearing(p));
@@ -254,7 +258,7 @@ public class Cosmetic {
     }
 
     public void rebuild(Inventory inv, int slot, Player p){
-        inv.setItem(slot, build(isWearing(p), false, CosmeticView.isViewing(p, this)));
+        inv.setItem(slot, build(p, isWearing(p), false, CosmeticView.isViewing(p, this)));
     }
 }
 
@@ -273,7 +277,7 @@ class CosmeticView{
         running = true;
         if(c != null){
             currentCosmetic = c;
-            mannequin.getOrAddTrait(Equipment.class).set(getEquipmentSlot(c.slot), c.build(false, false, isViewing(p, c)));
+            mannequin.getOrAddTrait(Equipment.class).set(getEquipmentSlot(c.slot), c.build(p, false, false, isViewing(p, c)));
         }
         Location loc = LobbyConfig.Locations.get("clothing_room").clone();
         SkinTrait skin = mannequin.getOrAddTrait(SkinTrait.class);
@@ -297,7 +301,7 @@ class CosmeticView{
         for(Equipment.EquipmentSlot key : equipment.keySet()){
             mannequin.getOrAddTrait(Equipment.class).set(key, null);
         }
-        mannequin.getOrAddTrait(Equipment.class).set(getEquipmentSlot(c.slot), c.build(false, false, isViewing(p, c)));
+        mannequin.getOrAddTrait(Equipment.class).set(getEquipmentSlot(c.slot), c.build(p, false, false, isViewing(p, c)));
     }
 
     public void removeCosmetic(){
@@ -351,7 +355,7 @@ class CosmeticView{
             }
 
             if (InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0) != null) {
-                inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), c.build(LobbyDatabase.isWearing(p,c), false, isViewing(p, c)));
+                inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), c.build(p, LobbyDatabase.isWearing(p,c), false, isViewing(p, c)));
             } else {
                 break;
             }
@@ -362,11 +366,11 @@ class CosmeticView{
 
     public void giveItems(){
         Inventory inv = p.getInventory();
-        inv.setItem(0, App.Wardrobe.build());
-        inv.setItem(1, App.Shop.build());
+        inv.setItem(0, App.Wardrobe.build(p));
+        inv.setItem(1, App.Shop.build(p));
         inv.clear(2);
         inv.clear(3);
-        inv.setItem(8, App.LeaveWardrobe.build());
+        inv.setItem(8, App.LeaveWardrobe.build(p));
     }
 
     private static Equipment.EquipmentSlot getEquipmentSlot(EquipmentSlot slot){

@@ -67,10 +67,10 @@ public class StatView implements Listener {
            slot = slot + 2;
         }
         if(!isLifetime){
-            inv.setItem(48, App.ProfileScrollLeft.build());
+            inv.setItem(48, App.ProfileScrollLeft.build(p));
         }
         if(!isGameView) {
-            inv.setItem(50, App.ProfileScrollRight.build());
+            inv.setItem(50, App.ProfileScrollRight.build(p));
         }
         viewer.openInventory(inv);
         isInView = true;
@@ -99,9 +99,9 @@ public class StatView implements Listener {
             slot = slot + 2;
         }
         if(!isLifetime){
-            inv.setItem(48, App.ProfileScrollLeft.build());
+            inv.setItem(48, App.ProfileScrollLeft.build(viewer));
         }
-        inv.setItem(50, App.ProfileScrollRight.build());
+        inv.setItem(50, App.ProfileScrollRight.build(viewer));
         viewer.openInventory(inv);
         isInView = true;
         views.add(this);
@@ -143,9 +143,9 @@ public class StatView implements Listener {
             }
         }
         if(page != 0) {
-            inv.setItem(48, App.ProfileScrollLeft.build());
+            inv.setItem(48, App.ProfileScrollLeft.build(viewer));
         }
-        inv.setItem(50, App.ProfileScrollRight.build());
+        inv.setItem(50, App.ProfileScrollRight.build(viewer));
         viewer.openInventory(inv);
         isInView = true;
         views.add(this);
@@ -218,11 +218,11 @@ public class StatView implements Listener {
             return;
         }
 
-        if(e.getCurrentItem().equals(App.ProfileScrollRight.build())){
+        if(e.getCurrentItem().equals(App.ProfileScrollRight.build(p))){
             if(!(view.page >= games)) {
                 view.page++;
             }
-        }else if(e.getCurrentItem().equals(App.ProfileScrollLeft.build())){
+        }else if(e.getCurrentItem().equals(App.ProfileScrollLeft.build(p))){
             if (!(view.page <= -1) && !onSide) {
                 view.page--;
             }
