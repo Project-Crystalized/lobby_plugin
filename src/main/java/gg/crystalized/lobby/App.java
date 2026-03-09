@@ -46,8 +46,8 @@ public enum App {
               "\uA000\uA009"),
     Achieve("ui/scn3/achivements", useCases.Achievements, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.translatable("crystalized.shardcore.achivements.name").color(WHITE).decoration(ITALIC, false), 32,
             "\uA000\uA011"),
-    Quest("ui/scn3/quests", useCases.Quests, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.shardcore.quests.name").color(WHITE).decoration(ITALIC, false), 32,
-            "\uA000"),//TODO slot + name
+    Quest("ui/scn3/quests", useCases.Quests, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.shardcore.quests.name").color(WHITE).decoration(ITALIC, false), 4,
+            "\uA000"),//TODO name
     Shop("ui/scn3/shop", useCases.Shop, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.shop.name").color(WHITE).decoration(ITALIC, false), 33,
             "\uA000\uA004"),
     Wardrobe("ui/scn3/wardrobe", useCases.Wardrobe, new useCases[]{useCases.Menu}, Component.translatable("").color(WHITE).decoration(ITALIC, false), 38,

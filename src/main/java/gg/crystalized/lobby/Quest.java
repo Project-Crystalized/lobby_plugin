@@ -3,7 +3,6 @@ package gg.crystalized.lobby;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.CustomModelData;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -67,6 +66,7 @@ public class Quest {
 
         if(Objects.equals(questNumber, "-1")){
             this.difficulty = Difficulty.HARD;
+            this.amount = 6;
         }else {
             this.game = Game.values()[Integer.parseInt(Character.toString(questNumber.charAt(0)))];
             this.forSeveral = Integer.parseInt(Character.toString(questNumber.charAt(1))) == 1;
