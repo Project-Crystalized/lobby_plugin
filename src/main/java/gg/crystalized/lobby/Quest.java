@@ -5,6 +5,7 @@ import io.papermc.paper.datacomponent.item.CustomModelData;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -107,6 +108,28 @@ public class Quest {
         return quests;
     }
 
+    public void rerollQuest(){
+        Game game = Game.values()[(int) Math.floor(Math.random() * (Game.values().length))];
+        boolean forSeveral = Math.floor(Math.random() * 2) == 1;
+        int c = (int) Math.floor(Math.random() * (Category.getCategories(game).size()-1));
+        Category category = Category.getCategories(game).get(c);
+        int amount = (int) Math.floor(Math.random() * (category.max - category.min + 1) + category.min);
+
+        while (this.category == category || (!forSeveral && !category.forOneGame) || this.difficulty != Difficulty.getDifficulty(category.min, category.max, amount, category.baseDiff)) {
+            game = Game.values()[(int) Math.floor(Math.random() * (Game.values().length))];
+            forSeveral = Math.floor(Math.random() * 2) == 1;
+            c = (int) Math.floor(Math.random() * Category.getCategories(game).size());
+            category = Category.getCategories(game).get(c);
+            amount = (int) Math.floor(Math.random() * (category.max - category.min + 1) + category.min);
+        }
+
+        Quest quest = new Quest(player, game, forSeveral, category, amount);
+        allQuests.remove(this);
+        allQuests.add(quest);
+        LobbyDatabase.replaceQuest(player, this, quest);
+        LobbyDatabase.rerollReduce(player); 
+    }
+
     public static void removeQuests(Player p){
         for(int i = 0; i < allQuests.size(); i++){
             if(allQuests.get(i).player.equals(p)){
@@ -157,6 +180,9 @@ public class Quest {
             lore.add(Component.translatable("Click to claim").color(GREEN).decoration(ITALIC, false));
         }else {
             lore.add(Component.text(getProgress() + "/" + amount).color(GRAY).decoration(ITALIC, false));
+        }
+        if(LobbyDatabase.canRerollQuest(this)){
+            lore.add(Component.text("Click to reroll Quest").color(GRAY).decoration(ITALIC, false));
         }
         lore.add(Component.text("Reward: " + difficulty.money + "[m]   " + difficulty.exp + "xp").color(GRAY).decoration(ITALIC, false));
         lore.add(Component.text("Difficulty: " + difficulty).color(GRAY).decoration(ITALIC, false));
@@ -336,7 +362,7 @@ public class Quest {
                 return Difficulty.values()[baseDiff.ordinal() +1];
             }
 
-            if((value >= q2 && value < q3) || baseDiff == EASY){
+            if((value >= q2 && value < q3) || baseDiff == MEDIUM){
                 return Difficulty.values()[baseDiff.ordinal() +2];
             }
 

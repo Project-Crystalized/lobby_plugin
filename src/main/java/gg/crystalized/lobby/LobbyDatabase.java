@@ -8,6 +8,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -33,7 +34,8 @@ public class LobbyDatabase {
             + "first_login   INTEGER,"
             + "last_login   INTEGER,"
             + "times_logged_in   INTEGER,"
-            + "last_quest_roll    INTEGER"
+            + "last_quest_roll    INTEGER,"
+            + "quest_rerolls    INTEGER"
             + ");";
 
     String createFriendsTable = "CREATE TABLE IF NOT EXISTS Friends ("
@@ -371,12 +373,13 @@ public class LobbyDatabase {
 
     public static void makeNewLobbyPlayersEntry(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
-            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id, pay_rank_id, skin_url, first_login, last_login, times_logged_in, last_quest_roll)"
-                    + "VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?, unixepoch(), unixepoch(), 1, unixepoch());";
+            String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id, pay_rank_id, skin_url, first_login, last_login, times_logged_in, last_quest_roll, quest_rerolls)"
+                    + "VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?, unixepoch(), unixepoch(), 1, unixepoch(), ?);";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.setString(2, p.getName());
             prepared.setString(3, p.getPlayerProfile().getTextures().getSkin().toString());
+            prepared.setInt(4, Ranks.getPayRank(p) == 6 ? 1 : Ranks.getPayRank(p) == 7 ? 2 : 0);
             prepared.executeUpdate();
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
@@ -607,6 +610,11 @@ public class LobbyDatabase {
                 pr.setString(2, q.questNumber);
                 pr.executeUpdate();
             }
+
+            PreparedStatement pre = conn.prepareStatement("UPDATE Quests SET quest_rerolls = ? WHERE player_uuid = ?;");
+            pre.setInt(1, Ranks.getPayRank(p) == 6 ? 1 : Ranks.getPayRank(p) == 7 ? 2 : 0);
+            pre.setBytes(2, uuid_to_bytes(p));
+            pre.executeUpdate();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't roll quests");
@@ -630,6 +638,19 @@ public class LobbyDatabase {
         }
     }
 
+    public static void replaceQuest(Player p, Quest old, Quest nevv){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("UPDATE Quests SET quest = ? WHERE player_uuid = ? AND quest = ?;");
+            prep.setString(1, nevv.questNumber);
+            prep.setBytes(2, uuid_to_bytes(p));
+            prep.setString(3, old.questNumber);
+            prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't replace quest");
+        }
+    }
+
     public static int getLastQuestRoll(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT last_quest_roll FROM LobbyPlayers WHERE player_uuid = ?;");
@@ -639,9 +660,49 @@ public class LobbyDatabase {
             return set.getInt("last_quest_roll");
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't roll or fetch quests");
+            Bukkit.getLogger().warning("couldn't get last quest roll");
         }
         return -1;
+    }
+
+    public static boolean canRerollQuest(Quest q){
+        if(Objects.equals(q.questNumber, "-1")) return false;
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT quest_rerolls FROM LobbyPlayers WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(q.player));
+            ResultSet set = prep.executeQuery();
+            set.next();
+            if (set.getInt("quest_rerolls") > 0){
+                return true;
+            }
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't reroll quests");
+        }
+        return false;
+    }
+
+    public static void rerollReduce(Player p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET quest_rerolls = quest_rerolls -1 WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't reroll reduce");
+        }
+    }
+
+    public static void setQuestRerolls(OfflinePlayer p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET quest_rerolls = ? WHERE player_uuid = ?;");
+            prep.setInt(1, Ranks.getPayRank(p) == 6 ? 1 : Ranks.getPayRank(p) == 7 ? 2 : 0);
+            prep.setBytes(2, uuid_to_bytes(p));
+            prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't get rerolls");
+        }
     }
 
     public static void questCompleted(Player p, String quest){
@@ -652,7 +713,7 @@ public class LobbyDatabase {
             prep.executeUpdate();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't fetch quests");
+            Bukkit.getLogger().warning("couldn't complete quest");
         }
     }
 
@@ -664,7 +725,7 @@ public class LobbyDatabase {
             prep.executeUpdate();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't fetch quests");
+            Bukkit.getLogger().warning("couldn't claim quest");
         }
     }
 

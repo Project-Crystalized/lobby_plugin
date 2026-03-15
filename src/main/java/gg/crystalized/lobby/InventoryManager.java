@@ -140,6 +140,11 @@ public class InventoryManager implements Listener {
                 Quest.identifyQuest(p, item).claim();
                 event.getInventory().remove(item);
             }
+
+            if(LobbyDatabase.canRerollQuest(Quest.identifyQuest(p, item))){
+                Quest.identifyQuest(p, item).rerollQuest();
+                Quest.setQuests(event.getInventory(), p);
+            }
         } else{
             App.useCases use = identifyInv(event.getView());
             if(use == null){

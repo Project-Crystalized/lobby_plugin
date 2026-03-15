@@ -156,6 +156,8 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
             Ranks.renderTabList(p.getPlayer());
             Ranks.renderNameTags(p.getPlayer());
         }
+
+        LobbyDatabase.setQuestRerolls(p);
         return true;
     }
 

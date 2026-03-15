@@ -368,4 +368,13 @@ public class Ranks {
 
         return (Integer)data.get("pay_rank_id");
     }
+
+    public static int getPayRank(OfflinePlayer p){
+        HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
+        if(data.get("pay_rank_id") == null){
+            return 0;
+        }
+
+        return (Integer)data.get("pay_rank_id");
+    }
 }
