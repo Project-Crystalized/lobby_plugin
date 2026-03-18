@@ -604,7 +604,7 @@ public class LobbyDatabase {
             prep.setBytes(1, uuid_to_bytes(p));
             prep.executeUpdate();
             Quest[] quests = Quest.rollQuests(p);
-            PreparedStatement pr = conn.prepareStatement("INSERT INTO Quests(player_uuid, quest, done, claimed) VALUES (?, ?, 0, 0)");
+            PreparedStatement pr = conn.prepareStatement("INSERT INTO Quests(player_uuid, quest, done, claimed) VALUES (?, ?, 0, 0);");
             for(Quest q : quests){
                 pr.setBytes(1, uuid_to_bytes(p));
                 pr.setString(2, q.questNumber);

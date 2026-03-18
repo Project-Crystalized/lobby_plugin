@@ -247,6 +247,19 @@ public final class PlayerListener implements Listener {
 		}
 		e.setCancelled(true);
 	}
+
+	@EventHandler
+	public void onMove(PlayerMoveEvent e){
+		if(Lobby_plugin.getInstance().passive_mode){
+			return;
+		}
+		CosmeticView view = CosmeticView.findView(e.getPlayer());
+		if(view == null) return;
+
+		if(e.getPlayer().getLocation().distance(LobbyConfig.Locations.get("clothing_room")) > 10){
+			view.endView();
+		}
+	}
 }
 class LobbyChatRenderer implements ChatRenderer.ViewerUnaware{
 

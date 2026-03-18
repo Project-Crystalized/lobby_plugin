@@ -106,6 +106,7 @@ class WinLeaderboard {
 			@Override
 			public void run() {
 				for(Player p : Bukkit.getOnlinePlayers()) {
+					cleanMultiples(loc, p);
 					TextDisplay	display = findDisplay(p, loc);
 					if(display == null){
 						createDisplay(p, loc, type);
@@ -123,6 +124,27 @@ class WinLeaderboard {
 				}
 			}
 		}.runTaskTimer(Lobby_plugin.getInstance(), 1, (20 * 10));
+	}
+
+	static void cleanMultiples(Location loc, Player p){
+		int canSeeDisplays = 0;
+		List<TextDisplay> displays = (List<TextDisplay>) loc.getNearbyEntitiesByType(TextDisplay.class, 2.0);
+		for(TextDisplay display : displays){
+			if(p.canSee(display)){
+				canSeeDisplays++;
+			}
+		}
+		
+		if(canSeeDisplays <= 1){
+			return;
+		}
+		
+		for(int i = 0; i < displays.size(); i++) {
+			if(i == 0) continue;
+			if (displays.get(i).getPersistentDataContainer().get(new NamespacedKey("crystalized", "leaderboard"), PersistentDataType.STRING).contains(p.getName() + "_leaderboard")) {
+				displays.get(i).remove();
+			}
+		}
 	}
 
 	static void createDisplay(Player p, Location loc, String type){

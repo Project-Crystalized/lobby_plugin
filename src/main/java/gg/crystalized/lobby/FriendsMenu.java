@@ -139,6 +139,9 @@ public class FriendsMenu {
             inv.setItem(i+3, item);
             i++;
         }
+        if(inv == null){
+            return;
+        }
         p.openInventory(inv);
     }
 

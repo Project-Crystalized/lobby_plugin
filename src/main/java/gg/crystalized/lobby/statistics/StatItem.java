@@ -28,7 +28,7 @@ public class StatItem {
     public StatItem(StatUnit<?>[] stat, String gameAlias, boolean isLifetime){
         this.stat = stat;
         ItemStack item = makeNoneItem();
-        if(getItemName(stat[0].name, isLifetime) != null && stat != null) {
+        if(stat != null && getItemName(stat[0].name, isLifetime) != null) {
             item = Statistics.stats.get(gameAlias).statClass.cast(Statistics.stats.get(gameAlias).newInst()).getBase(stat);
             ItemMeta meta = item.getItemMeta();
             meta.displayName(style(getItemName(stat[0].name, isLifetime), gameAlias));
@@ -185,7 +185,7 @@ public class StatItem {
             case "REAL":
                 f = set -> {
                     try {
-                        return set.getFloat(label);
+                        return Math.floor(set.getFloat(label));
                     } catch (SQLException e) {
                         Bukkit.getLogger().severe(e.getMessage());
                         throw new RuntimeException();
