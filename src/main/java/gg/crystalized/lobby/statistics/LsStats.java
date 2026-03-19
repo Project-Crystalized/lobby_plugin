@@ -30,8 +30,12 @@ public class LsStats extends Statistics{
         null,
         "item.minecraft.diamond_chestplate",
         "item.minecraft.iron_sword",
+        "item.minecraft.stone_sword",
         "item.minecraft.iron_axe",
+        "item.minecraft.bow",
         "item.minecraft.arrow",
+        "item.minecraft.leather_chestplate",
+        "item.minecraft.leather_chestplate",
         "crystalized.item.defuser.name",
         "item.minecraft.golden_apple",
         "item.minecraft.iron_chestplate",
@@ -42,14 +46,16 @@ public class LsStats extends Statistics{
         "crystalized.bow.ricochet.name",
         "crystalized.crossbow.multi.name",
         "crystalized.crossbow.charged.name",
-        "item.minecraft.potion.effect.swiftness", //16
-        "item.minecraft.potion.effect.swiftness", //17
+        "item.minecraft.potion.effect.swiftness", //16 = 2
+        "item.minecraft.potion.effect.swiftness", //17 = 1
         "Potion of Resistance",
         "item.minecraft.spectral_arrow",
         "crystalized.item.dragonarrow.name",
         "crystalized.item.explosivearrow.name",
         "crystalized.sword.underdog.name",
-        "item.minecraft.crossbow"
+        "item.minecraft.stone_pickaxe",
+        "item.minecraft.crossbow",
+        "crystalized.sword.wind.name"
     };
 
     public LsStats(Statistics stat) {
@@ -129,9 +135,17 @@ public class LsStats extends Statistics{
         }
         int i = 1;
         for(short s : items){
+            if(s > LsItem.length-1){
+                components.add(Component.text("unknown").decoration(ITALIC,false).color(WHITE));
+                continue;
+            }
+
             if(LsItem[s] == null){
                 components.add(Component.text("Round " + i + ": ").decoration(ITALIC,false).color(GRAY));
+                i++;
+                continue;
             }
+
             components.add(translatable(LsItem[s]).decoration(ITALIC, false).color(WHITE));
         }
         return components;

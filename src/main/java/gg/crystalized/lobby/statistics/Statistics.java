@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -165,7 +166,7 @@ public class Statistics implements Methods{
                 profile.setTextures(texture);
                 skull.setPlayerProfile(profile);
                 member.setItemMeta(skull);
-                member.editPersistentDataContainer(pdc -> pdc.set(new NamespacedKey("crystalized", "profile_holder"), PersistentDataType.STRING, player.getName()));
+                member.editPersistentDataContainer(pdc -> pdc.set(new NamespacedKey("crystalized", "profile_holder"), PersistentDataType.STRING, player.getName() == null ? "null" : player.getName()));
                 ItemMeta meta = member.getItemMeta();
                 ArrayList<Component> lore = new ArrayList<>();
                 for(String s : gameStats){
@@ -181,7 +182,7 @@ public class Statistics implements Methods{
                 }else{
                     players.add(new PlayerItem(member, 2));
                 }
-                meta.displayName(Component.text(player.getName()).color(color).decoration(ITALIC, false));
+                meta.displayName(Component.text(player.getName() == null ? "null" : player.getName()).color(color).decoration(ITALIC, false));
                 member.setItemMeta(meta);
             }
 
@@ -340,7 +341,7 @@ public class Statistics implements Methods{
             prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
             set.next();
-            return set.getInt("sum");
+            return Objects.equals(set.getMetaData().getColumnTypeName(1), "REAL") ? (int) Math.floor(set.getInt("sum")) : set.getInt("sum");
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't sum columns");

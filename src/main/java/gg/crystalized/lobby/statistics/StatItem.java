@@ -129,18 +129,14 @@ public class StatItem {
     }
 
     public static short[] convertByteToShort(byte[] b){
-        if(b.length == 0){
-            return new short[]{};
+        short[] s = new short[b.length/2];
+        int j = 0;
+        for(int i = 0; i < b.length; i = i+2){
+            short sh = ByteBuffer.wrap(new byte[]{b[i], b[i+1]}).getShort();
+            s[j] = sh;
+            j++;
         }
-        ByteBuffer bb = ByteBuffer.allocate(b.length);
-        for (byte value : b) {
-            bb.put(value);
-        }
-        ShortBuffer sb = bb.asShortBuffer();
-        if (!sb.hasArray()) {
-            return new short[]{};
-        }
-        return sb.array();
+        return s;
     }
 
     public static Function<ResultSet, ?> getMethod(String s, String label){

@@ -67,10 +67,10 @@ public class StatView implements Listener {
            slot = slot + 2;
         }
         if(!isLifetime){
-            inv.setItem(48, App.ProfileScrollLeft.build(p));
+            inv.setItem(48, App.ProfileScrollLeft.build(viewer));
         }
         if(!isGameView) {
-            inv.setItem(50, App.ProfileScrollRight.build(p));
+            inv.setItem(50, App.ProfileScrollRight.build(viewer));
         }
         viewer.openInventory(inv);
         isInView = true;
@@ -218,11 +218,11 @@ public class StatView implements Listener {
             return;
         }
 
-        if(e.getCurrentItem().equals(App.ProfileScrollRight.build(p))){
+        if(e.getCurrentItem().equals(App.ProfileScrollRight.build(viewer))){
             if(!(view.page >= games)) {
                 view.page++;
             }
-        }else if(e.getCurrentItem().equals(App.ProfileScrollLeft.build(p))){
+        }else if(e.getCurrentItem().equals(App.ProfileScrollLeft.build(viewer))){
             if (!(view.page <= -1) && !onSide) {
                 view.page--;
             }

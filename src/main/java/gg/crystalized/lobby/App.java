@@ -171,7 +171,7 @@ public enum App {
         meta.setItemModel(new NamespacedKey("crystalized", model));
         meta.displayName(name);
         i.setItemMeta(meta);
-        if(active.get(p).contains(this)) i.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(2).build());
+        if(active.get(p) != null && active.get(p).contains(this)) i.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(2).build());
         this.addPDC(i);
         return i;
     }
