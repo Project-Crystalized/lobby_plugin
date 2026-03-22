@@ -12,8 +12,10 @@ import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
+import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.function.Function;
 
@@ -139,38 +141,29 @@ public class StatItem {
         return s;
     }
 
-    public static Function<ResultSet, ?> getMethod(String s, String label){
-        Function<ResultSet, ?> f;
-        switch (s){
-            case "INTEGER":
-                f = set -> {
+    public static Function<ResultSet, ?> getMethod(int i, String label){
+        JDBCType type = JDBCType.valueOf(i);
+        switch (type){
+            case INTEGER:
+                return set -> {
                     try {
-                        return set.getInt(label);
+                        return (int)set.getInt(label);
                     } catch (SQLException e) {
                         Bukkit.getLogger().severe(e.getMessage());
                         throw new RuntimeException();
                     }
                 };
-            case "BLOB":
-                f = set -> {
+            case DOUBLE:
+                return set -> {
                     try {
-                        return set.getBlob(label);
+                        return (int) set.getDouble(label);
                     } catch (SQLException e) {
                         Bukkit.getLogger().severe(e.getMessage());
                         throw new RuntimeException();
                     }
                 };
-            case "DOUBLE":
-                f = set -> {
-                    try {
-                        return set.getDouble(label);
-                    } catch (SQLException e) {
-                        Bukkit.getLogger().severe(e.getMessage());
-                        throw new RuntimeException();
-                    }
-                };
-            case "STRING":
-                f = set -> {
+            case OTHER:
+                return set -> {
                     try {
                         return set.getString(label);
                     } catch (SQLException e) {
@@ -178,8 +171,8 @@ public class StatItem {
                         throw new RuntimeException();
                     }
                 };
-            case "REAL":
-                f = set -> {
+            case REAL:
+                return set -> {
                     try {
                         return Math.floor(set.getFloat(label));
                     } catch (SQLException e) {
@@ -187,17 +180,8 @@ public class StatItem {
                         throw new RuntimeException();
                     }
                 };
-            case "BYTES":
-                f = set ->{
-                    try {
-                        return set.getBytes(label);
-                    } catch (SQLException e) {
-                        Bukkit.getLogger().severe(e.getMessage());
-                        throw new RuntimeException();
-                    }
-                };
             default:
-                f = set -> {
+                return set -> {
                     try {
                         return set.getObject(label);
                     } catch (SQLException e) {
@@ -206,7 +190,6 @@ public class StatItem {
                     }
                 };
         }
-        return f;
     }
 
     public static boolean notIndividual(Object o){

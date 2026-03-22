@@ -116,7 +116,7 @@ public class Statistics implements Methods{
             int count = data.getColumnCount();
             ArrayList<StatUnit<?>> units = new ArrayList<>();
             for (int i = 1; i <= count; i++) {
-                Function<ResultSet, ?> fun = StatItem.getMethod(data.getColumnTypeName(i), data.getColumnLabel(i));
+                Function<ResultSet, ?> fun = StatItem.getMethod(data.getColumnType(i), data.getColumnLabel(i));
                 if(fun.apply(set) == null){
                     units.add(new StatUnit<>(p, data.getColumnLabel(i), 0, alias, isLifetime));
                     continue;
@@ -341,7 +341,7 @@ public class Statistics implements Methods{
             prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
             set.next();
-            return Objects.equals(set.getMetaData().getColumnTypeName(1), "REAL") ? (int) Math.floor(set.getInt("sum")) : set.getInt("sum");
+            return (int) Math.floor(set.getDouble("sum"));
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't sum columns");
