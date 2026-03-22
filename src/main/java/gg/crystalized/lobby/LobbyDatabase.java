@@ -15,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import javax.swing.text.DateFormatter;
 
@@ -603,6 +604,12 @@ public class LobbyDatabase {
             PreparedStatement prep = conn.prepareStatement("DELETE FROM Quests WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't roll quests (1)");
+        }
+
+        try(Connection conn = DriverManager.getConnection(URL)){
             Quest[] quests = Quest.rollQuests(p);
             PreparedStatement pr = conn.prepareStatement("INSERT INTO Quests(player_uuid, quest, done, claimed) VALUES (?, ?, 0, 0);");
             for(Quest q : quests){
@@ -610,14 +617,19 @@ public class LobbyDatabase {
                 pr.setString(2, q.questNumber);
                 pr.executeUpdate();
             }
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't roll quests (2)");
+        }
 
-            PreparedStatement pre = conn.prepareStatement("UPDATE Quests SET quest_rerolls = ? WHERE player_uuid = ?;");
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement pre = conn.prepareStatement("UPDATE LobbyPlayers SET quest_rerolls = ? WHERE player_uuid = ?;");
             pre.setInt(1, Ranks.getPayRank(p) == 6 ? 1 : Ranks.getPayRank(p) == 7 ? 2 : 0);
             pre.setBytes(2, uuid_to_bytes(p));
             pre.executeUpdate();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't roll quests");
+            Bukkit.getLogger().warning("couldn't roll quests (3)");
         }
     }
 
