@@ -44,13 +44,13 @@ public enum App {
             "\uA000"), //TODO + inv
     Settings("ui/scn3/settings", useCases.Settings, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.settings.name").color(WHITE).decoration(ITALIC, false), 20,
               "\uA000\uA009"),
-    Achieve("ui/scn3/achivements", useCases.Achievements, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.translatable("crystalized.shardcore.achivements.name").color(WHITE).decoration(ITALIC, false), 32,
+    Achieve("ui/scn3/achivements", useCases.Achievements, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.achivements.name").color(WHITE).decoration(ITALIC, false), 32,
             "\uA000\uA011"),
-    Quest("ui/scn3/quests", useCases.Quests, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.shardcore.quests.name").color(WHITE).decoration(ITALIC, false), 4,
-            "\uA000"),//TODO name
-    Shop("ui/scn3/shop", useCases.Shop, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.shop.name").color(WHITE).decoration(ITALIC, false), 33,
+    Quest("ui/scn3/quests", useCases.Quests, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.translatable("crystalized.shardcore.quests.name").color(WHITE).decoration(ITALIC, false), 33,
+            "\uA000\uA014"),
+    Shop("ui/scn3/shop", useCases.Shop, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.shop.name").color(WHITE).decoration(ITALIC, false), 38,
             "\uA000\uA004"),
-    Wardrobe("ui/scn3/wardrobe", useCases.Wardrobe, new useCases[]{useCases.Menu}, Component.translatable("").color(WHITE).decoration(ITALIC, false), 38,
+    Wardrobe("ui/scn3/wardrobe", useCases.Wardrobe, new useCases[]{useCases.Menu}, Component.translatable("").color(WHITE).decoration(ITALIC, false), 39,
             "\uA000\uA00F"),
     HatsButton("ui/invisible", useCases.ShopPage, useCases.Shop, Component.translatable("crystalized.shardcore.shop.hats").color(WHITE).decoration(ITALIC, false), new int[]{28, 4, 1},
             EquipmentSlot.HEAD),
@@ -347,6 +347,7 @@ public enum App {
         normal(null, null, null, null, null, null),
         shop(21, 23,null, null, null,20),
         friends(21, 23, null, null, 20, null),
+        quests(null, null, null, null, 20, null),
         settings(null, null, 20, 29, 47, null),
         profile(null, null, null, null, 51, null);
         final Integer scrollLeft;
@@ -375,6 +376,8 @@ public enum App {
                 profile.placeUI(inv);
             }else if(use == useCases.Achievements){
                 friends.placeUI(inv);
+            }else if(use == useCases.Quests){
+                quests.placeUI(inv);
             }else{
                 normal.placeUI(inv);
             }

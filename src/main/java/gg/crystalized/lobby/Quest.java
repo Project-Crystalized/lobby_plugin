@@ -3,7 +3,9 @@ package gg.crystalized.lobby;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.CustomModelData;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -179,14 +181,15 @@ public class Quest {
             lore.add(Component.translatable("Quest completed").color(GREEN).decoration(ITALIC, false));
             lore.add(Component.translatable("Click to claim").color(GREEN).decoration(ITALIC, false));
         }else {
-            lore.add(Component.text(getProgress() + "/" + amount).color(GRAY).decoration(ITALIC, false));
+            lore.add(Component.text(getProgress() + "/" + amount).color(WHITE).decoration(ITALIC, false));
         }
         if(LobbyDatabase.canRerollQuest(this)){
-            lore.add(Component.text("Click to reroll Quest").color(GRAY).decoration(ITALIC, false));
+            lore.add(Component.text("Click to reroll Quest").color(WHITE).decoration(ITALIC, false));
         }
-        lore.add(Component.text("Reward: " + difficulty.money + "[m]   " + difficulty.exp + "xp").color(GRAY).decoration(ITALIC, false));
+        lore.add(Component.text("Reward: " + difficulty.money + "[m]   " + difficulty.exp + "xp").color(WHITE).decoration(ITALIC, false));
         lore.add(Component.text("Difficulty: " + difficulty).color(GRAY).decoration(ITALIC, false));
         meta.lore(lore);
+        meta.setItemModel(new NamespacedKey("crystalized", difficulty.model));
         item.setItemMeta(meta);
         if(done) item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(2).build());
         return item;
@@ -194,7 +197,7 @@ public class Quest {
 
     public Component name(){
         if(Objects.equals(questNumber, "-1")){
-            return Component.translatable("Complete all weekly quests").color(WHITE).decoration(ITALIC, false);
+            return Component.translatable("Complete all weekly quests").color(difficulty.color).decoration(ITALIC, false);
         }
         List<Component> args = new ArrayList<>();
         args.add(Component.text("" + amount));
@@ -203,7 +206,7 @@ public class Quest {
             c = c.append(Component.translatable("one game of "));
         }
         c = c.append(Component.text(game.name));
-        c = c.color(WHITE).decoration(ITALIC, false);
+        c = c.color(difficulty.color).decoration(ITALIC, false);
         return c;
     }
 
@@ -339,15 +342,19 @@ public class Quest {
         }
     }
     enum Difficulty{
-        EASY(10, 5),
-        MEDIUM(30, 10),
-        HARD(50, 20),
-        EXPERT(80, 30);
+        EASY(10, 5, "ui/scn3/quests/quest_easy", DARK_GREEN),
+        MEDIUM(30, 10, "ui/scn3/quests/quest_medium",YELLOW),
+        HARD(50, 20, "ui/scn3/quests/quest_hard",RED),
+        EXPERT(80, 30, "ui/scn3/quests/quest_expert", DARK_RED);
         final int money;
         final int exp;
-        Difficulty(int money, int exp){
+        final String model;
+        final NamedTextColor color;
+        Difficulty(int money, int exp, String model, NamedTextColor color){
             this.money = money;
             this.exp = exp;
+            this.model = model;
+            this.color = color;
         }
         public static Difficulty getDifficulty(int min, int max, int value, Difficulty baseDiff){
             double q2 = (double) (min + max) /2;
