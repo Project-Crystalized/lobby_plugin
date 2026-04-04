@@ -138,9 +138,9 @@ public class StatView implements Listener {
                 slot++;
             }
             if(!isSoloOrDuo){
-                i++;
-                slot = 0;
+                i = i+2;
             }
+            slot = 0;
         }
         if(page != 0) {
             inv.setItem(48, App.ProfileScrollLeft.build(viewer));

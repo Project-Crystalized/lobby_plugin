@@ -338,6 +338,8 @@ public enum App {
                 CosmeticView.getView(p).startView(null);
             }else if(this == App.Quest){
                 setQuests(inv, p);
+            }else if(this == App.Achieve){
+                Achievement.setAchievements(inv, p);
             }
             p.openInventory(inv);
         }

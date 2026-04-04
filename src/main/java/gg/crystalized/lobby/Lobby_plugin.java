@@ -67,6 +67,8 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 
 		saveResource("cosmetics.json", false);
 		Cosmetic.createCosmetics(getResource("cosmetics.json"));
+		saveResource("achievements.json", false);
+		Achievement.getAchievementsFromJson(getResource("achievements.json"));
 		EntityRefresh.setupEntityRefresh();
 		createStatistics();
 		protocolManager = ProtocolLibrary.getProtocolManager();
@@ -98,20 +100,6 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		return getPlugin(Lobby_plugin.class);
 	}
 
-	//This will be called in this class *and* when a minigames.CrystalizedChess game ends
-	/*
-	public void GivePlayerSpawnItems(Player p) {
-		p.getInventory().clear();
-
-		ItemStack item = new ItemStack(Material.EMERALD);
-		ItemMeta meta = item.getItemMeta();
-		meta.customName(text("Placeholder item for shardcore nexus (this does nothing atm)"));
-		meta.setItemModel(new NamespacedKey("crystalized", "shardcorenexus3/blue"));
-		item.setItemMeta(meta);
-		p.getInventory().setItem(4, item);
-	}
-
-	 */
 
 	public void newChessGame(Player white, Player black) {
 		CrystalizedChess chess = new CrystalizedChess(white, black);

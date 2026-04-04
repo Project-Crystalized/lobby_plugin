@@ -61,6 +61,7 @@ public final class PlayerListener implements Listener {
 			LobbyDatabase.rollQuests(p);
 			LobbyDatabase.addCosmetic(p, Cosmetic.getCosmeticById(6), true);
 			LobbyDatabase.makeNewSettingsEntry(p);
+			Achievement.createNewAchievements(p);
 		}
 
 		e.joinMessage(Ranks.getJoinMessage(p));
@@ -89,8 +90,10 @@ public final class PlayerListener implements Listener {
 		LevelManager.rewardForLogin(p);
 		LobbyDatabase.updateLastLogin(p);
 		LobbyDatabase.updateLoginTimes(p);
+		Achievement.getFromDatabase(p);
 		if(inDatabase)LobbyDatabase.rollOrFetchQuests(p);
 		Quest.checkAndComplete(p);
+		Achievement.checkAndComplete(p);
 		HashMap<String, Object> map = LobbyDatabase.fetchAndDeleteTemporaryData(p);
 		if(map.get("xp_amount") != null) {
 			LevelManager.giveExperience(p, (Integer) map.get("xp_amount"));
@@ -136,6 +139,7 @@ public final class PlayerListener implements Listener {
 		}
 
 		Quest.removeQuests(e.getPlayer());
+		Achievement.removeAchievements(e.getPlayer());
 		App.active.remove(e.getPlayer());
 	}
 

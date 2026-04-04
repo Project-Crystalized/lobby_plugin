@@ -187,7 +187,7 @@ public class Quest {
             lore.add(Component.text("Click to reroll Quest").color(WHITE).decoration(ITALIC, false));
         }
         lore.add(Component.text("Reward: " + difficulty.money + "[m]   " + difficulty.exp + "xp").color(WHITE).decoration(ITALIC, false));
-        lore.add(Component.text("Difficulty: " + difficulty).color(GRAY).decoration(ITALIC, false));
+        lore.add(Component.text("Difficulty: ").color(GRAY).decoration(ITALIC, false).append(Component.text(difficulty.name).color(GRAY).decoration(ITALIC, false)));
         meta.lore(lore);
         meta.setItemModel(new NamespacedKey("crystalized", difficulty.model));
         item.setItemMeta(meta);
@@ -342,18 +342,20 @@ public class Quest {
         }
     }
     enum Difficulty{
-        EASY(10, 5, "ui/scn3/quests/quest_easy", DARK_GREEN),
-        MEDIUM(30, 10, "ui/scn3/quests/quest_medium",YELLOW),
-        HARD(50, 20, "ui/scn3/quests/quest_hard",RED),
-        EXPERT(80, 30, "ui/scn3/quests/quest_expert", DARK_RED);
+        EASY(10, 5, "ui/scn3/quests/quest_easy", "crystalized.shardcore.quests.difficulty.easy", DARK_GREEN),
+        MEDIUM(30, 10, "ui/scn3/quests/quest_medium", "crystalized.shardcore.quests.difficulty.medium", YELLOW),
+        HARD(50, 20, "ui/scn3/quests/quest_hard", "crystalized.shardcore.quests.difficulty.hard", RED),
+        EXPERT(80, 30, "ui/scn3/quests/quest_expert", "crystalized.shardcore.quests.difficulty.expert", DARK_RED);
         final int money;
         final int exp;
         final String model;
+        final String name;
         final NamedTextColor color;
-        Difficulty(int money, int exp, String model, NamedTextColor color){
+        Difficulty(int money, int exp, String model, String name, NamedTextColor color){
             this.money = money;
             this.exp = exp;
             this.model = model;
+            this.name = name;
             this.color = color;
         }
         public static Difficulty getDifficulty(int min, int max, int value, Difficulty baseDiff){

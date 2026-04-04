@@ -74,6 +74,13 @@ public class LobbyDatabase {
             + "done      INTEGER,"
             + "claimed    INTEGER"
             +");";
+    String createAchieveTable = "CREATE TABLE IF NOT EXISTS Achievements ("
+            + "player_uuid        BLOB,"
+            + "id        TEXT,"
+            + "stage      INTEGER,"
+            + "done     INTEGER,"
+            + "claimed    INTEGER"
+            +");";
 
         try (Connection conn = DriverManager.getConnection(URL)) {
             Statement stmt = conn.createStatement();
@@ -83,6 +90,7 @@ public class LobbyDatabase {
             stmt.execute(createSettingsTable);
             stmt.execute(createTemporaryData);
             stmt.execute(createQuestsTable);
+            stmt.execute(createAchieveTable);
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("continuing without database");
@@ -738,6 +746,74 @@ public class LobbyDatabase {
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't claim quest");
+        }
+    }
+
+    public static void addAchievement(Player p, Achievement a){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("INSERT INTO Achievements(player_uuid, id, stage, done, claimed) VALUES (?, ?, 0, 0, 0);");
+            prep.setBytes(1, uuid_to_bytes(p));
+            prep.setString(2, a.temp.id);
+            prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't add achievement");
+        }
+    }
+
+    public static void progressStage(Player p, Achievement a){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET stage = stage +1 WHERE player_uuid = ? AND id = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            prep.setString(2, a.temp.id);
+            prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't progess achievement stage");
+        }
+    }
+
+    public static ArrayList<Achievement> getAchievements(Player p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            ArrayList<Achievement> list = new ArrayList<>();
+            PreparedStatement prep = conn.prepareStatement("SELECT * FROM Achievements WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            ResultSet set = prep.executeQuery();
+            while(set.next()){
+                Achievement a = new Achievement(p, AchieveTemplate.getAchieveTemplate(set.getString("id")), set.getInt("stage"), set.getInt("done") == 1, set.getInt("claimed") == 1);
+                list.add(a);
+            }
+            return list;
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't get achievement");
+            return null;
+        }
+    }
+
+    public static void updateAchievementDone(Player p, Achievement a){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET done = ? WHERE player_uuid = ? AND id = ?;");
+            prep.setInt(1, a.done ? 1 : 0);
+            prep.setBytes(2, uuid_to_bytes(p));
+            prep.setString(3, a.temp.id);
+            prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't set achievement done");
+        }
+    }
+
+    public static void updateAchievementClaimed(Player p, Achievement a){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET claimed = ? WHERE player_uuid = ? AND id = ?;");
+            prep.setInt(1, a.claimed ? 1 : 0);
+            prep.setBytes(2, uuid_to_bytes(p));
+            prep.setString(3, a.temp.id);
+            prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't set achievement done");
         }
     }
 
