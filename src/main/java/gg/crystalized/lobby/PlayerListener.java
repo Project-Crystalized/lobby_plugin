@@ -94,13 +94,7 @@ public final class PlayerListener implements Listener {
 		if(inDatabase)LobbyDatabase.rollOrFetchQuests(p);
 		Quest.checkAndComplete(p);
 		Achievement.checkAndComplete(p);
-		HashMap<String, Object> map = LobbyDatabase.fetchAndDeleteTemporaryData(p);
-		if(map.get("xp_amount") != null) {
-			LevelManager.giveExperience(p, (Integer) map.get("xp_amount"));
-		}
-		if(map.get("money_amount") != null) {
-			LevelManager.giveMoney(p, (Integer) map.get("money_amount"));
-		}
+		
 		InventoryManager.giveLobbyItems(p);
 		new BukkitRunnable(){
 			public void run(){

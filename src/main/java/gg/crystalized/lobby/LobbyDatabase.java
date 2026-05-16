@@ -62,12 +62,6 @@ public class LobbyDatabase {
             + "party_requests   INTEGER"
             +");";
 
-    String createTemporaryData = "CREATE TABLE IF NOT EXISTS TemporaryData ("
-            + "player_uuid        BLOB UNIQUE,"
-            + "xp_amount        INTEGER,"
-            + "money_amount      INTEGER"
-            +");";
-
     String createQuestsTable = "CREATE TABLE IF NOT EXISTS Quests ("
             + "player_uuid        BLOB,"
             + "quest        TEXT,"
@@ -88,7 +82,6 @@ public class LobbyDatabase {
             stmt.execute(createFriendsTable);
             stmt.execute(createCosmeticsTable);
             stmt.execute(createSettingsTable);
-            stmt.execute(createTemporaryData);
             stmt.execute(createQuestsTable);
             stmt.execute(createAchieveTable);
         } catch (SQLException e) {
@@ -338,30 +331,6 @@ public class LobbyDatabase {
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("failed set wearing of cosmetic in database");
-        }
-    }
-
-    public static HashMap<String, Object> fetchAndDeleteTemporaryData(Player p){
-        //CAREFUL: This makes it so the temporary data can only be retrieved once -> handle with care!!
-        try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("SELECT * FROM TemporaryData WHERE player_uuid = ?;");
-            prep.setBytes(1, uuid_to_bytes(p));
-            ResultSet set =  prep.executeQuery();
-            PreparedStatement prepared = conn.prepareStatement("DELETE FROM TemporaryData WHERE player_uuid = ?;");
-            prepared.setBytes(1, uuid_to_bytes(p));
-            prepared.executeUpdate();
-            set.next();
-            ResultSetMetaData data = set.getMetaData();
-            int count = data.getColumnCount();
-            HashMap<String, Object> map = new HashMap<>();
-            for(int i = 1; i <= count; i++){
-                map.put(data.getColumnLabel(i), set.getObject(data.getColumnLabel(i)));
-            }
-            return map;
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get cosmetic data for " + p.getName() + "UUID: " + p.getUniqueId());
-            return null;
         }
     }
 
