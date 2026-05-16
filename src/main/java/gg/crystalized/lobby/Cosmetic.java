@@ -23,6 +23,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -53,13 +55,18 @@ public class Cosmetic {
         this.name = name;
     }
 
-    public static void createCosmetics(InputStream stream) {
-        JsonObject json = JsonParser.parseReader(new InputStreamReader(stream)).getAsJsonObject();
-        Map<String, JsonElement> map = json.asMap();
-        for (String s : map.keySet()) {
-            JsonObject j = map.get(s).getAsJsonObject();
-            Cosmetic c = new Cosmetic(j.get("id").getAsInt(), j.get("model").getAsString(), getInt(j.get("level")), getInt(j.get("price")), getSlot(j.get("slot")), Component.translatable(j.get("name").getAsString()));
-            cosmetics.add(c);
+    public static void createCosmetics(){
+        try {
+            final String directory = Files.readString(Paths.get(System.getProperty("user.home") + "/databases/cosmetics.json"));
+            JsonObject json = JsonParser.parseString(directory).getAsJsonObject();
+            Map<String, JsonElement> map = json.asMap();
+            for (String s : map.keySet()) {
+                JsonObject j = map.get(s).getAsJsonObject();
+                Cosmetic c = new Cosmetic(j.get("id").getAsInt(), j.get("model").getAsString(), getInt(j.get("level")), getInt(j.get("price")), getSlot(j.get("slot")), Component.translatable(j.get("name").getAsString()));
+                cosmetics.add(c);
+            }
+        }catch(IOException e){
+            Bukkit.getLogger().severe("[Lobby_plugin] Couldn't get cosmetics from json continuing without.");
         }
     }
 

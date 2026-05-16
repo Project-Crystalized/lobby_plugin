@@ -65,10 +65,10 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 			return;
 		}
 
-		saveResource("cosmetics.json", false);
-		Cosmetic.createCosmetics(getResource("cosmetics.json"));
-		saveResource("achievements.json", false);
-		Achievement.getAchievementsFromJson(getResource("achievements.json"));
+
+		Cosmetic.createCosmetics();
+		Achievement.getAchievementsFromJson();
+
 		EntityRefresh.setupEntityRefresh();
 		createStatistics();
 		protocolManager = ProtocolLibrary.getProtocolManager();
@@ -78,6 +78,8 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		this.getCommand("give_xp").setExecutor(dc);
 		this.getCommand("give_money").setExecutor(dc);
 		this.getCommand("spawn").setExecutor(dc);
+		this.getCommand("reload_cosmetics").setExecutor(dc);
+		this.getCommand("reload_achievements").setExecutor(dc);
 
 		Component message = Component.text("------------------------------------").color(WHITE);
 		Component message2 = Component.text("\nFound any bugs? \n Report them in our Discord! \n https://discord.gg/saAGYcncd7\n").color(DARK_AQUA);

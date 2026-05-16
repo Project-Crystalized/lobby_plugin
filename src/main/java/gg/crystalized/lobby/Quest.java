@@ -67,13 +67,18 @@ public class Quest {
         this.claimed = claimed;
         this.done = done;
 
+
         if(Objects.equals(questNumber, "-1")){
             this.difficulty = Difficulty.HARD;
             this.amount = 6;
         }else {
             this.game = Game.values()[Integer.parseInt(Character.toString(questNumber.charAt(0)))];
             this.forSeveral = Integer.parseInt(Character.toString(questNumber.charAt(1))) == 1;
-            this.category = Category.getCategories(game).get(Integer.parseInt(Character.toString(questNumber.charAt(2))));
+            if(questNumber.charAt(2) != '-'){
+                this.category = Category.getCategories(game).get(Integer.parseInt(Character.toString(questNumber.charAt(2))));
+            }else{
+                this.category = Category.empty;
+            }
             this.amount = Integer.parseInt(questNumber.substring(3));
             this.difficulty = Difficulty.getDifficulty(category.min, category.max, amount, category.baseDiff);
         }
@@ -201,7 +206,12 @@ public class Quest {
         }
         List<Component> args = new ArrayList<>();
         args.add(Component.text("" + amount));
-        Component c = Component.translatable(category.translationKey, args);
+        Component c;
+        if(questNumber.contains("-")){
+            c = Component.translatable("Play %1$s games of ", args);
+        }else {
+            c = Component.translatable(category.translationKey, args);
+        }
         if(!forSeveral){
             c = c.append(Component.translatable("one game of "));
         }
@@ -298,6 +308,7 @@ public class Quest {
 
     public enum Category{
         //IMPORTANT: the order of the categories mustn't change
+        empty("empty", null, 0, 0, false, Difficulty.EXPERT, ""),
         ls_was_winner("was_winner", Game.ls, 1, 10, false, Difficulty.MEDIUM, "Win %1$s games of "),
         bombs_placed("placed_bombs", Game.ls, 1,3 , true, Difficulty.EASY , "Place %1$s bombs in "),
         bombs_broken("broken_bombs", Game.ls, 1, 3, true, Difficulty.EASY, "Break %1$s bombs in "),

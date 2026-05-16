@@ -22,6 +22,7 @@ import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+
 public class Commands implements CommandExecutor {
 
 public static List<Pig> pig_trackerA = new ArrayList<Pig>();
@@ -44,6 +45,10 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
                 return set_rank(args, commandSender);
             case "spawn":
                 return spawn(commandSender);
+            case "reload_cosmetics":
+                return reload_cosmetics(commandSender);
+            case "reload_achievements":
+                return reload_achievements(commandSender);
             default:
                 return false;
 
@@ -171,6 +176,32 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
         }
 
         ((Player)sender).teleport(LobbyConfig.Locations.get("spawn"), TeleportFlag.EntityState.RETAIN_PASSENGERS);
+        return true;
+    }
+
+    private boolean reload_cosmetics(CommandSender sender){
+        if(!sender.isOp()){
+            return false;
+        }
+        Cosmetic.cosmetics.clear();
+        Cosmetic.createCosmetics();
+        return true;
+    }
+
+    private boolean reload_achievements(CommandSender sender){
+        if(!sender.isOp()){
+            return false;
+        }
+        Achievement.templates.clear();
+        Achievement.achievements.clear();
+        Achievement.getAchievementsFromJson();
+        for(Player p : Bukkit.getOnlinePlayers()){
+            if(!LobbyDatabase.isPlayerInDatabase(p)){
+                Achievement.createNewAchievements(p);
+                continue;
+            }
+            Achievement.getFromDatabase(p);
+        }
         return true;
     }
 }

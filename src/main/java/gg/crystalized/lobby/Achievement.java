@@ -10,19 +10,20 @@ import io.papermc.paper.datacomponent.item.CustomModelData;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.sql.*;
 import java.util.*;
 
+import static gg.crystalized.lobby.LobbyDatabase.uuid_to_bytes;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
-import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 public class Achievement extends Quest{
@@ -37,14 +38,20 @@ public class Achievement extends Quest{
         this.temp = temp;
     }
 
-    public static void getAchievementsFromJson(InputStream stream){
-        JsonObject json = JsonParser.parseReader(new InputStreamReader(stream)).getAsJsonObject();
-        Map<String, JsonElement> map = json.asMap();
-        Type listType = new TypeToken<LinkedList<Integer>>() {}.getType();
-        for (String s : map.keySet()) {
-            JsonObject j = map.get(s).getAsJsonObject();
-            AchieveTemplate a = new AchieveTemplate(j.get("id").getAsString(), new Gson().fromJson(j.get("stages"), listType), j.get("reward_money").getAsInt(), j.get("reward_xp").getAsInt(), Component.translatable(j.get("name").getAsString()));
-            templates.add(a);
+    public static void getAchievementsFromJson(){
+        try {
+            final String directory = Files.readString(Paths.get(System.getProperty("user.home") + "/databases/achievements.json"));
+            JsonObject json = JsonParser.parseString(directory).getAsJsonObject();
+            Map<String, JsonElement> map = json.asMap();
+            Type listType = new TypeToken<LinkedList<Integer>>() {
+            }.getType();
+            for (String s : map.keySet()) {
+                JsonObject j = map.get(s).getAsJsonObject();
+                AchieveTemplate a = new AchieveTemplate(j.get("id").getAsString(), new Gson().fromJson(j.get("stages"), listType), j.get("reward_money").getAsInt(), j.get("reward_xp").getAsInt(), Component.translatable(j.get("name").getAsString()));
+                templates.add(a);
+            }
+        }catch(IOException e){
+            Bukkit.getLogger().severe("[Lobby_plugin] Couldn't get achievements from json continuing without.");
         }
     }
 
@@ -76,7 +83,7 @@ public class Achievement extends Quest{
         if(achieve == null){
             return;
         }
-        if(a.size() == templates.size()){
+        if(achieve.size() == templates.size()){
             achievements.addAll(achieve);
             return;
         }
@@ -110,7 +117,7 @@ public class Achievement extends Quest{
     public ItemStack build(){
         ItemStack item = new ItemStack(Material.COAL);
         ItemMeta meta = item.getItemMeta();
-        meta.displayName(temp.name.color(GOLD));
+        meta.displayName(temp.name.color(GOLD).append(Component.text(" " + "|".repeat(1 + stage))));
         ArrayList<Component> lore = new ArrayList<>();
         lore.add(name().color(WHITE));
         if(done){
@@ -119,9 +126,9 @@ public class Achievement extends Quest{
         }else {
             lore.add(Component.text(getProgress() + "/" + amount).color(WHITE).decoration(ITALIC, false));
         }
-        //TODO add getReward and getXp
+
         //TODO change model when achievement is claimed
-        lore.add(Component.text("Reward: " + temp.reward_money + "[m]   " + temp.reward_xp + "xp").color(WHITE).decoration(ITALIC, false));
+        lore.add(Component.text("Reward: " + getMoney() + "[m]   " + getXp() + "xp").color(WHITE).decoration(ITALIC, false));
         meta.lore(lore);
         item.setItemMeta(meta);
         if(done) item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(2).build());
@@ -130,12 +137,13 @@ public class Achievement extends Quest{
 
     @Override
     public void claim(){
-        LevelManager.giveExperience(player, temp.reward_xp);
-        LevelManager.giveMoney(player, temp.reward_money);
+        LevelManager.giveExperience(player, getXp());
+        LevelManager.giveMoney(player, getMoney());
         stage++;
         if(stage < temp.stages.size()) {
             LobbyDatabase.progressStage(player, this);
             questNumber = temp.id + temp.stages.get(stage);
+            amount = temp.stages.get(stage);
             done = false;
         }else{
             claimed = true;
@@ -155,6 +163,27 @@ public class Achievement extends Quest{
         LobbyDatabase.updateAchievementDone(player, this);
     }
 
+    @Override
+    public int getProgress(){
+        try(Connection conn = DriverManager.getConnection(game.URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT SUM(" + category.columnName + ") AS " + category.columnName + " FROM " + game.playerTableName + " INNER JOIN " + game.tableName + " ON " + game.playerTableName + ".game=" + game.tableName + ".game_id WHERE player_uuid = ?;");
+            if(!forSeveral){
+                prep = conn.prepareStatement("SELECT MAX(" + category.columnName + ") AS " + category.columnName + " FROM " + game.playerTableName + " INNER JOIN " + game.tableName + " ON " + game.playerTableName + ".game=" + game.tableName + ".game_id WHERE player_uuid = ?;");
+            }
+            if(questNumber.contains("-")){
+                prep = conn.prepareStatement("SELECT COUNT(game) AS " + category.columnName + " FROM " + game.playerTableName + " WHERE player_uuid = ?;");
+            }
+            prep.setBytes(1, uuid_to_bytes(player));
+            ResultSet set = prep.executeQuery();
+            set.next();
+            return set.getInt(category.columnName);
+        }catch(SQLException e){
+            //Bukkit.getLogger().warning(e.getMessage());
+            //Bukkit.getLogger().warning("couldn't get progress");
+        }
+        return 0;
+    }
+
     public static void checkAndComplete(Player p){
         ArrayList<Achievement> a = getAchievements(p);
         for(Achievement ach : a){
@@ -165,6 +194,14 @@ public class Achievement extends Quest{
                 App.Achieve.activateApps(p);
             }
         }
+    }
+
+    public int getMoney(){
+        return (int) Math.round(temp.reward_money * Math.pow(1.1, stage));
+    }
+
+    public int getXp(){
+        return (int) Math.round(temp.reward_xp * Math.pow(1.1, stage));
     }
 
     public static void setAchievements(Inventory inv, Player p){
@@ -205,8 +242,6 @@ class AchieveTemplate{
 
     public static AchieveTemplate getAchieveTemplate(String id){
         for(AchieveTemplate t : Achievement.templates){
-            Bukkit.getLogger().warning("template: " + t.id);
-            Bukkit.getLogger().warning("id: " + id);
             if(t.id.equals(id.trim())){
                 return t;
             }

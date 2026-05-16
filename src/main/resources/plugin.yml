@@ -40,4 +40,15 @@ commands:
     aliases: ["s"]
     permission: crystalized.lobby.spawn
     premission: "[!] You don't have permission to run this command, this is probably a bug"
+  reload_cosmetics:
+    description: "reload the cosmetics"
+    usage: "/reload_cosmetics"
+    aliases: []
+    permission: crystalized.lobby.command
+  reload_achievements:
+    description: "reload the achievements"
+    usage: "/reload_achievements"
+    aliases: []
+    permission: crystalized.lobby.command
+
 
