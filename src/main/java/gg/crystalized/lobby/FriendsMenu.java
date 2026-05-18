@@ -91,16 +91,16 @@ public class FriendsMenu {
             out.writeUTF("remove");
             out.writeUTF(name);
             p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
-            App.Friends.action(p);
+            App.Friends.action(p, p);
         }else if(click.isLeftClick()) {
-            App.Profiles.action(Bukkit.getOfflinePlayer(name).getPlayer());
+            App.Profiles.action(p, Bukkit.getOfflinePlayer(name).getPlayer());
         }else if(click.isRightClick()){
             ByteArrayDataOutput out = ByteStreams.newDataOutput();
             out.writeUTF("Party");
             out.writeUTF("invite");
             out.writeUTF(name);
             p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
-            App.Friends.action(p);
+            App.Friends.action(p, p);
         }
     }
 
@@ -198,16 +198,16 @@ public class FriendsMenu {
             out.writeUTF("remove");
             out.writeUTF(name);
             p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
-            App.Friends.action(p);
+            App.Friends.action(p, p);
         }else if(click.isLeftClick()) {
-            App.Profiles.action((Player)Bukkit.getOfflinePlayer(name));
+            App.Profiles.action(p, Bukkit.getOfflinePlayer(name));
         }else if(click.isRightClick()){
             ByteArrayDataOutput out = ByteStreams.newDataOutput();
             out.writeUTF("Friend");
             out.writeUTF("add");
             out.writeUTF(name);
             p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
-            App.Friends.action(p);
+            App.Friends.action(p, p);
         }
     }
 }

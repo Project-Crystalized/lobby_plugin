@@ -221,7 +221,7 @@ public class Cosmetic {
 
                 LobbyDatabase.addCosmetic(p, this, false);
                 LevelManager.giveMoney(p, price * (-1));
-                App.Shop.action(p);
+                App.Shop.action(p, p);
             }else {
                 if (isWearing(p)) {
                     if (slot != EquipmentSlot.HAND) {

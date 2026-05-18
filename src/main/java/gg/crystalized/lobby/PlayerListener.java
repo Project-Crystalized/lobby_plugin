@@ -133,7 +133,6 @@ public final class PlayerListener implements Listener {
 		}
 
 		Quest.removeQuests(e.getPlayer());
-		Achievement.removeAchievements(e.getPlayer());
 		App.active.remove(e.getPlayer());
 	}
 
@@ -156,9 +155,10 @@ public final class PlayerListener implements Listener {
 	@EventHandler
 	public void onRightclick(PlayerInteractEntityEvent e) {
 	Player player = e.getPlayer();
-		if(Lobby_plugin.getInstance().passive_mode){
-			return;
-		}
+	if(Lobby_plugin.getInstance().passive_mode){
+		return;
+	}
+
 		if (Commands.player_pig_counters.get(player) == null) {
 		Commands.player_pig_counters.put(player, 0);
 		}
@@ -182,6 +182,9 @@ public final class PlayerListener implements Listener {
 				fw.setFireworkMeta(fwm);
 		}
 		e.setCancelled(true);
+		if((e.getRightClicked() instanceof Player) && !CitizensAPI.getNPCRegistry().isNPC(e.getRightClicked())){
+			App.Profiles.action(player, (Player)e.getRightClicked());
+		}
 		if (!CitizensAPI.getNPCRegistry().isNPC(e.getRightClicked())) {
 			return;
 		}

@@ -152,7 +152,7 @@ public class Setting {
         }
 
         LobbyDatabase.updateSetting(p, (String) a.extra, value);
-        App.Settings.action(p);
+        App.Settings.action(p, p);
         updatePlayerVisibility(p);
         updatePlayerHeight(p);
     }

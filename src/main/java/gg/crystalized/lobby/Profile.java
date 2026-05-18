@@ -61,6 +61,7 @@ public class Profile {
         inv.setItem(30, App.ProfileLsStats.build(viewer));
         inv.setItem(31, App.ProfileKoStats.build(viewer));
         inv.setItem(32, App.ProfileCbStats.build(viewer));
+        inv.setItem(47, App.Achieve.build(viewer));
 
         if(p.getPlayer() == null){
             return;

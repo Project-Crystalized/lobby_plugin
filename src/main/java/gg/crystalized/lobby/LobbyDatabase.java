@@ -627,7 +627,7 @@ public class LobbyDatabase {
         }
     }
 
-    public static void replaceQuest(Player p, Quest old, Quest nevv){
+    public static void replaceQuest(OfflinePlayer p, Quest old, Quest nevv){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("UPDATE Quests SET quest = ? WHERE player_uuid = ? AND quest = ?;");
             prep.setString(1, nevv.questNumber);
@@ -640,7 +640,7 @@ public class LobbyDatabase {
         }
     }
 
-    public static int getLastQuestRoll(Player p){
+    public static int getLastQuestRoll(OfflinePlayer p){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT last_quest_roll FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
@@ -671,7 +671,7 @@ public class LobbyDatabase {
         return false;
     }
 
-    public static void rerollReduce(Player p){
+    public static void rerollReduce(OfflinePlayer p){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET quest_rerolls = quest_rerolls -1 WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
@@ -694,7 +694,7 @@ public class LobbyDatabase {
         }
     }
 
-    public static void questCompleted(Player p, String quest){
+    public static void questCompleted(OfflinePlayer p, String quest){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("UPDATE Quests SET done = 1 WHERE player_uuid = ? AND quest = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
@@ -706,7 +706,7 @@ public class LobbyDatabase {
         }
     }
 
-    public static void questClaimed(Player p, String quest){
+    public static void questClaimed(OfflinePlayer p, String quest){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("UPDATE Quests SET claimed = 1 WHERE player_uuid = ? AND quest = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
@@ -718,7 +718,7 @@ public class LobbyDatabase {
         }
     }
 
-    public static void addAchievement(Player p, Achievement a){
+    public static void addAchievement(OfflinePlayer p, Achievement a){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("INSERT INTO Achievements(player_uuid, id, stage, done, claimed) VALUES (?, ?, 0, 0, 0);");
             prep.setBytes(1, uuid_to_bytes(p));
@@ -730,7 +730,7 @@ public class LobbyDatabase {
         }
     }
 
-    public static void progressStage(Player p, Achievement a){
+    public static void progressStage(OfflinePlayer p, Achievement a){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET stage = stage +1 WHERE player_uuid = ? AND id = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
@@ -742,7 +742,7 @@ public class LobbyDatabase {
         }
     }
 
-    public static ArrayList<Achievement> getAchievements(Player p){
+    public static ArrayList<Achievement> getAchievements(OfflinePlayer p){
         try(Connection conn = DriverManager.getConnection(URL)){
             ArrayList<Achievement> list = new ArrayList<>();
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Achievements WHERE player_uuid = ?;");
@@ -760,7 +760,7 @@ public class LobbyDatabase {
         }
     }
 
-    public static void updateAchievementDone(Player p, Achievement a){
+    public static void updateAchievementDone(OfflinePlayer p, Achievement a){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET done = ? WHERE player_uuid = ? AND id = ?;");
             prep.setInt(1, a.done ? 1 : 0);
@@ -773,7 +773,7 @@ public class LobbyDatabase {
         }
     }
 
-    public static void updateAchievementClaimed(Player p, Achievement a){
+    public static void updateAchievementClaimed(OfflinePlayer p, Achievement a){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET claimed = ? WHERE player_uuid = ? AND id = ?;");
             prep.setInt(1, a.claimed ? 1 : 0);

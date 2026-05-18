@@ -6,6 +6,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -25,7 +26,7 @@ import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 public class Quest {
     static ArrayList<Quest> allQuests = new ArrayList<>();
     String questNumber;
-    Player player;
+    OfflinePlayer player;
     Game game;
     boolean forSeveral;
     Category category;
@@ -33,7 +34,7 @@ public class Quest {
     Difficulty difficulty;
     boolean claimed;
     boolean done;
-    public Quest(Player p, Game game, boolean forSeveral, Category category,int amount){
+    public Quest(OfflinePlayer p, Game game, boolean forSeveral, Category category,int amount){
         this.player = p;
         this.game = game;
         this.forSeveral = forSeveral;
@@ -61,7 +62,7 @@ public class Quest {
         questNumber = number;
     }
 
-    public Quest(Player p, String questNumber, boolean claimed, boolean done){
+    public Quest(OfflinePlayer p, String questNumber, boolean claimed, boolean done){
         this.questNumber = questNumber;
         this.player = p;
         this.claimed = claimed;
@@ -146,7 +147,7 @@ public class Quest {
         }
     }
 
-    public static ArrayList<Quest> getQuests(Player p){
+    public static ArrayList<Quest> getQuests(OfflinePlayer p){
         ArrayList<Quest> quests = new ArrayList<>();
         for(Quest q : allQuests){
             if(q.player.equals(p)){
@@ -159,8 +160,8 @@ public class Quest {
     public void claim(){
         LobbyDatabase.questClaimed(player, questNumber);
         claimed = true;
-        LevelManager.giveExperience(player, difficulty.exp);
-        LevelManager.giveMoney(player, difficulty.money);
+        LevelManager.giveExperience(player.getPlayer(), difficulty.exp);
+        LevelManager.giveMoney(player.getPlayer(), difficulty.money);
 
         for(Quest q : getQuests(player)){
             if(q.done && !q.claimed) return;

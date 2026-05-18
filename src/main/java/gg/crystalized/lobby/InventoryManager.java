@@ -52,7 +52,7 @@ public class InventoryManager implements Listener {
             return;
         }
         if(App.identifyApp(event.getItem(), p) == null) return;
-        App.identifyApp(event.getItem(), p).action(p);
+        App.identifyApp(event.getItem(), p).action(p, p);
     }
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event){
@@ -131,7 +131,7 @@ public class InventoryManager implements Listener {
                 home(p);
                 return;
             }
-            app.action((Player) event.getWhoClicked());
+            app.action(p, p);
         }else if(Cosmetic.identifyCosmetic(item) != null){
             Cosmetic c = Cosmetic.identifyCosmetic(item);
             c.clicked(event.getClick(), p, event.getSlotType(), event.getSlot(), event.getInventory());
@@ -147,7 +147,7 @@ public class InventoryManager implements Listener {
             }
         }else if(Achievement.identifyAchievement(p, item) != null){
             Achievement a = Achievement.identifyAchievement(p, item);
-            if(a.done){
+            if(a.done && p.getUniqueId().equals(a.player.getUniqueId())){
                 a.claim();
                 event.getInventory().setItem(event.getSlot(), a.build());
             }
@@ -338,9 +338,9 @@ public class InventoryManager implements Listener {
 
     public static void goBack(App.useCases use, Player p){
         if(use == App.useCases.ShopPage) {
-            App.Shop.action(p);
+            App.Shop.action(p, p);
         }else if (use == App.useCases.WardrobePage){
-            App.Wardrobe.action(p);
+            App.Wardrobe.action(p, p);
         }
     }
 

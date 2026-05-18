@@ -10,6 +10,7 @@ import io.papermc.paper.datacomponent.item.CustomModelData;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -32,7 +33,7 @@ public class Achievement extends Quest{
     int stage;
     AchieveTemplate temp;
 
-    public Achievement(Player player, AchieveTemplate temp, int stage, boolean done, boolean claimed){
+    public Achievement(OfflinePlayer player, AchieveTemplate temp, int stage, boolean done, boolean claimed){
         super(player, temp.id + temp.stages.get(stage), done, claimed);
         this.stage = stage;
         this.temp = temp;
@@ -61,23 +62,20 @@ public class Achievement extends Quest{
         }
     }
 
-    public static ArrayList<Achievement> getAchievements(Player p){
+    public static ArrayList<Achievement> getAchievements(OfflinePlayer p){
+        getFromDatabase(p);
         ArrayList<Achievement> achieve = new ArrayList<>();
         for(Achievement a : achievements){
             if (a.player.equals(p)) {
                 achieve.add(a);
             }
         }
+
         return achieve;
     }
 
-    public static void removeAchievements(Player p){
-        for(Achievement a : getAchievements(p)){
-            achievements.remove(a);
-        }
-    }
-
-    public static void getFromDatabase(Player p){
+    public static void getFromDatabase(OfflinePlayer p){
+        if(dontGetAchieve(p)) return;
         ArrayList<Achievement> achieve = LobbyDatabase.getAchievements(p);
         ArrayList<AchieveTemplate> a = (ArrayList<AchieveTemplate>) templates.clone();
         if(achieve == null){
@@ -101,6 +99,15 @@ public class Achievement extends Quest{
             LobbyDatabase.addAchievement(p, new Achievement(p, t, 0, false, false));
         }
         achievements.addAll(LobbyDatabase.getAchievements(p));
+    }
+
+    public static boolean dontGetAchieve(OfflinePlayer p){
+        for(Achievement a : achievements){
+            if(a.player.getUniqueId().equals(p.getUniqueId())){
+                return true;
+            }
+        }
+        return false;
     }
 
     public static Achievement identifyAchievement(Player p, ItemStack i){
@@ -137,8 +144,8 @@ public class Achievement extends Quest{
 
     @Override
     public void claim(){
-        LevelManager.giveExperience(player, getXp());
-        LevelManager.giveMoney(player, getMoney());
+        LevelManager.giveExperience(player.getPlayer(), getXp());
+        LevelManager.giveMoney(player.getPlayer(), getMoney());
         stage++;
         if(stage < temp.stages.size()) {
             LobbyDatabase.progressStage(player, this);
@@ -204,7 +211,7 @@ public class Achievement extends Quest{
         return (int) Math.round(temp.reward_xp * Math.pow(1.1, stage));
     }
 
-    public static void setAchievements(Inventory inv, Player p){
+    public static void setAchievements(Inventory inv, OfflinePlayer p){
         int[] border = {8, 17, 26, 35, 44, 53};
         int[] nextLine = {2, 11, 20, 29, 38, 47};
         int slot = 29;

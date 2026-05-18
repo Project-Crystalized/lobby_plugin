@@ -273,7 +273,7 @@ public enum App {
         }
     }
 
-    public void action(Player p){
+    public void action(Player p, OfflinePlayer viewed){
         if(this == Requeue){
             ArrayList<String> plugins = new ArrayList<>();
             stream(Bukkit.getServer().getPluginManager().getPlugins()).forEach(pl -> plugins.add(pl.getName()));
@@ -333,13 +333,13 @@ public enum App {
                 FriendsMenu.waitingForPartyMembers.put(p, inv);
                 return;
             }else if(this == App.Profiles){
-                Profile.prepareProfile(p, inv, p);
+                Profile.prepareProfile(viewed, inv, p);
             }else if(this == App.Wardrobe){
                 CosmeticView.getView(p).startView(null);
             }else if(this == App.Quest){
                 setQuests(inv, p);
             }else if(this == App.Achieve){
-                Achievement.setAchievements(inv, p);
+                Achievement.setAchievements(inv, viewed);
             }
             p.openInventory(inv);
         }
