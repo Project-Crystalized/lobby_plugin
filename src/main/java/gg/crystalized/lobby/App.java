@@ -120,7 +120,7 @@ public enum App {
     public Integer slot;
     int[] slots;
     Object extra;
-    static HashMap<OfflinePlayer, ArrayList<App>> active = new HashMap<>();
+    static final HashMap<OfflinePlayer, ArrayList<App>> active = new HashMap<>();
 
     App(String model,useCases self ,useCases[] uses, Component name, Integer slot, Object extra){
         this.model = model;

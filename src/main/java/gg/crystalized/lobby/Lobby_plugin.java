@@ -60,13 +60,13 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 
 		Commands dc = new Commands();
 		this.getCommand("set_rank").setExecutor(dc);
+		Cosmetic.createCosmetics();
 
 		if(Lobby_plugin.getInstance().passive_mode){
 			return;
 		}
 
 
-		Cosmetic.createCosmetics();
 		Achievement.getAchievementsFromJson();
 
 		EntityRefresh.setupEntityRefresh();

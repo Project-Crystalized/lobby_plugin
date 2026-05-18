@@ -106,7 +106,7 @@ public class Cosmetic {
             meta.lore(getDescription(wearing, viewing));
         }
         item.setItemMeta(meta);
-        if((wearing != null && wearing && slot == EquipmentSlot.HAND) && (!open && !App.active.get(p).isEmpty())) item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(2).build());
+        if((wearing != null && wearing && slot == EquipmentSlot.HAND) && (!open && !(App.active.get(p) == null) && !App.active.get(p).isEmpty())) item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(2).build());
         if((wearing != null && wearing && slot == EquipmentSlot.HAND) && open) item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(1).build());
         return item;
     }
@@ -194,6 +194,14 @@ public class Cosmetic {
     public static void giveCosmetics(Player p){
         for(Cosmetic c : Cosmetic.cosmetics){
             if(c.isWearing(p) && c.slot != EquipmentSlot.HAND){
+                p.sendEquipmentChange(p, c.slot, c.build(p, true, false, CosmeticView.isViewing(p, c)));
+            }
+        }
+    }
+
+    public static void giveCosmeticsInGame(Player p){
+        for(Cosmetic c : Cosmetic.cosmetics){
+            if(c.isWearing(p) && c.slot == EquipmentSlot.HEAD){
                 p.sendEquipmentChange(p, c.slot, c.build(p, true, false, CosmeticView.isViewing(p, c)));
             }
         }
