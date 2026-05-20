@@ -83,6 +83,7 @@ public enum App {
     ProfileKoStats("ui/scn3/profile/info/ko", useCases.Demand, new useCases[]{useCases.Stats}, Component.text("KnockOff Statistics").color(WHITE).decoration(ITALIC, false), 0, "ko"),
     ProfileCbStats("ui/scn3/profile/info/cb", useCases.Demand, new useCases[]{useCases.Stats}, Component.text("CrystalBlitz Statistics").color(WHITE).decoration(ITALIC, false), 0, "cb"),
     LeaveWardrobe("ui/leave", useCases.Wardrobe, Component.text("Leave").color(WHITE).decoration(ITALIC, false), 9),
+    EquipBuy("", useCases.Wardrobe, Component.text("Equip/Buy").color(WHITE).decoration(ITALIC, false), 8),
     HatsButtonW("ui/invisible", useCases.WardrobePage, useCases.Wardrobe, Component.translatable("crystalized.shardcore.shop.hats").color(WHITE).decoration(ITALIC, false), new int[]{28, 7, 1},
     EquipmentSlot.HEAD),
     HandButtonW("ui/invisible", useCases.WardrobePage, useCases.Wardrobe, Component.translatable("crystalized.shardcore.shop.handheld").color(WHITE).decoration(ITALIC, false), new int[]{37, 7, 1},
@@ -307,6 +308,9 @@ public enum App {
         }
         if(this == LeaveWardrobe){
             CosmeticView.findView(p).endView();
+        }
+        if(this == EquipBuy){
+            CosmeticView.findView(p).equipOrBuy(p);
         }
         if(this.toString().contains("Stats")){
             StatView.create(p, (String)extra).startPlayerView(p.getOpenInventory().getTopInventory().getItem(2));

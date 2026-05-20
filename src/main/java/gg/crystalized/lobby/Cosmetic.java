@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static gg.crystalized.lobby.LobbyDatabase.ownsCosmetic;
 import static io.papermc.paper.entity.TeleportFlag.EntityState.RETAIN_PASSENGERS;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.BOLD;
@@ -222,8 +223,10 @@ public class Cosmetic {
                 LobbyDatabase.addCosmetic(p, this, false);
                 LevelManager.giveMoney(p, price * (-1));
                 App.Shop.action(p, p);
+                p.sendMessage(Component.text("Bought: ").color(WHITE).append(name));
             }else {
                 if (isWearing(p)) {
+                    p.sendMessage(Component.text("Unequipped: ").color(WHITE).append(name));
                     if (slot != EquipmentSlot.HAND) {
                         p.sendEquipmentChange(p, slot, null);
                     } else {
@@ -231,6 +234,7 @@ public class Cosmetic {
                     }
 
                 } else {
+                    p.sendMessage(Component.text("Equipped: ").color(WHITE).append(name));
                     if (slot != EquipmentSlot.HAND) {
                         p.sendEquipmentChange(p, slot, build(p, true, false, CosmeticView.isViewing(p, this)));
                     } else {
@@ -239,6 +243,7 @@ public class Cosmetic {
                 }
                 LobbyDatabase.cosmeticSetWearing(p, this, !isWearing(p));
                 unEquipAllApartFrom(p);
+                if(CosmeticView.findView(p) != null) inv.setItem(4, App.EquipBuy.build(p));
             }
         } else if (click.isLeftClick()) {
             CosmeticView v = CosmeticView.getView(p);
@@ -261,7 +266,7 @@ public class Cosmetic {
         }
     }
 
-    private void unEquipAllApartFrom(Player p){
+    public void unEquipAllApartFrom(Player p){
         for(Cosmetic c : cosmetics){
             if(equals(c)){
                 continue;
@@ -386,6 +391,7 @@ class CosmeticView{
         inv.clear(2);
         inv.clear(3);
         inv.setItem(8, App.LeaveWardrobe.build(p));
+        inv.setItem(4, App.EquipBuy.build(p));
     }
 
     private static Equipment.EquipmentSlot getEquipmentSlot(EquipmentSlot slot){
@@ -425,5 +431,42 @@ class CosmeticView{
             return true;
         }
         return false;
+    }
+
+    public void equipOrBuy(Player p){
+        if(!ownsCosmetic(p, currentCosmetic)) {
+            if (currentCosmetic.price == null) {
+                return;
+            }
+
+            if (LevelManager.getMoney(p) < currentCosmetic.price) {
+                p.sendMessage(Component.text("You can't afford this cosmetic :(").color(RED));
+                return;
+            }
+
+            LobbyDatabase.addCosmetic(p, currentCosmetic, false);
+            LevelManager.giveMoney(p, currentCosmetic.price * (-1));
+            p.sendMessage(Component.text("Bought: ").color(WHITE).append(currentCosmetic.name));
+            App.Shop.action(p, p);
+        }
+
+        if (currentCosmetic.isWearing(p)) {
+            p.sendMessage(Component.text("Unequipped: ").color(WHITE).append(currentCosmetic.name));
+            if (currentCosmetic.slot != EquipmentSlot.HAND) {
+                p.sendEquipmentChange(p, currentCosmetic.slot, null);
+            } else {
+                p.getInventory().setItem(4, Cosmetic.getCosmeticById(Cosmetic.DEFAULT_SHARDCORE).build(p, false, true, CosmeticView.isViewing(p, currentCosmetic)));
+            }
+        } else {
+            p.sendMessage(Component.text("Equipped: ").color(WHITE).append(currentCosmetic.name));
+            if (currentCosmetic.slot != EquipmentSlot.HAND) {
+                p.sendEquipmentChange(p, currentCosmetic.slot, currentCosmetic.build(p, true, false, CosmeticView.isViewing(p, currentCosmetic)));
+            } else {
+                p.getInventory().setItem(4, currentCosmetic.build(p, true, true, CosmeticView.isViewing(p, currentCosmetic)));
+            }
+        }
+        LobbyDatabase.cosmeticSetWearing(p, currentCosmetic, !currentCosmetic.isWearing(p));
+        currentCosmetic.unEquipAllApartFrom(p);
+        if(CosmeticView.findView(p) != null) p.getInventory().setItem(4, App.EquipBuy.build(p));
     }
 }
