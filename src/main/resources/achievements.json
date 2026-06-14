@@ -1,0 +1,28 @@
+{
+	"readme": "If you're updating this and releasing said update on multiple paper servers, you will need to update the lobby plugin on all servers.",
+
+	"achievements": {
+		"general": [
+			{"name": "general_shopping", "difficulty": "EASY", "databaseid": 10}
+		],
+		"litestrike": [
+			{"name": "ls_win", "difficulty": "EASY", "databaseid": 20},
+			{"name": "ls_ace", "difficulty": "HARD", "databaseid": 21},
+			{"name": "ls_quickdefuser", "difficulty": "HARD", "databaseid": 22},
+			{"name": "ls_ricochet", "difficulty": "EXPERT", "databaseid": 23}
+        ],
+		"knockoff": [
+			{"name": "ko_win", "difficulty": "MEDIUM", "databaseid": 30},
+			{"name": "ko_glovekill", "difficulty": "EASY", "databaseid": 31},
+			{"name": "ko_unlocker", "difficulty": "EASY", "databaseid": 32},
+			{"name": "ko_deflector", "difficulty": "MEDIUM", "databaseid": 33},
+			{"name": "ko_grapplekill", "difficulty": "MEDIUM", "databaseid": 34},
+			{"name": "ko_flawlesswin", "difficulty": "HARD", "databaseid": 35}
+		],
+		"crystalblitz": [
+			{"name": "cb_win", "difficulty": "MEDIUM", "databaseid": 40},
+			{"name": "cb_nexusshards", "difficulty": "EASY", "databaseid": 41},
+			{"name": "cb_nexuscollecter", "difficulty": "HARD", "databaseid": 42}
+		]
+	}
+}

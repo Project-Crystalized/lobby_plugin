@@ -5,6 +5,7 @@ import com.google.common.io.ByteStreams;
 import gg.crystalized.lobby.statistics.StatView;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -243,6 +244,11 @@ public class InventoryManager implements Listener {
                     return App.useCases.ShopPage;
                 } else if (inv.title().equals(Component.text("\uA000\uA010").color(WHITE))) {
                     return App.useCases.WardrobePage;
+                } else {
+                    String string = PlainTextComponentSerializer.plainText().serialize(inv.title());
+                    if (string.contains("\uA015")) { //we might have different titles for achievementspage in the future
+                        return App.useCases.AchievementsPage;
+                    }
                 }
                 if (!(a.extra instanceof String)) {
                     continue;
@@ -341,6 +347,8 @@ public class InventoryManager implements Listener {
             App.Shop.action(p, p);
         }else if (use == App.useCases.WardrobePage){
             App.Wardrobe.action(p, p);
+        } else if (use == App.useCases.AchievementsPage) {
+            App.Achieve.action(p, p); //unsure about this - Callum
         }
     }
 
