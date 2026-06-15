@@ -239,7 +239,7 @@ public class Achievement extends Quest{
             Advancement a = Bukkit.getUnsafe().loadAdvancement(tempkey, """
                     {
                     	"display": {
-                    		"icon":{"id":"gold_ingot"},
+                    		"icon":{"id":"coal", "components": {"minecraft:item_model":"crystalized:ui/scn3/achivements/""" + temp.internalName + "\"}}," + """
                     		"title": {"translate": \"crystalized.achievement.""" + temp.internalName + ".name\"}, \"description\": {\"translate\": \"crystalized.achievement." + temp.internalName + ".desc\"}," + """
                     		"announce_to_chat": false,
                     		"show_toast": true,
