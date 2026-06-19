@@ -91,6 +91,8 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 				}
 			}
 		}.runTaskTimer(this, 5, 600 * 20);
+
+		saveResource("achievements.json", true);
 	}
 
 	@Override

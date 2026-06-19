@@ -7,7 +7,6 @@ import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.CustomModelData;
 import io.papermc.paper.entity.TeleportFlag;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
@@ -16,13 +15,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.Plugin;
 
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.function.Consumer;
 
 import static gg.crystalized.lobby.Quest.setQuests;
@@ -46,6 +43,10 @@ public enum App {
               "\uA000\uA009"),
     Achieve("ui/scn3/achivements", useCases.Achievements, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.achivements.name").color(WHITE).decoration(ITALIC, false), 32,
             "\uA000\uA011"),
+    AchieveGeneralCategory("ui/scn3/achivements/category_general", useCases.AchievementsPage, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.achievement.category.general").decoration(ITALIC, false), 29, Achievement.achievementCategories.general),
+    AchieveLsCategory("ui/scn3/games/litestrike", useCases.AchievementsPage, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.achievement.category.ls").decoration(ITALIC, false), 30, Achievement.achievementCategories.ls),
+    AchieveKoCategory("ui/scn3/games/knockoff", useCases.AchievementsPage, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.achievement.category.ko").decoration(ITALIC, false), 31, Achievement.achievementCategories.ko),
+    AchieveCbCategory("ui/scn3/games/crystalblitz", useCases.AchievementsPage, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.achievement.category.cb").decoration(ITALIC, false), 32, Achievement.achievementCategories.cb),
     Quest("ui/scn3/quests", useCases.Quests, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.translatable("crystalized.shardcore.quests.name").color(WHITE).decoration(ITALIC, false), 33,
             "\uA000\uA014"),
     Shop("ui/scn3/shop", useCases.Shop, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.shop.name").color(WHITE).decoration(ITALIC, false), 38,
@@ -105,6 +106,7 @@ public enum App {
         Settings,
         Set,
         Achievements,
+        AchievementsPage,
         Quests,
         Hotbar,
         UI,
@@ -326,7 +328,8 @@ public enum App {
                 return;
             }
             p.teleport((Location)extra, TeleportFlag.EntityState.RETAIN_PASSENGERS);
-        }else if(extra instanceof String){
+        }
+        else if(extra instanceof String){
             Inventory inv = prepareInv((String) extra, 54, self, p);
             if(this == App.Friends){
                 FriendsMenu.placeFriends(p, inv);
@@ -342,9 +345,15 @@ public enum App {
                 CosmeticView.getView(p).startView(null);
             }else if(this == App.Quest){
                 setQuests(inv, p);
-            }else if(this == App.Achieve){
-                Achievement.setAchievements(inv, viewed);
             }
+            //else if(this == App.Achieve){Achievement.setAchievements(inv, viewed);}
+            p.openInventory(inv);
+        }
+        //no idea where this is supposed to go, work well here tho - Callum
+        else if (extra instanceof Achievement.achievementCategories category) {
+            String title = "\uA000\uA015"; //TODO different titles for different categories
+            Inventory inv = prepareInv(title, 54, self, p);
+            Achievement.setAchievements(inv, viewed, category);
             p.openInventory(inv);
         }
     }
@@ -372,7 +381,7 @@ public enum App {
         }
 
         public static void createUI(Inventory inv, useCases use){
-            if(use == useCases.ShopPage){
+            if(use == useCases.ShopPage || use == useCases.AchievementsPage){
                 shop.placeUI(inv);
             }else if(use == useCases.Friends || use == useCases.Wardrobe){
                 friends.placeUI(inv);
@@ -380,9 +389,7 @@ public enum App {
                 settings.placeUI(inv);
             }else if(use == useCases.Profiles){
                 profile.placeUI(inv);
-            }else if(use == useCases.Achievements){
-                friends.placeUI(inv);
-            }else if(use == useCases.Quests){
+            }else if(use == useCases.Quests || use == useCases.Achievements){
                 quests.placeUI(inv);
             }else{
                 normal.placeUI(inv);

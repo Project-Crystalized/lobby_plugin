@@ -1,14 +1,9 @@
 package gg.crystalized.lobby;
 
-import gg.crystalized.lobby.minigames.CrystalizedChess;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.Bukkit;
@@ -56,6 +51,7 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
     }
 
     private boolean run_pig_hunt(String[] args, CommandSender commandSender) {
+        //Achievement.getAchievement(args[0], (OfflinePlayer) commandSender).showNotif();
         if(Lobby_plugin.getInstance().passive_mode){
             return false;
         }
@@ -70,7 +66,6 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
                         }
         Bukkit.getLogger().severe(pig_trackerA.toString());
         return true;
-
     }
 
     private boolean run_chess(String[] args, CommandSender commandSender) {
