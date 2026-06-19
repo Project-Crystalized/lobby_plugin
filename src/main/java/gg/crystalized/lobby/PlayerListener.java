@@ -101,12 +101,10 @@ public final class PlayerListener implements Listener {
 				Cosmetic.giveCosmetics(p);
 			}
 		}.runTaskLater(Lobby_plugin.getInstance(), 3);
-		p.sendPlayerListHeaderAndFooter(
-				// Header
-				text("\nProject Crystalized Lobby\n").color(NamedTextColor.LIGHT_PURPLE),
 
-				// Footer
-				text("\ncrystalized.cc\n").color(NamedTextColor.DARK_GRAY));
+		for(Player player : Bukkit.getOnlinePlayers()){
+			Ranks.doRankTeams(player);
+		}
 	}
 
 	@EventHandler

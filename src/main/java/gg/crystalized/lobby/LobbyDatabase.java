@@ -21,7 +21,10 @@ import javax.swing.text.DateFormatter;
 
 public class LobbyDatabase {
     public static final String URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/lobby_db.sql";
+    private static Connection conn = null;
     public static void setup_databases(){
+        try{conn = DriverManager.getConnection(URL);}catch(SQLException e){Bukkit.getLogger().warning("failed creating connection");}
+
     String createLobbyPlayerTable = "CREATE TABLE IF NOT EXISTS LobbyPlayers ("
             + "player_uuid 			BLOB UNIQUE,"
             + "player_name 			STRING,"
@@ -30,7 +33,7 @@ public class LobbyDatabase {
             + "money     INTEGER,"
             + "online     INTEGER,"
             + "rank_id     INTEGER,"
-            + "pay_rank_id   INTEGER,"
+            + "pay_rank_id   BLOB,"
             + "skin_url    STRING,"
             + "first_login   INTEGER,"
             + "last_login   INTEGER,"
@@ -352,12 +355,13 @@ public class LobbyDatabase {
     public static void makeNewLobbyPlayersEntry(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
             String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id, pay_rank_id, skin_url, first_login, last_login, times_logged_in, last_quest_roll, quest_rerolls)"
-                    + "VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?, unixepoch(), unixepoch(), 1, unixepoch(), ?);";
+                    + "VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, unixepoch(), unixepoch(), 1, unixepoch(), ?);";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.setString(2, p.getName());
-            prepared.setString(3, p.getPlayerProfile().getTextures().getSkin().toString());
-            prepared.setInt(4, Ranks.getPayRank(p) == 6 ? 1 : Ranks.getPayRank(p) == 7 ? 2 : 0);
+            prepared.setBytes(3, new byte[]{});
+            prepared.setString(4, p.getPlayerProfile().getTextures().getSkin().toString());
+            prepared.setInt(5, Ranks.getPayRank(p) == 6 ? 1 : Ranks.getPayRank(p) == 7 ? 2 : 0);
             prepared.executeUpdate();
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
@@ -466,16 +470,32 @@ public class LobbyDatabase {
     }
 
     public static void setPayedRank(OfflinePlayer p, int rankID){
+        //if the rank is already there it will remove it
         try(Connection conn = DriverManager.getConnection(URL)){
             String makeNewEntry = "UPDATE LobbyPlayers SET pay_rank_id = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
-            prepared.setInt(1, rankID);
+
+            prepared.setBytes(1, shortToBytes(Ranks.addOrRemovePayedRank(p, rankID)));
             prepared.setBytes(2, uuid_to_bytes(p));
             prepared.executeUpdate();
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());
         }
+    }
+
+    public static byte[] getPayedRank(OfflinePlayer p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            String makeNewEntry = "SELECT pay_rank_id FROM LobbyPlayers WHERE player_uuid = ?";
+            PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
+            prepared.setBytes(1, uuid_to_bytes(p));
+            ResultSet set = prepared.executeQuery();
+            return set.getBytes("pay_rank_id");
+        }catch(SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't get payed rank");
+        }
+        return new byte[]{};
     }
 
     public static boolean areFriends(Player p, Player friend){
@@ -576,7 +596,7 @@ public class LobbyDatabase {
     }
 
     public static void rollQuests(Player p){
-        try(Connection conn = DriverManager.getConnection(URL)){
+        try{
             Quest.removeQuests(p);
             PreparedStatement prep = conn.prepareStatement("DELETE FROM Quests WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
@@ -586,7 +606,7 @@ public class LobbyDatabase {
             Bukkit.getLogger().warning("couldn't roll quests (1)");
         }
 
-        try(Connection conn = DriverManager.getConnection(URL)){
+        try{
             Quest[] quests = Quest.rollQuests(p);
             PreparedStatement pr = conn.prepareStatement("INSERT INTO Quests(player_uuid, quest, done, claimed) VALUES (?, ?, 0, 0);");
             for(Quest q : quests){
@@ -599,7 +619,7 @@ public class LobbyDatabase {
             Bukkit.getLogger().warning("couldn't roll quests (2)");
         }
 
-        try(Connection conn = DriverManager.getConnection(URL)){
+        try{
             PreparedStatement pre = conn.prepareStatement("UPDATE LobbyPlayers SET quest_rerolls = ? WHERE player_uuid = ?;");
             pre.setInt(1, Ranks.getPayRank(p) == 6 ? 1 : Ranks.getPayRank(p) == 7 ? 2 : 0);
             pre.setBytes(2, uuid_to_bytes(p));
@@ -799,6 +819,14 @@ public class LobbyDatabase {
         UUID uuid = p.getUniqueId();
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());
+        return bb.array();
+    }
+
+    public static byte[] shortToBytes(short[] s){
+        ByteBuffer bb = ByteBuffer.allocate(s.length * 2);
+        for (short sh : s) {
+            bb.putShort(sh);
+        }
         return bb.array();
     }
 }

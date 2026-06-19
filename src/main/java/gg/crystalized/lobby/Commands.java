@@ -131,30 +131,19 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
             return false;
         }
 
-        int rank = 0;
+        Ranks rank = Ranks.rankless;
 
-        if(args[1].equals("rankless")){
-            rank = 0;
-        }else if(args[1].equals("admin")){
-            rank = 1;
-        } else if(args[1].equals("mod")){
-            rank = 2;
-        } else if(args[1].equals("dev")){
-            rank = 3;
-        } else if(args[1].equals("contrib")){
-            rank = 4;
-        } else if(args[1].equals("sub-project")){
-            rank = 5;
-        } else if(args[1].equals("one-time-payment")){
-            rank = 6;
-        } else if(args[1].equals("subscription")){
-            rank = 7;
+        for(Ranks r : Ranks.values()){
+            if(r.toString().equals(args[1])){
+                rank = r;
+                continue;
+            }
         }
 
-        if(rank != 6 && rank != 7){
-            LobbyDatabase.setRank(p, rank);
+        if(!rank.payed){
+            LobbyDatabase.setRank(p, rank.ordinal());
         }else{
-            LobbyDatabase.setPayedRank(p, rank);
+            LobbyDatabase.setPayedRank(p, rank.ordinal());
         }
 
         if(p.isOnline() && !Lobby_plugin.getInstance().passive_mode) {

@@ -1,21 +1,16 @@
 package gg.crystalized.lobby.statistics;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.ShortBuffer;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.function.Function;
 

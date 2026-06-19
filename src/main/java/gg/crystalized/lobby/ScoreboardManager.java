@@ -67,7 +67,6 @@ public class ScoreboardManager {
         obj.getScore("6").setScore(6);
 
         p.setScoreboard(s);
-
         /*
         This is where we update values
         I've included the floodgate api since Java and Bedrock scoreboards need to be done differently
