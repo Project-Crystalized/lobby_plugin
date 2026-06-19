@@ -126,12 +126,16 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
             return false;
         }
 
+        if(args[1].equals("clear")){
+            LobbyDatabase.setRank(p, 0);
+            LobbyDatabase.setPayedRank(p, -1);
+        }
+
         Ranks rank = Ranks.rankless;
 
         for(Ranks r : Ranks.values()){
             if(r.toString().equals(args[1])){
                 rank = r;
-                continue;
             }
         }
 

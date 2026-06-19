@@ -474,8 +474,7 @@ public class LobbyDatabase {
         try(Connection conn = DriverManager.getConnection(URL)){
             String makeNewEntry = "UPDATE LobbyPlayers SET pay_rank_id = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
-
-            prepared.setBytes(1, shortToBytes(Ranks.addOrRemovePayedRank(p, rankID)));
+            prepared.setBytes(1, rankID == -1 ? new byte[]{} : shortToBytes(Ranks.addOrRemovePayedRank(p, rankID)));
             prepared.setBytes(2, uuid_to_bytes(p));
             prepared.executeUpdate();
         }catch(SQLException e) {

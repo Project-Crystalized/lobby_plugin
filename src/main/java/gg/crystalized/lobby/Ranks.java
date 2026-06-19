@@ -54,7 +54,7 @@ public enum Ranks {
     9 = subscription (sun)
      */
 
-    rankless("#a1a1a1", "", "", 9, "[J] rankless", "ui/invisible", false),
+    rankless("#a1a1a1", "", "", 10, "[J] rankless", "ui/invisible", false),
     admin("#ba1560", "\uE301","\uE300", 1, "[A] admin", "ui/scn3/profile/rank_admin", false),
     mod("#22d87a", "\uE307", "\uE306", 2, "[B] mod", "ui/scn3/profile/rank_mod", false),
     dev("#379fe5", "\uE303", "\uE302", 3, "[C] dev", "ui/scn3/profile/rank_dev", false),
@@ -349,20 +349,20 @@ public enum Ranks {
     }
 
     public static int getPayRank(OfflinePlayer p){
-        short biggest = 0;
+        Ranks smallest = rankless;
 
         for(short s : convertByteToShort(LobbyDatabase.getPayedRank(p))){
-            if(s > biggest) biggest = s;
+            if(values()[s].priority < smallest.priority) smallest = values()[s];
         }
 
-        return biggest;
+        return smallest.ordinal();
     }
 
-    public static short[] addOrRemovePayedRank(OfflinePlayer p, int rankId){
-        short [] ranks = convertByteToShort(LobbyDatabase.getPayedRank(p));
+    public static short[] addOrRemovePayedRank(OfflinePlayer p, Integer rankId){
+        short[] ranks = convertByteToShort(LobbyDatabase.getPayedRank(p));
         short[] ne = new short[ranks.length+1];
         boolean remove = false;
-        if(Set.of(ranks).contains(((Integer)rankId).shortValue())){
+        if(arrayContains(ranks, rankId.shortValue())){
             ne = new short[ranks.length-1];
             remove = true;
         }
@@ -377,7 +377,7 @@ public enum Ranks {
         }
 
         if(!remove){
-            ne[w] = ((Integer)rankId).shortValue();
+            ne[ne.length-1] = rankId.shortValue();
         }
 
         return ne;
@@ -393,5 +393,11 @@ public enum Ranks {
             j++;
         }
         return s;
+    }
+
+    public static boolean arrayContains(short[] array, Short sho){
+        ArrayList<Short> list = new ArrayList<>();
+        for(short s : array) list.add(s);
+        return list.contains(sho);
     }
 }
