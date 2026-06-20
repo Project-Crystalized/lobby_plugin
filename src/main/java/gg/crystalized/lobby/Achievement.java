@@ -7,7 +7,6 @@ import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.CustomModelData;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.*;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.Player;
@@ -28,16 +27,18 @@ import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 public class Achievement extends Quest{
     static ArrayList<AchieveTemplate> templates = new ArrayList<>();
     static ArrayList<Achievement> achievements = new ArrayList<>();
-    int stage;
+    int stage; //times completed this achievement, not usable rn, will make it in the future - Callum
+    int progress; //percentage
     AchieveTemplate temp;
 
-    public Achievement(OfflinePlayer player, AchieveTemplate temp, int stage, boolean done, boolean claimed){
+    public Achievement(OfflinePlayer player, AchieveTemplate temp, int progress, int stage, boolean done, boolean claimed){
         //super(player, temp.id + temp.stages.get(stage), done, claimed); //causes an exception
         super(player, "-1" , done, claimed);
         this.stage = stage;
         this.temp = temp;
-        this.amount = 100; //percentage
+        this.amount = 100; //max percentage
         this.difficulty = temp.difficulty; //dumb
+        this.progress = progress;
     }
 
     public enum achievementCategories{
@@ -88,7 +89,7 @@ public class Achievement extends Quest{
 
     public static void createNewAchievements(Player p){
         for(AchieveTemplate temp : templates){
-            LobbyDatabase.addAchievement(p, new Achievement(p, temp, 0, false, false));
+            LobbyDatabase.addAchievement(p, new Achievement(p, temp, 0, 1, false, false));
         }
     }
 
@@ -105,7 +106,7 @@ public class Achievement extends Quest{
         return achieve;
     }
 
-    //for api
+    //for plugins to use
     public static Achievement getAchievement(String internalName, OfflinePlayer p) {
         for (Achievement a : getAchievements(p)) {
             if (a.temp.internalName.equals(internalName)) {
@@ -137,7 +138,7 @@ public class Achievement extends Quest{
         }
 
         for(AchieveTemplate t : a){
-            LobbyDatabase.addAchievement(p, new Achievement(p, t, 0, false, false));
+            LobbyDatabase.addAchievement(p, new Achievement(p, t, 0, 1, false, false));
         }
         achievements.addAll(LobbyDatabase.getAchievements(p));
     }
@@ -164,9 +165,11 @@ public class Achievement extends Quest{
 
     @Override
     public ItemStack build(){
+        boolean claimed = stage > 0;
         ItemStack item = new ItemStack(Material.COAL);
         ItemMeta meta = item.getItemMeta();
-        meta.displayName(temp.name.color(temp.difficulty.color));
+        //meta.displayName(temp.name.color(temp.difficulty.color));
+        meta.displayName(temp.name.color(difficulty.color).append(Component.text(" | " + toRomanNumeral(stage))));
         if (claimed) {
             meta.setItemModel(new NamespacedKey("crystalized", "ui/scn3/achivements/" + temp.internalName));
         } else {
@@ -175,18 +178,20 @@ public class Achievement extends Quest{
 
         ArrayList<Component> lore = new ArrayList<>();
         lore.add(temp.description.color(WHITE));
+        lore.add(Component.text("Difficulty: ").color(WHITE).append(Component.translatable(difficulty.name).color(difficulty.color)).decoration(ITALIC, false));
         lore.add(Component.empty());
-        if(done){
+        if (done) {
             lore.add(Component.translatable("Achievement completed").color(GREEN).decoration(ITALIC, false));
             lore.add(Component.translatable("Click to claim reward").color(GREEN).decoration(ITALIC, false));
-        }else {
-            lore.add(Component.text("Progress: " + getProgress() + "/" + amount + "%").color(WHITE).decoration(ITALIC, false));
         }
+        lore.add(Component.empty());
+        lore.add(Component.text("Progress: " + getProgress() + "/" + amount + "%").color(WHITE).decoration(ITALIC, false));
         lore.add(Component.text("Reward: " + getMoney() + "[m]   " + getXp() + "xp").color(WHITE).decoration(ITALIC, false));
+        lore.add(Component.text("Stage: " + (stage + 1) + "/" + (temp.stages.size() + 1) ).color(WHITE).decoration(ITALIC, false));
 
         meta.lore(lore);
         item.setItemMeta(meta);
-        if(done && !claimed) item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(1).build());
+        if (done && !claimed) item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addFloat(1).build());
         return item;
     }
 
@@ -195,12 +200,17 @@ public class Achievement extends Quest{
     void claim(){
         LevelManager.giveExperience(player.getPlayer(), getXp());
         LevelManager.giveMoney(player.getPlayer(), getMoney());
+        //TODO sound for claiming? We could make it different based on difficulty
         stage++;
         if(stage < temp.stages.size()) {
             LobbyDatabase.progressStage(player, this);
             questNumber = temp.id + temp.stages.get(stage);
             amount = temp.stages.get(stage);
             done = false;
+            if (stage != 10) { //reset for next stage
+                amount = 100; //dumb shit
+                progress = 0;
+            }
         }else{
             claimed = true;
         }
@@ -229,10 +239,9 @@ public class Achievement extends Quest{
         //send chat message
         p.sendRichMessage("");
         p.sendMessage(Component.translatable("crystalized.achievement.chat", List.of(
-                temp.name.color(WHITE).
+                temp.name.append(Component.text(" " + toRomanNumeral(stage))).color(WHITE).
                         hoverEvent(HoverEvent.showText(temp.description.color(WHITE)))
         )).color(GOLD));
-        p.sendRichMessage("");
 
         //weird shit to send toast messages
         try {
@@ -274,9 +283,19 @@ public class Achievement extends Quest{
 
     //for plugins to use
     public void setProgress(int percentage) {
-        //TODO this method and save to achievement database
+        progress = percentage;
 
-        //sanity check for afterwords, keep this in incase plugins are setting this to 100 (immediately or overtime) - Callum
+        //save to database
+        try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
+            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET progress = ? WHERE player_uuid = ? AND id = ?;");
+            prep.setInt(1, progress);
+            prep.setBytes(2, LobbyDatabase.uuid_to_bytes(player));
+            prep.setString(3, temp.id);
+            prep.executeUpdate();
+        } catch (SQLException ex) {
+            Lobby_plugin.getInstance().getLogger().warning(ex.toString());
+        }
+
         checkAndComplete(player.getPlayer());
     }
 
@@ -287,24 +306,16 @@ public class Achievement extends Quest{
 
     @Override
     public int getProgress(){
-        //TODO rewrite this so it doesn't depend on game databases, instead getting progress from the achievement database own
-        /*try(Connection conn = DriverManager.getConnection(game.URL)){
-            PreparedStatement prep = conn.prepareStatement("SELECT SUM(" + category.columnName + ") AS " + category.columnName + " FROM " + game.playerTableName + " INNER JOIN " + game.tableName + " ON " + game.playerTableName + ".game=" + game.tableName + ".game_id WHERE player_uuid = ?;");
-            if(!forSeveral){
-                prep = conn.prepareStatement("SELECT MAX(" + category.columnName + ") AS " + category.columnName + " FROM " + game.playerTableName + " INNER JOIN " + game.tableName + " ON " + game.playerTableName + ".game=" + game.tableName + ".game_id WHERE player_uuid = ?;");
-            }
-            if(questNumber.contains("-")){
-                prep = conn.prepareStatement("SELECT COUNT(game) AS " + category.columnName + " FROM " + game.playerTableName + " WHERE player_uuid = ?;");
-            }
-            prep.setBytes(1, uuid_to_bytes(player));
+        return progress;
+        /*try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
+            PreparedStatement prep = conn.prepareStatement("SELECT * FROM Achievements WHERE player_uuid = ?;");
+            prep.setBytes(1, LobbyDatabase.uuid_to_bytes(player));
             ResultSet set = prep.executeQuery();
-            set.next();
-            return set.getInt(category.columnName);
-        }catch(SQLException e){
-            //Bukkit.getLogger().warning(e.getMessage());
-            //Bukkit.getLogger().warning("couldn't get progress");
+            return set.getInt("progress");
+        } catch (SQLException ex) {
+            Lobby_plugin.getInstance().getLogger().warning(ex.toString());
+            return 0;
         }*/
-        return 25; //placeholder for now
     }
 
     public static void checkAndComplete(Player p){
@@ -320,11 +331,31 @@ public class Achievement extends Quest{
     }
 
     public int getMoney(){
-        return (int) Math.round(temp.reward_money * Math.pow(1.1, stage));
+        //return (int) Math.round(temp.reward_money * Math.pow(1.1, stage));
+        return (int) Math.round(temp.reward_money * Math.pow(2.2, stage));
     }
 
     public int getXp(){
-        return (int) Math.round(temp.reward_xp * Math.pow(1.1, stage));
+        //return (int) Math.round(temp.reward_xp * Math.pow(1.1, stage));
+        return (int) Math.round(temp.reward_xp * Math.pow(2.2, stage));
+    }
+
+    private String toRomanNumeral(int in) {
+        int i = in + 1; //shifted up by 1, because idk how to properly get stages to start at 1
+        switch (i) {
+            case 0 -> {return "0";}
+            case 1 -> {return "I";}
+            case 2 -> {return "II";}
+            case 3 -> {return "III";}
+            case 4 -> {return "IV";}
+            case 5 -> {return "V";}
+            case 6 -> {return "VI";}
+            case 7 -> {return "VII";}
+            case 8 -> {return "VIII";}
+            case 9 -> {return "IX";}
+            case 10 -> {return "X";}
+            default -> {return "?";}
+        }
     }
 
     public static void setAchievements(Inventory inv, OfflinePlayer p, achievementCategories category){
@@ -374,9 +405,12 @@ class AchieveTemplate{
     public AchieveTemplate(String id, String name, String difficulty, Achievement.achievementCategories category) {
         this.internalName = name;
         this.id = id;
-        //I honestly dont get this, but the old achievements json had this repeated lol - Callum
-        this.stages = List.of(1, 50, 100, 200);
         this.difficulty = Quest.Difficulty.valueOf(difficulty);
+        if (this.difficulty.equals(Quest.Difficulty.EXPERT)) {
+            this.stages = List.of(1, 2, 3, 4); //doing an expert achievement 10 times is way too painful
+        } else {
+            this.stages = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        }
         this.reward_money = this.difficulty.money;
         this.reward_xp = this.difficulty.exp;
         this.name = Component.translatable("crystalized.achievement." + name + ".name").decoration(ITALIC, false);

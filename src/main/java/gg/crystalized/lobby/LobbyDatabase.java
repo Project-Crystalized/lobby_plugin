@@ -74,6 +74,7 @@ public class LobbyDatabase {
     String createAchieveTable = "CREATE TABLE IF NOT EXISTS Achievements ("
             + "player_uuid        BLOB,"
             + "id        TEXT,"
+            + "progress INTEGER,"
             + "stage      INTEGER,"
             + "done     INTEGER,"
             + "claimed    INTEGER"
@@ -739,9 +740,10 @@ public class LobbyDatabase {
 
     public static void addAchievement(OfflinePlayer p, Achievement a){
         try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("INSERT INTO Achievements(player_uuid, id, stage, done, claimed) VALUES (?, ?, 0, 0, 0);");
+            PreparedStatement prep = conn.prepareStatement("INSERT INTO Achievements(player_uuid, id, progress, stage, done, claimed) VALUES (?, ?, ?, 0, 0, 0);");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setString(2, a.temp.id);
+            prep.setInt(3, a.progress);
             prep.executeUpdate();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
@@ -768,7 +770,7 @@ public class LobbyDatabase {
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
             while(set.next()){
-                Achievement a = new Achievement(p, AchieveTemplate.getAchieveTemplate(set.getString("id")), set.getInt("stage"), set.getInt("done") == 1, set.getInt("claimed") == 1);
+                Achievement a = new Achievement(p, AchieveTemplate.getAchieveTemplate(set.getString("id")), set.getInt("stage"), set.getInt("progress"), set.getInt("done") == 1, set.getInt("claimed") == 1);
                 list.add(a);
             }
             return list;
