@@ -6,6 +6,8 @@ import com.google.gson.JsonParser;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.CustomModelData;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.*;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.Player;
@@ -226,7 +228,10 @@ public class Achievement extends Quest{
         }
         //send chat message
         p.sendRichMessage("");
-        p.sendMessage(Component.translatable("crystalized.achievement.chat", List.of(temp.name)).color(GOLD));
+        p.sendMessage(Component.translatable("crystalized.achievement.chat", List.of(
+                temp.name.color(WHITE).
+                        hoverEvent(HoverEvent.showText(temp.description.color(WHITE)))
+        )).color(GOLD));
         p.sendRichMessage("");
 
         //weird shit to send toast messages
