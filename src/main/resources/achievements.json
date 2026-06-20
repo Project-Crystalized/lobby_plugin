@@ -3,13 +3,14 @@
 
 	"achievements": {
 		"general": [
-			{"name": "general_shopping", "difficulty": "EASY", "databaseid": 10}
+			{"name": "general_chesswin", "difficulty": "EASY", "databaseid": 10}
 		],
 		"litestrike": [
 			{"name": "ls_win", "difficulty": "EASY", "databaseid": 20},
 			{"name": "ls_ace", "difficulty": "HARD", "databaseid": 21},
 			{"name": "ls_quickdefuser", "difficulty": "HARD", "databaseid": 22},
-			{"name": "ls_ricochet", "difficulty": "EXPERT", "databaseid": 23}
+			{"name": "ls_ricochet", "difficulty": "EXPERT", "databaseid": 23},
+			{"name": "ls_onlyweapons", "difficulty": "EXPERT", "databaseid": 24}
         ],
 		"knockoff": [
 			{"name": "ko_win", "difficulty": "MEDIUM", "databaseid": 30},
@@ -22,7 +23,10 @@
 		"crystalblitz": [
 			{"name": "cb_win", "difficulty": "MEDIUM", "databaseid": 40},
 			{"name": "cb_nexusshards", "difficulty": "EASY", "databaseid": 41},
-			{"name": "cb_nexuscollecter", "difficulty": "HARD", "databaseid": 42}
+			{"name": "cb_clutch", "difficulty": "MEDIUM", "databaseid": 42},
+			{"name": "cb_puritarian", "difficulty": "MEDIUM", "databaseid": 43},
+			{"name": "cb_nexuscollecter", "difficulty": "HARD", "databaseid": 44},
+			{"name": "cb_elimeveryone", "difficulty": "EXPERT", "databaseid": 45}
 		]
 	}
 }
