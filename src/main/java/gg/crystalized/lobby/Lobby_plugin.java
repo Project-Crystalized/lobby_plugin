@@ -62,12 +62,12 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		this.getCommand("set_rank").setExecutor(dc);
 		Cosmetic.createCosmetics();
 
+		//this needs to load in game servers - Callum
+		Achievement.getAchievementsFromJson();
+
 		if(Lobby_plugin.getInstance().passive_mode){
 			return;
 		}
-
-
-		Achievement.getAchievementsFromJson();
 
 		EntityRefresh.setupEntityRefresh();
 		createStatistics();

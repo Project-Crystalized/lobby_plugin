@@ -51,8 +51,7 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
     }
 
     private boolean run_pig_hunt(String[] args, CommandSender commandSender) {
-        Achievement.getAchievement(args[0], (OfflinePlayer) commandSender).setProgress(Integer.parseInt(args[1]));
-        /*if(Lobby_plugin.getInstance().passive_mode){
+        if(Lobby_plugin.getInstance().passive_mode){
             return false;
         }
         if (commandSender instanceof Player) {
@@ -64,7 +63,7 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
             pig_trackerA.add(pig);
 
                         }
-        Bukkit.getLogger().severe(pig_trackerA.toString());*/
+        Bukkit.getLogger().severe(pig_trackerA.toString());
         return true;
     }
 

@@ -183,8 +183,8 @@ public class Achievement extends Quest{
         if (done) {
             lore.add(Component.translatable("Achievement completed").color(GREEN).decoration(ITALIC, false));
             lore.add(Component.translatable("Click to claim reward").color(GREEN).decoration(ITALIC, false));
+            lore.add(Component.empty());
         }
-        lore.add(Component.empty());
         lore.add(Component.text("Progress: " + getProgress() + "/" + amount + "%").color(WHITE).decoration(ITALIC, false));
         lore.add(Component.text("Reward: " + getMoney() + "[m]   " + getXp() + "xp").color(WHITE).decoration(ITALIC, false));
         lore.add(Component.text("Stage: " + (stage + 1) + "/" + (temp.stages.size() + 1) ).color(WHITE).decoration(ITALIC, false));
@@ -292,6 +292,7 @@ public class Achievement extends Quest{
             prep.setBytes(2, LobbyDatabase.uuid_to_bytes(player));
             prep.setString(3, temp.id);
             prep.executeUpdate();
+            //Bukkit.getServer().sendRichMessage("Saved Achievement progress for " + temp.internalName + " | " + percentage);
         } catch (SQLException ex) {
             Lobby_plugin.getInstance().getLogger().warning(ex.toString());
         }
@@ -306,23 +307,26 @@ public class Achievement extends Quest{
 
     @Override
     public int getProgress(){
-        return progress;
         /*try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Achievements WHERE player_uuid = ?;");
             prep.setBytes(1, LobbyDatabase.uuid_to_bytes(player));
             ResultSet set = prep.executeQuery();
-            return set.getInt("progress");
+            progress = set.getInt("progress");
+            //Bukkit.getServer().sendRichMessage("Got achievement progress for " + temp.internalName + " | "  + progress);
         } catch (SQLException ex) {
             Lobby_plugin.getInstance().getLogger().warning(ex.toString());
-            return 0;
+            progress = 0;
         }*/
+        //TODO above fucks up saving when switching between servers for some reason - Callum
+        return progress;
     }
 
     public static void checkAndComplete(Player p){
         ArrayList<Achievement> a = getAchievements(p);
         for(Achievement ach : a){
             if(ach.done) continue;
-            int progress = ach.getProgress();
+            //int progress = ach.getProgress();
+            int progress = ach.progress;
             if(progress >= ach.amount){
                 ach.complete();
                 App.Achieve.activateApps(p);
