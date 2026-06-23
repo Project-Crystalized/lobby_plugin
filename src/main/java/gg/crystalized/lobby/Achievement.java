@@ -162,6 +162,30 @@ public class Achievement extends Quest{
         return null;
     }
 
+    public static void resyncInfo(OfflinePlayer p) {
+        for (Achievement a : achievements) {
+            if (a.player.equals(p)) {
+                try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
+                    PreparedStatement prep = conn.prepareStatement("SELECT * FROM Achievements WHERE player_uuid = ?;");
+                    prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
+                    ResultSet set = prep.executeQuery();
+                    while (set.next()) {
+                        if (set.getString("id").equals(a.temp.id)) {
+                            int done = set.getInt("done");
+                            a.done = done == 1;
+
+                            int claimed = set.getInt("claimed");
+                            a.claimed = claimed == 1;
+
+                            a.stage = set.getInt("stage");
+                        }
+                    }
+                } catch (SQLException ex) {
+                    Lobby_plugin.getInstance().getLogger().warning(ex.toString());
+                }
+            }
+        }
+    }
 
     @Override
     public ItemStack build(){
@@ -209,7 +233,7 @@ public class Achievement extends Quest{
             done = false;
             if (stage != 10) { //reset for next stage
                 amount = 100; //dumb shit
-                progress = 0;
+                setProgress(0);
             }
         }else{
             claimed = true;
@@ -232,10 +256,7 @@ public class Achievement extends Quest{
     }
 
     private void showNotif() {
-        Player p = player.getPlayer();
-        if (p == null) {
-            return;
-        }
+        Player p = Bukkit.getPlayer(player.getName());
         //send chat message
         p.sendRichMessage("");
         p.sendMessage(Component.translatable("crystalized.achievement.chat", List.of(
@@ -307,17 +328,20 @@ public class Achievement extends Quest{
 
     @Override
     public int getProgress(){
-        /*try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
+        try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Achievements WHERE player_uuid = ?;");
             prep.setBytes(1, LobbyDatabase.uuid_to_bytes(player));
             ResultSet set = prep.executeQuery();
-            progress = set.getInt("progress");
-            //Bukkit.getServer().sendRichMessage("Got achievement progress for " + temp.internalName + " | "  + progress);
+            while (set.next()) {
+                if (set.getString("id").equals(temp.id)) {
+                    progress = set.getInt("progress");
+                    break;
+                }
+            }
         } catch (SQLException ex) {
             Lobby_plugin.getInstance().getLogger().warning(ex.toString());
             progress = 0;
-        }*/
-        //TODO above fucks up saving when switching between servers for some reason - Callum
+        }
         return progress;
     }
 
@@ -325,8 +349,8 @@ public class Achievement extends Quest{
         ArrayList<Achievement> a = getAchievements(p);
         for(Achievement ach : a){
             if(ach.done) continue;
-            //int progress = ach.getProgress();
-            int progress = ach.progress;
+            int progress = ach.getProgress();
+            //int progress = ach.progress;
             if(progress >= ach.amount){
                 ach.complete();
                 App.Achieve.activateApps(p);

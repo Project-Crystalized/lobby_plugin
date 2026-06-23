@@ -58,6 +58,8 @@ public final class PlayerListener implements Listener {
 		e.joinMessage(Ranks.getJoinMessage(p));
 		App.active.put(p, new ArrayList<>());
 
+		Achievement.resyncInfo(p);
+
 		if(Lobby_plugin.getInstance().passive_mode){
 			return;
 		}
