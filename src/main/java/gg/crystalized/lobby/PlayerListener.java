@@ -58,6 +58,7 @@ public final class PlayerListener implements Listener {
 		e.joinMessage(Ranks.getJoinMessage(p));
 		App.active.put(p, new ArrayList<>());
 
+		if (!Lobby_plugin.getInstance().passive_mode) Achievement.getFromDatabase(p); //needs to run before resyncInfo
 		Achievement.resyncInfo(p);
 
 		if(Lobby_plugin.getInstance().passive_mode){
@@ -92,7 +93,6 @@ public final class PlayerListener implements Listener {
 		LevelManager.rewardForLogin(p);
 		LobbyDatabase.updateLastLogin(p);
 		LobbyDatabase.updateLoginTimes(p);
-		Achievement.getFromDatabase(p);
 		if(inDatabase)LobbyDatabase.rollOrFetchQuests(p);
 		Quest.checkAndComplete(p);
 		Achievement.checkAndComplete(p);
