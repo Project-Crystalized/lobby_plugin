@@ -65,19 +65,19 @@ public class Achievement extends Quest{
             //These are split just to make the json look nice
             for (JsonElement e : categories.get("general").getAsJsonArray()) {
                 JsonObject j = e.getAsJsonObject();
-                templates.add(new AchieveTemplate(j.get("databaseid").getAsString(), j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.general));
+                templates.add(new AchieveTemplate(j.get("databaseid").getAsString(), j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.general, j));
             }
             for (JsonElement e : categories.get("litestrike").getAsJsonArray()) {
                 JsonObject j = e.getAsJsonObject();
-                templates.add(new AchieveTemplate(j.get("databaseid").getAsString(), j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.ls));
+                templates.add(new AchieveTemplate(j.get("databaseid").getAsString(), j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.ls, j));
             }
             for (JsonElement e : categories.get("knockoff").getAsJsonArray()) {
                 JsonObject j = e.getAsJsonObject();
-                templates.add(new AchieveTemplate(j.get("databaseid").getAsString(), j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.ko));
+                templates.add(new AchieveTemplate(j.get("databaseid").getAsString(), j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.ko, j));
             }
             for (JsonElement e : categories.get("crystalblitz").getAsJsonArray()) {
                 JsonObject j = e.getAsJsonObject();
-                templates.add(new AchieveTemplate(j.get("databaseid").getAsString(), j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.cb));
+                templates.add(new AchieveTemplate(j.get("databaseid").getAsString(), j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.cb, j));
             }
 
             Lobby_plugin.getInstance().getLogger().log(Level.INFO, "Loaded " + templates.size() + " achievements from json.");
@@ -224,7 +224,8 @@ public class Achievement extends Quest{
     void claim(){
         LevelManager.giveExperience(player.getPlayer(), getXp());
         LevelManager.giveMoney(player.getPlayer(), getMoney());
-        //TODO sound for claiming? We could make it different based on difficulty
+        //TODO placeholder sound for claiming
+        player.getPlayer().playSound(player.getPlayer(), "minecraft:entity.experience_orb.pickup", 1, 1);
         stage++;
         if(stage < temp.stages.size()) {
             LobbyDatabase.progressStage(player, this);
@@ -257,6 +258,9 @@ public class Achievement extends Quest{
 
     private void showNotif() {
         Player p = Bukkit.getPlayer(player.getName());
+        NamespacedKey tempkey = new NamespacedKey("crystalized", "preperaingachievement_" + p.getUniqueId().toString().toLowerCase() + "_" + temp.id);
+        if (Bukkit.getServer().getAdvancement(tempkey) != null) {return;}
+
         //send chat message
         p.sendRichMessage("");
         p.sendMessage(Component.translatable("crystalized.achievement.chat", List.of(
@@ -264,10 +268,15 @@ public class Achievement extends Quest{
                         hoverEvent(HoverEvent.showText(temp.description.color(WHITE)))
         )).color(GOLD));
 
+        //sound
+        if (difficulty.equals(Difficulty.EXPERT)) {
+            p.playSound(p, "crystalized:effect.achievement_obtain_expert", 0.25F, 1);
+        } else {
+            p.playSound(p, "crystalized:effect.achievement_obtain", 1, 1);
+        }
+
         //weird shit to send toast messages
         try {
-            NamespacedKey tempkey = new NamespacedKey("crystalized", "preperaingachievement_" + p.getUniqueId().toString().toLowerCase() + "_" + temp.id);
-
             // The String in this method is the json format for advancements in datapacks, if vanilla changes this in future updates, expect this to fuck up
             // This is the only way we can load advancements without using a library, NMS or a datapacks, yes this is stupid and looks stupid - Callum
             // https://minecraft.wiki/w/Advancement_definition#File_format
@@ -430,7 +439,7 @@ class AchieveTemplate{
     Achievement.achievementCategories category;
     Quest.Difficulty difficulty;
 
-    public AchieveTemplate(String id, String name, String difficulty, Achievement.achievementCategories category) {
+    public AchieveTemplate(String id, String name, String difficulty, Achievement.achievementCategories category, JsonObject json) {
         this.internalName = name;
         this.id = id;
         this.difficulty = Quest.Difficulty.valueOf(difficulty);
@@ -444,6 +453,20 @@ class AchieveTemplate{
         this.name = Component.translatable("crystalized.achievement." + name + ".name").decoration(ITALIC, false);
         this.description = Component.translatable("crystalized.achievement." + name + ".desc").decoration(ITALIC, false);
         this.category = category;
+
+        if (json.has("replaceStages")) {
+            List<JsonElement> list = json.get("replaceStages").getAsJsonArray().asList();
+            this.stages = new ArrayList<>();
+            for (JsonElement e : list) {
+                this.stages.add(e.getAsInt());
+            }
+        }
+        if (json.has("replaceRewardMoney")) {
+            this.reward_money = json.get("replaceRewardMoney").getAsInt();
+        }
+        if (json.has("replaceRewardXP")) {
+            this.reward_xp = json.get("replaceRewardXP").getAsInt();
+        }
     }
 
     public static AchieveTemplate getAchieveTemplate(String id){
