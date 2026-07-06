@@ -58,13 +58,6 @@ public final class PlayerListener implements Listener {
 		e.joinMessage(Ranks.getJoinMessage(p));
 		App.active.put(p, new ArrayList<>());
 
-		if (!Lobby_plugin.getInstance().passive_mode) Achievement.getFromDatabase(p); //needs to run before resyncInfo
-		Achievement.resyncInfo(p);
-
-		if(Lobby_plugin.getInstance().passive_mode){
-			return;
-		}
-
 		boolean inDatabase = LobbyDatabase.isPlayerInDatabase(p);
 		if(!inDatabase){
 			LobbyDatabase.makeNewLobbyPlayersEntry(p);
@@ -72,6 +65,13 @@ public final class PlayerListener implements Listener {
 			LobbyDatabase.addCosmetic(p, Cosmetic.getCosmeticById(6), true);
 			LobbyDatabase.makeNewSettingsEntry(p);
 			Achievement.createNewAchievements(p);
+		}
+
+		if (!Lobby_plugin.getInstance().passive_mode) Achievement.getFromDatabase(p); //needs to run before resyncInfo
+		Achievement.resyncInfo(p);
+
+		if(Lobby_plugin.getInstance().passive_mode){
+			return;
 		}
 
 		ScoreboardManager.SetScoreboard(p);

@@ -178,6 +178,7 @@ public class Achievement extends Quest{
                             a.claimed = claimed == 1;
 
                             a.stage = set.getInt("stage");
+                            makeIconsBlink(p, a);
                         }
                     }
                 } catch (SQLException ex) {
@@ -362,8 +363,20 @@ public class Achievement extends Quest{
             //int progress = ach.progress;
             if(progress >= ach.amount){
                 ach.complete();
-                App.Achieve.activateApps(p);
+                makeIconsBlink(p, ach);
             }
+        }
+    }
+
+    private static void makeIconsBlink(OfflinePlayer p, Achievement ach) {
+        if (ach.done && !ach.claimed) {
+            switch (ach.temp.category) {
+                case general -> {App.AchieveGeneralCategory.activateApps(p);}
+                case ls -> {App.AchieveLsCategory.activateApps(p);}
+                case ko -> {App.AchieveKoCategory.activateApps(p);}
+                case cb -> {App.AchieveCbCategory.activateApps(p);}
+            }
+            App.Achieve.activateApps(p);
         }
     }
 
