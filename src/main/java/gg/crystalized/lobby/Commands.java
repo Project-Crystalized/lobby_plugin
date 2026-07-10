@@ -51,7 +51,6 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
     }
 
     private boolean run_pig_hunt(String[] args, CommandSender commandSender) {
-        //Achievement.getAchievement(args[0], (OfflinePlayer) commandSender).showNotif();
         if(Lobby_plugin.getInstance().passive_mode){
             return false;
         }

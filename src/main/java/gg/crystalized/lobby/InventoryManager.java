@@ -261,6 +261,11 @@ public class InventoryManager implements Listener {
         return null;
     }
     public static void giveLobbyItems(Player p){
+        if (Lobby_plugin.getInstance().passive_mode) {
+            return;
+            // if this method activates when you get an achievement (which will happen because of the flashing shardcore), you will be given
+            // the lobby items during gameplay, returning here to fix that bug. - Callum
+        }
         Inventory i = p.getInventory();
         int in = 0;
         for(App a : App.values()){
