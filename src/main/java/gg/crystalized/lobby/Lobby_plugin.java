@@ -2,6 +2,7 @@ package gg.crystalized.lobby;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
+import com.github.retrooper.packetevents.PacketEvents;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 import com.google.gson.JsonObject;
@@ -9,6 +10,7 @@ import com.google.gson.JsonParser;
 import gg.crystalized.lobby.minigames.CrystalizedChess;
 import gg.crystalized.lobby.minigames.CrystalizedChessListener;
 import gg.crystalized.lobby.statistics.StatView;
+import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -45,6 +47,13 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 	List<CrystalizedChess> ChessGames = new ArrayList<>();
 	public boolean passive_mode = false;
 	public static ProtocolManager protocolManager;
+
+	@Override
+	public void onLoad(){
+		PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
+		PacketEvents.getAPI().getSettings().reEncodeByDefault(false).checkForUpdates(true).bStats(false);
+		PacketEvents.getAPI().load();
+	}
 	@Override
 	public void onEnable() {
 		LobbyDatabase.setup_databases();
@@ -61,6 +70,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		Commands dc = new Commands();
 		this.getCommand("set_rank").setExecutor(dc);
 		Cosmetic.createCosmetics();
+		PacketEvents.getAPI().init();
 
 		if(Lobby_plugin.getInstance().passive_mode){
 			return;
@@ -98,6 +108,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 	@Override
 	public void onDisable() {
 		Bukkit.getOnlinePlayers().forEach(p -> p.getPassengers().forEach(Entity::remove));
+		PacketEvents.getAPI().terminate();
 	}
 
 	public static Lobby_plugin getInstance() {

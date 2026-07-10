@@ -2,6 +2,7 @@ package gg.crystalized.lobby;
 import java.nio.ByteBuffer;
 import java.sql.*;
 import java.text.DateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
 
+import gg.crystalized.lobby.statistics.StatItem;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -350,6 +352,43 @@ public class LobbyDatabase {
             Bukkit.getLogger().warning("couldn't check existence in database for " + p.getName() + " UUID: " + p.getUniqueId());
             return false;
         }
+    }
+
+    public static boolean nullScan(Player p){
+        //returns true if null was found in the database or there wasn't an entry
+        if(!isPlayerInDatabase(p)) {
+            makeNewLobbyPlayersEntry(p);
+            return true;
+        }
+
+        try(Connection conn = DriverManager.getConnection(URL)){
+            String select = "SELECT * FROM LobbyPlayers WHERE player_uuid = ?;";
+            PreparedStatement prep = conn.prepareStatement(select);
+            prep.setBytes(1, uuid_to_bytes(p));
+            ResultSet set = prep.executeQuery();
+            ResultSetMetaData data = set.getMetaData();
+            set.next();
+            boolean retur = false;
+            for(int i = 0; i < data.getColumnCount(); i++){
+               Object o = set.getObject(i);
+               if(set.wasNull()) retur = true;
+               if(data.getColumnLabel(i).equals("first_login") || data.getColumnLabel(i).equals("last_login") || data.getColumnLabel(i).equals("last_quest_roll")){
+                   set.updateInt(i, ((Long)Instant.now().getEpochSecond()).intValue());
+               }else if(data.getColumnLabel(i).equals("times_logged_in")){
+                   set.updateInt(i, 1);
+               }else if(data.getColumnLabel(i).equals("quest_rerolls")){
+                   set.updateInt(i, Ranks.getPayRank(p) == 6 ? 1 : Ranks.getPayRank(p) == 7 ? 2 : 0);
+               }else{
+                   set.updateInt(i, 0);
+               }
+            }
+
+
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't scan for null");
+        }
+        return false; //FIXme remove this
     }
 
     public static void makeNewLobbyPlayersEntry(Player p){
