@@ -83,7 +83,7 @@ public final class PlayerListener implements Listener {
 		LobbyDatabase.updatePlayerNames(p);
 		LobbyDatabase.updateSkin(p);
 
-		Ranks.renderNameTags(p);
+		Nametag.renderAllNametags(p);
 		Ranks.renderTabList(p);
 
 		Setting.updatePlayerVisibility(p);
@@ -131,7 +131,7 @@ public final class PlayerListener implements Listener {
 		if(view != null && view.isRunning()){
 			view.endView();
 		}
-
+		Nametag.getNametag(e.getPlayer()).removeNametag();
 		Quest.removeQuests(e.getPlayer());
 		App.active.remove(e.getPlayer());
 	}

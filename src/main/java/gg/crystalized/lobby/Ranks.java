@@ -9,16 +9,26 @@ import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.*;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.protocol.attribute.Attributes;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
+import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
+import com.github.retrooper.packetevents.protocol.world.Location;
+import com.github.retrooper.packetevents.util.Vector3d;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetPassengers;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.apache.commons.lang3.SerializationUtils;
 import org.bukkit.*;
-import org.bukkit.entity.Display;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.TextDisplay;
+import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -35,6 +45,8 @@ import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
+import static org.bukkit.attribute.Attribute.SCALE;
+import static org.bukkit.attribute.AttributeModifier.Operation.ADD_SCALAR;
 import static org.bukkit.entity.EntityType.TEXT_DISPLAY;
 import static org.bukkit.entity.TextDisplay.TextAlignment.CENTER;
 
@@ -65,7 +77,6 @@ public enum Ranks {
     moon_one("#512f7c", "\uE30F", "\uE30E", 8, "[H] moon_one", "ui/scn3/profile/moon", true),
     supporter("#1a1a1a", "\uE311", "\uE310", 9,"[I] supporter", "ui/scn3/profile/supporter", true);
 
-    private static int EntityId = 1000000;
     final String color;
     final String icon;
     final String iconWithName;
@@ -132,106 +143,6 @@ public enum Ranks {
         }
 
         return getNameWithName(p).append(Component.text(" joined the game").color(GREEN));
-    }
-
-    public static void renderNameTags(Player p){
-        
-        ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(Lobby_plugin.getInstance(), PacketType.Play.Server.PLAYER_INFO) {
-            @Override
-            public void onPacketSending(PacketEvent event) {
-                if (event.getPacket().getPlayerInfoAction().size() == 0 || event.getPacket().getPlayerInfoAction().read(0) != EnumWrappers.PlayerInfoAction.ADD_PLAYER) return;
-                List<PlayerInfoData> newPlayerInfoDataList = new ArrayList<>();
-                List<PlayerInfoData> playerInfoDataList = event.getPacket().getPlayerInfoDataLists().read(0);
-                for (PlayerInfoData playerInfoData : playerInfoDataList) {
-                    if (playerInfoData == null || playerInfoData.getProfile() == null || Bukkit.getPlayer(playerInfoData.getProfile().getUUID()) == null) { //Unknown Player
-                        newPlayerInfoDataList.add(playerInfoData);
-                        continue;
-                    }
-                    // Check if the player's UUID matches the specific player's UUID
-                    if (!playerInfoData.getProfile().getUUID().equals(p.getUniqueId())) {
-                        newPlayerInfoDataList.add(playerInfoData);
-                        continue;
-                    }
-                    WrappedGameProfile profile = playerInfoData.getProfile();
-                    // Create a new profile with the desired name and the original profile's properties (including the skin)
-                    WrappedGameProfile newProfile = new WrappedGameProfile(profile.getUUID(), "\uE301 \n" + ChatColor.translateAlternateColorCodes('&', "test"));
-                    newProfile.getProperties().putAll(profile.getProperties());
-                    PlayerInfoData newPlayerInfoData = new PlayerInfoData(newProfile, playerInfoData.getLatency(), playerInfoData.getGameMode(), playerInfoData.getDisplayName());
-                    newPlayerInfoDataList.add(newPlayerInfoData);
-                }
-                event.getPacket().getPlayerInfoDataLists().write(0, newPlayerInfoDataList);
-                Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
-                    Lobby_plugin.protocolManager.sendServerPacket(onlinePlayer, event.getPacket());
-                    onlinePlayer.hidePlayer(p);
-                    onlinePlayer.showPlayer(p);
-                });
-            }
-        });
-
-        /*
-        PacketContainer nameTagPacket = Lobby_plugin.protocolManager.createPacket(PacketType.Play.Server.PLAYER_INFO);
-        Set<EnumWrappers.PlayerInfoAction> set = new HashSet<>(Collections.emptySet());
-        set.add(EnumWrappers.PlayerInfoAction.ADD_PLAYER);
-        nameTagPacket.getPlayerInfoActions().write(0, set);
-        nameTagPacket.getPlayerInfoDataLists().write(0, Collections.singletonList(new PlayerInfoData(
-                WrappedGameProfile.fromPlayer(p),
-                1,
-                EnumWrappers.NativeGameMode.fromBukkit(p.getGameMode()),
-                WrappedChatComponent.fromText(p.getName())
-        )));
-        try {
-            Lobby_plugin.protocolManager.sendServerPacket(p, nameTagPacket);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        Scoreboard s = p.getScoreboard();
-        /*
-        for(int i = 0; i <= 7; i++){
-            Team team  = s.registerNewTeam(getTeamName(i));
-            team.color(NamedTextColor.namedColor(getColor(i).value()));
-            for(Player player : Bukkit.getOnlinePlayers()){
-                if(getRank(player) == i){
-                    team.addPlayer(player);
-                }
-            }
-        }
-        new Nametag(p);
-
-        UUID uuid = UUID.randomUUID();
-        PacketContainer spawnEntity = new PacketContainer(PacketType.Play.Server.SPAWN_ENTITY);
-        spawnEntity.getIntegers().write(0, EntityId);
-        spawnEntity.getUUIDs().write(0, uuid);
-        spawnEntity.getEntityTypeModifier().write(0, TEXT_DISPLAY);
-        spawnEntity.getDoubles().write(0, p.getLocation().getX()).write(1, p.getLocation().getY()).write(2, p.getLocation().getZ());
-
-        PacketContainer setMetaData = new PacketContainer(PacketType.Play.Server.ENTITY_METADATA);
-        setMetaData.getIntegers().write(0, EntityId);
-        WrappedDataWatcher watcher = new WrappedDataWatcher();
-        watcher.setEntity(Bukkit.getEntity(uuid));
-        watcher.setByte(0, (byte)0x00, true);
-        Component text = getRankWithName(p).append(text("\n")).append(getColoredName(p)).append(text("\n"));
-        watcher.setChatComponent(23, WrappedChatComponent.fromJson("{\"extra\":{\"hex\":\""+ getColor(getRank(p)) +"\",\"text\":\"" + getRankWithNameAsString(p) + "\\n" + p.getName() + "\"}}"), false);
-        setMetaData.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
-
-        for(Player player : Bukkit.getOnlinePlayers()) {
-            Lobby_plugin.protocolManager.sendServerPacket(player, spawnEntity);
-            Lobby_plugin.protocolManager.sendServerPacket(player, setMetaData);
-        }
-
-        EntityId++;
-
-        /*
-        TextDisplay display = (TextDisplay) Bukkit.getWorld("world").spawnEntity(new Location(Bukkit.getWorld("world"), 0, 0, 0), TEXT_DISPLAY);
-        Component text = getRankWithName(p).append(text("\n")).append(getColoredName(p)).append(text("\n"));
-        display.text(text);
-        display.setAlignment(CENTER);
-        display.setBillboard(Display.Billboard.CENTER);
-        display.setPersistent(false);
-        display.getPersistentDataContainer().set(new NamespacedKey("crystalized", "nametag"), PersistentDataType.STRING, p.getName() + "_nametag");
-        p.addPassenger(display);
-        p.hideEntity(Lobby_plugin.getInstance(), display);
-         */
     }
 
     public static void renderTabList(Player p){

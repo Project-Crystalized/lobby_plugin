@@ -26,6 +26,8 @@ repositories {
 		maven("https://maven.citizensnpcs.co/repo")
     maven {url = uri("https://repo.opencollab.dev/main/") }
     maven {url = uri("https://jitpack.io")}
+    maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
+    maven { url = uri("https://repo.codemc.io/repository/maven-snapshots/") }
 }
 
 dependencies {
@@ -41,6 +43,7 @@ dependencies {
     compileOnly ("com.github.bhlangonijr:chesslib:1.3.4")
 
     compileOnly ("net.dmulloy2:ProtocolLib:5.4.0")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.12.2")
 }
 
 
