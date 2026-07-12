@@ -76,10 +76,8 @@ public class Profile {
     public static ItemStack[] getExpItems(Player p){
         HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
         int level = (Integer)data.get("level");
-        double expToNext = Setting.toDouble(data.get("exp_to_next_lvl"));
-        long total = p.getExperiencePointsNeededForNextLevel();
-        double a = (total - expToNext) / total;
-        double amount = 48 * a;
+        double expToNext = Setting.toDouble(data.get("exp_to_next_lvl")); //this gets the percentage of xp p needs to level up
+        double amount = 48 * expToNext;
         ItemStack[] items = new ItemStack[3];
         for(int i = 0; i < 3; i++){
             if(amount / 16 >= 1){

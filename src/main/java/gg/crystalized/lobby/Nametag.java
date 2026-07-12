@@ -62,8 +62,10 @@ public class Nametag {
         //for API
         this.p = p;
         this.components = components;
+        this.displayIds = new int[components.length];
+        this.armorIds = new int[components.length];
 
-        for(int i = 0; i < 3; i++) {
+        for(int i = 0; i < components.length; i++) {
             displayIds[i] = EntityId;
             makeDisplay(false, p,i);
             EntityId++;
@@ -76,7 +78,7 @@ public class Nametag {
     }
 
     private void renderNametag(Player recipient){
-        for(int i = 0; i < 3; i++){
+        for(int i = 0; i < components.length; i++){
             makeDisplay(true, recipient,i);
             makeArmorStand(true, recipient, i);
             setPassengers(true, recipient, i);
@@ -150,7 +152,7 @@ public class Nametag {
     private void setPassengers(boolean sendToPlayer, Player p, int i){
         WrapperPlayServerSetPassengers passengers;
         if(i == 0){
-            passengers = new WrapperPlayServerSetPassengers(p.getEntityId(), new int[]{armorIds[i]});
+            passengers = new WrapperPlayServerSetPassengers(this.p.getEntityId(), new int[]{armorIds[i]});
 
         }else {
             passengers = new WrapperPlayServerSetPassengers(displayIds[i-1], new int[]{armorIds[i]});
