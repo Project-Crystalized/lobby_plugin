@@ -27,7 +27,7 @@ import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 public class Achievement extends Quest{
     static ArrayList<AchieveTemplate> templates = new ArrayList<>();
     static ArrayList<Achievement> achievements = new ArrayList<>();
-    int stage; //times completed this achievement, not usable rn, will make it in the future - Callum
+    int stage; //subtracted by 1, stage 1 is 0, stage 2 is 1, so on.
     int progress; //percentage
     AchieveTemplate temp;
 
@@ -190,12 +190,12 @@ public class Achievement extends Quest{
 
     @Override
     public ItemStack build(){
-        boolean claimed = stage > 0;
+        boolean showIcon = stage > 0 && !claimed;
         ItemStack item = new ItemStack(Material.COAL);
         ItemMeta meta = item.getItemMeta();
         //meta.displayName(temp.name.color(temp.difficulty.color));
         meta.displayName(temp.name.color(difficulty.color).append(Component.text(" | " + toRomanNumeral(stage))));
-        if (claimed) {
+        if (showIcon && !done) {
             meta.setItemModel(new NamespacedKey("crystalized", "ui/scn3/achivements/" + temp.internalName));
         } else {
             meta.setItemModel(new NamespacedKey("crystalized", difficulty.lockedModel));
@@ -205,7 +205,12 @@ public class Achievement extends Quest{
         lore.add(temp.description.color(WHITE));
         lore.add(Component.text("Difficulty: ").color(WHITE).append(Component.translatable(difficulty.name).color(difficulty.color)).decoration(ITALIC, false));
         lore.add(Component.empty());
-        if (done) {
+        if (stage == temp.stages.getLast()) { //achieve fully done, claimed didn't work for this
+            //TODO different tooltip style
+            lore.add(Component.translatable("Achievement fully completed!").color(GOLD).decoration(ITALIC, false));
+            lore.add(Component.translatable("Well done!").color(GOLD).decoration(ITALIC, false));
+            lore.add(Component.empty());
+        } else if (done) {
             lore.add(Component.translatable("Achievement completed").color(GREEN).decoration(ITALIC, false));
             lore.add(Component.translatable("Click to claim reward").color(GREEN).decoration(ITALIC, false));
             lore.add(Component.empty());
@@ -225,28 +230,27 @@ public class Achievement extends Quest{
     void claim(){
         LevelManager.giveExperience(player.getPlayer(), getXp());
         LevelManager.giveMoney(player.getPlayer(), getMoney());
-        //TODO placeholder sound for claiming
-        player.getPlayer().playSound(player.getPlayer(), "minecraft:entity.experience_orb.pickup", 1, 1);
-        stage++;
-        if(stage < temp.stages.size()) {
+        if (stage != temp.stages.getLast() - 1) {
+            stage++;
             LobbyDatabase.progressStage(player, this);
-            questNumber = temp.id + temp.stages.get(stage);
-            amount = temp.stages.get(stage);
             done = false;
-            if (stage != 10) { //reset for next stage
-                amount = 100; //dumb shit
-                setProgress(0);
-            }
-        }else{
+            //TODO placeholder sound
+            player.getPlayer().playSound(player.getPlayer(), "minecraft:entity.experience_orb.pickup", 1, 1);
+            amount = 100; //dumb shit
+            setProgress(0);
+        } else {
+            //TODO placeholder sound, different than the other one
+            player.getPlayer().playSound(player.getPlayer(), "minecraft:entity.player.levelup", 1, 1);
+            stage = temp.stages.getLast();
             claimed = true;
         }
+        App.Achieve.deactivateApps(player);
+        deactivateIconsBlink(player, this);
         LobbyDatabase.updateAchievementDone(player, this);
         LobbyDatabase.updateAchievementClaimed(player, this);
         for(Achievement a : getAchievements(player)){
             if(a.done && !a.claimed) return;
         }
-
-        App.Achieve.deactivateApps(player);
     }
 
     //no access modifier to prevent other plugins calling this directly - Callum
@@ -369,7 +373,8 @@ public class Achievement extends Quest{
     }
 
     private static void makeIconsBlink(OfflinePlayer p, Achievement ach) {
-        if (ach.done && !ach.claimed) {
+        //TODO this works, but deactivateIconsBlink doesn't work when claiming, disabling for now to stop confusion - Callum
+        /*if (ach.done && !ach.claimed) {
             switch (ach.temp.category) {
                 case general -> {App.AchieveGeneralCategory.activateApps(p);}
                 case ls -> {App.AchieveLsCategory.activateApps(p);}
@@ -377,7 +382,19 @@ public class Achievement extends Quest{
                 case cb -> {App.AchieveCbCategory.activateApps(p);}
             }
             App.Achieve.activateApps(p);
-        }
+        }*/
+    }
+
+    private static void deactivateIconsBlink(OfflinePlayer p, Achievement ach) {
+        /*if (ach.done && !ach.claimed) {
+            switch (ach.temp.category) {
+                case general -> {App.AchieveGeneralCategory.deactivateApps(p);}
+                case ls -> {App.AchieveLsCategory.deactivateApps(p);}
+                case ko -> {App.AchieveKoCategory.deactivateApps(p);}
+                case cb -> {App.AchieveCbCategory.deactivateApps(p);}
+            }
+            App.Achieve.deactivateApps(p);
+        }*/
     }
 
     public int getMoney(){

@@ -51,7 +51,8 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
     }
 
     private boolean run_pig_hunt(String[] args, CommandSender commandSender) {
-        if(Lobby_plugin.getInstance().passive_mode){
+        Achievement.getAchievement("ko_unlocker", (OfflinePlayer) commandSender).setProgress(100);
+        /*if(Lobby_plugin.getInstance().passive_mode){
             return false;
         }
         if (commandSender instanceof Player) {
@@ -63,7 +64,7 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
             pig_trackerA.add(pig);
 
                         }
-        Bukkit.getLogger().severe(pig_trackerA.toString());
+        Bukkit.getLogger().severe(pig_trackerA.toString());*/
         return true;
     }
 
@@ -71,7 +72,7 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
         if(Lobby_plugin.getInstance().passive_mode){
             return false;
         }
-        if (commandSender instanceof Player) {
+        /*if (commandSender instanceof Player) {
             if (commandSender == Bukkit.getPlayer(args[0])) {
                 commandSender
                         .sendMessage("Chess isn't a singleplayer game, choose someone else who is online currently.");
@@ -84,7 +85,7 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
             }
         } else {
             commandSender.sendMessage("Chess game cannot be started by console. Please run this command in-game.");
-        }
+        }*/
         return true;
     }
 
