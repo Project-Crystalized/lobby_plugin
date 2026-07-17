@@ -5,6 +5,7 @@ import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
+import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.world.Location;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
@@ -13,6 +14,7 @@ import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
@@ -33,45 +35,45 @@ import static org.bukkit.entity.EntityType.TEXT_DISPLAY;
 import static org.bukkit.entity.TextDisplay.TextAlignment.CENTER;
 
 public class Nametag {
-    Player p;
+    Player holder;
     //0 = levels & money, 1 = name, 2 = rank
     Component[] components = new Component[3];
     int[] displayIds = new int[3];
     int[] armorIds = new int[3];
     static ArrayList<Nametag> nametags = new ArrayList<>();
     private static int EntityId = 1000000;
-    public Nametag(Player p) {
-        this.p = p;
-        components[0] = Component.text("lvl: " + p.getLevel()).color(GREEN).decoration(ITALIC, false).append(Component.text("   " + "[m]: " + LevelManager.getMoney(p)).color(LIGHT_PURPLE).decoration(ITALIC, false));
-        components[1] = Ranks.getColoredName(p);
-        components[2] = Ranks.getRankWithName(p);
+    public Nametag(Player holder) {
+        this.holder = holder;
+        components[0] = Component.text("lvl: " + holder.getLevel()).color(GREEN).decoration(ITALIC, false).append(Component.text("   " + "[m]: " + LevelManager.getMoney(holder)).color(LIGHT_PURPLE).decoration(ITALIC, false));
+        components[1] = Ranks.getColoredName(holder);
+        components[2] = Ranks.getRankWithName(holder);
 
         for(int i = 0; i < 3; i++) {
             displayIds[i] = EntityId;
-            makeDisplay(false, p,i);
+            makeDisplay(false, holder, i);
             EntityId++;
             armorIds[i] = EntityId;
-            makeArmorStand(false, p,i);
-            setPassengers(false, p,i);
+            makeArmorStand(false, holder, i);
+            setPassengers(false, holder, i);
             EntityId++;
         }
         nametags.add(this);
     }
 
-    public Nametag(Player p, Component[] components){
+    public Nametag(Player holder, Player recipient,Component[] components){
         //for API
-        this.p = p;
+        this.holder = holder;
         this.components = components;
         this.displayIds = new int[components.length];
         this.armorIds = new int[components.length];
 
         for(int i = 0; i < components.length; i++) {
             displayIds[i] = EntityId;
-            makeDisplay(false, p,i);
+            makeDisplay(false, holder, i);
             EntityId++;
             armorIds[i] = EntityId;
-            makeArmorStand(false, p,i);
-            setPassengers(false, p,i);
+            makeArmorStand(false, holder, i);
+            setPassengers(false, holder, i);
             EntityId++;
         }
         nametags.add(this);
@@ -79,7 +81,7 @@ public class Nametag {
 
     private void renderNametag(Player recipient){
         for(int i = 0; i < components.length; i++){
-            makeDisplay(true, recipient,i);
+            makeDisplay(true, recipient, i);
             makeArmorStand(true, recipient, i);
             setPassengers(true, recipient, i);
         }
@@ -89,7 +91,6 @@ public class Nametag {
         for(Nametag tag : nametags){
             tag.renderNametag(p);
         }
-        new Nametag(p);
     }
 
     private static void sendToEveryoneApartFrom(Player p, PacketWrapper<?> wrapper){
@@ -100,34 +101,46 @@ public class Nametag {
     }
 
     public static Nametag getNametag(Player p){
+        //gets all tags in which p is either holder or recipient
         for(Nametag tag : nametags){
-            if(tag.p.equals(p)){
+            if(tag.holder.equals(p)){
                 return tag;
             }
         }
         return null;
     }
 
-    public void reloadNametag(){
-        removeNametag();
+    public static void reloadNametag(Player p){
+        removeNametag(p);
+        renderAllNametags(p);
         new Nametag(p);
     }
 
-    public void removeNametag(){
-        //removes player's own nametag for others
-        Nametag tag = getNametag(p);
-        for(int id : ArrayUtils.addAll(armorIds, displayIds)) {
-            WrapperPlayServerDestroyEntities wrapper = new WrapperPlayServerDestroyEntities(id);
-            sendToEveryoneApartFrom(p, wrapper);
+    public static void removeNametag(Player p){
+        //removes player's own nametag for others and all nametags for the player
+        Nametag remove = null;
+        for(Nametag tag : nametags) {
+            for (int id : ArrayUtils.addAll(tag.armorIds, tag.displayIds)) {
+                WrapperPlayServerDestroyEntities wrapper = new WrapperPlayServerDestroyEntities(id);
+                User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
+                if(tag.holder.equals(p)){
+                    sendToEveryoneApartFrom(p, wrapper);
+                    remove = tag;
+                    continue;
+                }
+                if(user != null) {
+                    user.sendPacket(wrapper);
+                }
+            }
         }
-        nametags.remove(this);
+        nametags.remove(remove);
     }
 
     //sendToPlayer = true -> packet is sent to only p
     //sendToPlayer = false -> packet is sent to everyone but p
     private void makeDisplay(boolean sendToPlayer, Player p, int i){
         WrapperPlayServerSpawnEntity entity = new WrapperPlayServerSpawnEntity(displayIds[i], UUID.randomUUID(), EntityTypes.TEXT_DISPLAY, new com.github.retrooper.packetevents.protocol.world.Location
-                (p.getLocation().getX(), p.getLocation().getY(), p.getLocation().getZ(), 0, 0), 0, 0, new Vector3d());
+                (holder.getLocation().getX(), holder.getLocation().getY(), holder.getLocation().getZ(), 0, 0), 0, 0, new Vector3d());
         if(sendToPlayer) PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(entity); else sendToEveryoneApartFrom(p, entity);
 
         Integer num = 3;
@@ -138,7 +151,7 @@ public class Nametag {
 
     private void makeArmorStand(boolean sendToPlayer, Player p, int i){
         WrapperPlayServerSpawnEntity armor = new WrapperPlayServerSpawnEntity(armorIds[i], UUID.randomUUID(), EntityTypes.ARMOR_STAND, new Location
-                (p.getLocation().getX(), p.getLocation().getY(), p.getLocation().getZ(), 0, 0), 0, 0, new Vector3d());
+                (holder.getLocation().getX(), holder.getLocation().getY(), holder.getLocation().getZ(), 0, 0), 0, 0, new Vector3d());
         if(sendToPlayer) PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(armor); else sendToEveryoneApartFrom(p, armor);
 
         WrapperPlayServerUpdateAttributes attribute = new WrapperPlayServerUpdateAttributes(armorIds[i], List.of(new WrapperPlayServerUpdateAttributes.Property(Attributes.SCALE, 0.15, List.of(new WrapperPlayServerUpdateAttributes.PropertyModifier(Attributes.SCALE.getName(), 0, WrapperPlayServerUpdateAttributes.PropertyModifier.Operation.ADDITION)))));
@@ -152,8 +165,7 @@ public class Nametag {
     private void setPassengers(boolean sendToPlayer, Player p, int i){
         WrapperPlayServerSetPassengers passengers;
         if(i == 0){
-            passengers = new WrapperPlayServerSetPassengers(this.p.getEntityId(), new int[]{armorIds[i]});
-
+            passengers = new WrapperPlayServerSetPassengers(holder.getEntityId(), new int[]{armorIds[i]});
         }else {
             passengers = new WrapperPlayServerSetPassengers(displayIds[i-1], new int[]{armorIds[i]});
         }

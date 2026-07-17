@@ -133,7 +133,7 @@ public class Setting {
         }
 
         if(a == App.PlayerHeightSetting){
-            if(((Integer)LobbyDatabase.fetchPlayerData(p).get("pay_rank_id")) != 7){
+            if(Ranks.getPayRank(p) != 7){
                 p.sendMessage(Component.text("Buy [rank name here] to change your height.").color(RED));
                 return;
             }

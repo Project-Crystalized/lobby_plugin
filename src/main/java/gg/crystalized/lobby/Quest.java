@@ -274,13 +274,13 @@ public class Quest {
         int slot = 29;
         int line = 3;
         for(Quest q : getQuests(p)){
-            if(slot >= border[line]){
-                line++;
-                slot = nextLine[line];
-            }
             if(Objects.equals(q.questNumber, "-1")){
                 inv.setItem(4, q.build());
                 continue;
+            }
+            if(slot >= border[line]){
+                line++;
+                slot = nextLine[line];
             }
             if(q.claimed || q.build() == null){
                 slot = slot + 2;

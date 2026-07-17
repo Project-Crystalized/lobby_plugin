@@ -537,7 +537,7 @@ public class LobbyDatabase {
         return new byte[]{};
     }
 
-    public static boolean areFriends(Player p, Player friend){
+    public static boolean areFriends(Player p, OfflinePlayer friend){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT COUNT(*) AS count FROM Friends WHERE player_uuid = ? AND friend_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));

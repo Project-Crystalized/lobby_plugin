@@ -88,12 +88,12 @@ public class FriendsMenu {
         if(click.isShiftClick()){
             ByteArrayDataOutput out = ByteStreams.newDataOutput();
             out.writeUTF("Friend");
-            out.writeUTF("remove");
+            out.writeUTF(LobbyDatabase.areFriends(p, Bukkit.getOfflinePlayer(name)) ? "remove" : "add");
             out.writeUTF(name);
             p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
             App.Friends.action(p, p);
         }else if(click.isLeftClick()) {
-            App.Profiles.action(p, Bukkit.getOfflinePlayer(name).getPlayer());
+            App.Profiles.action(p, Bukkit.getOfflinePlayer(name));
         }else if(click.isRightClick()){
             ByteArrayDataOutput out = ByteStreams.newDataOutput();
             out.writeUTF("Party");

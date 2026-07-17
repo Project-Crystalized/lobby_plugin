@@ -79,7 +79,7 @@ public class InventoryManager implements Listener {
 
         } else {
             p.playSound(p, "crystalized:effect.scn3.click", 1, 1); //assuming the item we have we're supposed to click on - Callum
-            if(item.getType() == Material.PLAYER_HEAD && identifyInv(event.getView()) == App.useCases.Friends){
+            if(item.getType() == Material.PLAYER_HEAD){
                 if(event.getSlot() < 7){
                     FriendsMenu.clickedPartyMember(p, item, event.getClick());
                     return;

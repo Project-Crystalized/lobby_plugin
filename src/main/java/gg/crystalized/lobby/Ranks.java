@@ -49,6 +49,8 @@ import static org.bukkit.attribute.Attribute.SCALE;
 import static org.bukkit.attribute.AttributeModifier.Operation.ADD_SCALAR;
 import static org.bukkit.entity.EntityType.TEXT_DISPLAY;
 import static org.bukkit.entity.TextDisplay.TextAlignment.CENTER;
+import static org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY;
+import static org.bukkit.scoreboard.Team.OptionStatus.NEVER;
 
 public enum Ranks {
     /*
@@ -214,10 +216,9 @@ public enum Ranks {
             Team team = s.getTeam(name);
             if(team == null){
                 team = s.registerNewTeam(name);
-                team.prefix(getRankWithName(p));
-                //team.color(getRank(p).color);
             }
             team.addPlayer(player);
+            team.setOption(NAME_TAG_VISIBILITY, NEVER);
         }
     }
 

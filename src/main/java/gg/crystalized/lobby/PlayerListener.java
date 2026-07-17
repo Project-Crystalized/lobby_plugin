@@ -83,7 +83,12 @@ public final class PlayerListener implements Listener {
 		LobbyDatabase.updatePlayerNames(p);
 		LobbyDatabase.updateSkin(p);
 
-		Nametag.renderAllNametags(p);
+		new BukkitRunnable(){
+			public void run(){
+				Nametag.reloadNametag(p);
+			}
+		}.runTaskLaterAsynchronously(Lobby_plugin.getInstance(), 20);
+
 		Ranks.renderTabList(p);
 
 		Setting.updatePlayerVisibility(p);
@@ -131,7 +136,7 @@ public final class PlayerListener implements Listener {
 		if(view != null && view.isRunning()){
 			view.endView();
 		}
-		Nametag.getNametag(e.getPlayer()).removeNametag();
+		Nametag.removeNametag(e.getPlayer());
 		Quest.removeQuests(e.getPlayer());
 		App.active.remove(e.getPlayer());
 	}

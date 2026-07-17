@@ -363,7 +363,7 @@ public enum App {
         shop(21, 23,null, null, null,20),
         friends(21, 23, null, null, 20, null),
         quests(null, null, null, null, 20, null),
-        settings(null, null, 20, 29, 47, null),
+        settings(null, null, 29, 38, 47, null),
         profile(null, null, null, null, 51, null);
         final Integer scrollLeft;
         final Integer scrollRight;
