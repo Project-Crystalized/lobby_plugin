@@ -13,6 +13,7 @@ import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -150,25 +151,26 @@ class WinLeaderboard {
 			Integer win = null;
 
 			int h = 0;
-			TextComponent longest = text("");
+			String longest = "";
 			while (res.next()) {
 				UUID uuid = Leaderboards.convertBytesToUUID(res.getBytes("player_uuid"));
 				TextComponent name = (TextComponent)Ranks.getName(Bukkit.getOfflinePlayer(uuid));
+				String name_str = PlainTextComponentSerializer.plainText().serialize(name);
 				if(top.containsKey(name)){
 					continue;
 				}
 				h++;
 				int wins = res.getInt("SUM(" + t.dbColumn + ")");
 
-				if(balance(name.content()) > balance(longest.content())){
-					longest = name;
+				if(balance(name_str) > balance(longest)){
+					longest = name_str;
 				}
 
 				if(Bukkit.getOfflinePlayer(uuid).equals(p)){
 					win = wins;
 					rank = h;
-					if(balance(((TextComponent)Ranks.getName(p)).content()) > balance(longest.content())){
-						longest = (TextComponent)Ranks.getName(p);
+					if(balance(((TextComponent)Ranks.getName(p)).content()) > balance(longest)){
+						longest = PlainTextComponentSerializer.plainText().serialize(Ranks.getName(p));
 					}
 				}
 
@@ -178,12 +180,14 @@ class WinLeaderboard {
 				}
 			}
 
-			int total = balance(longest.content() + "......" + "1000000");
+			int total = balance(longest + "......" + "1000000");
 			for(int j = 0; j <= topKey.size()-1; j++){
-				int padding = total - (balance(topKey.get(j).content()) + balance("" + top.get(topKey.get(j))));
+				String top_str = PlainTextComponentSerializer.plainText().serialize(topKey.get(j));
+				Component num = Leaderboards.get_styles(j+1);
+				String num_str = PlainTextComponentSerializer.plainText().serialize(num);
+				int padding = total - (balance(num_str) + balance(top_str) + balance("" + top.get(topKey.get(j))));
 				//Bukkit.getLogger().warning(type + ": " + top.get(topKey.get(j)).content());
 				String dots = ".".repeat(padding);
-				Component num = Leaderboards.get_styles(j+1);
 				leaderboard_rows = leaderboard_rows.append(text("\n")).append(num);
 				leaderboard_rows = leaderboard_rows.append(topKey.get(j)).append(text(dots).color(GRAY));
 				leaderboard_rows = leaderboard_rows.append(text("" + top.get(topKey.get(j)))).color(GREEN);
@@ -194,9 +198,10 @@ class WinLeaderboard {
 			}
 
 			leaderboard_rows = leaderboard_rows.append(text("\n")).append(text("-----------------").color(GRAY));
-			int padding = total - (balance(((TextComponent)Ranks.getName(p)).content()) + balance("" + win));
-			String dots = ".".repeat(padding);
 			Component num = Leaderboards.get_styles(rank);
+			String num_str = PlainTextComponentSerializer.plainText().serialize(num);
+			int padding = total - (balance(num_str) + balance((PlainTextComponentSerializer.plainText().serialize(Ranks.getName(p)))) + balance("" + win));
+			String dots = ".".repeat(padding);
 			leaderboard_rows = leaderboard_rows.append(text("\n")).append(num);
 			leaderboard_rows = leaderboard_rows.append(Ranks.getName(p)).append(text(dots).color(GRAY));
 			leaderboard_rows = leaderboard_rows.append(text("" + win)).color(GREEN);

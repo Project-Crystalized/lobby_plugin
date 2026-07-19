@@ -92,7 +92,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		this.getCommand("reload_achievements").setExecutor(dc);
 
 		Component message = Component.text("------------------------------------").color(WHITE);
-		Component message2 = Component.text("\nFound any bugs? \n Report them in our Discord! \n https://discord.gg/saAGYcncd7\n").color(DARK_AQUA);
+		Component message2 = Component.text("\nFound any bugs? \nReport them in our Discord! \nhttps://discord.gg/saAGYcncd7\n").color(DARK_AQUA);
 		new BukkitRunnable(){
 			public void run(){
 				for(Player p : Bukkit.getOnlinePlayers()){
@@ -201,5 +201,9 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 				FriendsMenu.areOnline.put(p, false);
 			}
 		}
+	}
+
+	private static void doLobbyMessages(){
+		//ArrayList<Component>
 	}
 }
