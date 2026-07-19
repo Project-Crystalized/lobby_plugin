@@ -5,6 +5,13 @@ import java.sql.*;
 import java.util.*;
 import java.util.logging.Level;
 
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
+import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
+import com.github.retrooper.packetevents.util.Vector3d;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
@@ -89,89 +96,41 @@ public class Leaderboards {
 }
 
 class WinLeaderboard {
+	static HashMap<Player, HashMap<String, Integer>> leaderboards = new HashMap<>();
 
 	public WinLeaderboard(String type, Location loc) {
-
-		for(TextDisplay display : loc.getNearbyEntitiesByType(TextDisplay.class, 2.0)){
-			if(display.getPersistentDataContainer().get(new NamespacedKey("crystalized", "leaderboard"), PersistentDataType.STRING) == null){
-				continue;
-			}
-
-			if(display.getPersistentDataContainer().get(new NamespacedKey("crystalized", "leaderboard"), PersistentDataType.STRING).contains("_leaderboard")){
-				display.remove();
-			}
-		}
-
 		new BukkitRunnable() {
 			@Override
 			public void run() {
 				for(Player p : Bukkit.getOnlinePlayers()) {
-					cleanMultiples(loc, p);
-					TextDisplay	display = findDisplay(p, loc);
-					if(display == null){
+					Bukkit.getLogger().severe(type);
+                    leaderboards.computeIfAbsent(p, k -> new HashMap<>());
+					if(!leaderboards.get(p).containsKey(type)){
 						createDisplay(p, loc, type);
 						continue;
 					}
-					display.teleport(loc);
-					display.text(generateText(p, type));
-					display.setShadowed(true);
-					display.setBillboard(Billboard.CENTER);
-					display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
-					for (Player player : Bukkit.getOnlinePlayers()) {
-						player.hideEntity(Lobby_plugin.getInstance(), display);
-					}
-					p.showEntity(Lobby_plugin.getInstance(), display);
+					Integer num = 3;
+					List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, generateText(p, type)), new EntityData(25, EntityDataTypes.INT, 1345466930));
+					WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(leaderboards.get(p).get(type), data);
+					PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(metadata);
 				}
 			}
 		}.runTaskTimer(Lobby_plugin.getInstance(), 1, (20 * 10));
 	}
 
-	static void cleanMultiples(Location loc, Player p){
-		int canSeeDisplays = 0;
-		List<TextDisplay> displays = (List<TextDisplay>) loc.getNearbyEntitiesByType(TextDisplay.class, 2.0);
-		for(TextDisplay display : displays){
-			if(p.canSee(display)){
-				canSeeDisplays++;
-			}
-		}
-		
-		if(canSeeDisplays <= 1){
-			return;
-		}
-		
-		for(int i = 0; i < displays.size(); i++) {
-			if(i == 0) continue;
-			if (displays.get(i).getPersistentDataContainer().get(new NamespacedKey("crystalized", "leaderboard"), PersistentDataType.STRING).contains(p.getName() + "_leaderboard")) {
-				displays.get(i).remove();
-			}
-		}
-	}
-
 	static void createDisplay(Player p, Location loc, String type){
-		TextDisplay display = (TextDisplay) loc.getWorld().spawnEntity(loc, EntityType.TEXT_DISPLAY);
-		display.teleport(loc);
-		display.text(generateText(p, type));
-		display.setShadowed(true);
-		display.setBillboard(Billboard.CENTER);
-		display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
-		display.getPersistentDataContainer().set(new NamespacedKey("crystalized", "leaderboard"), PersistentDataType.STRING, p.getName() + "_leaderboard");
-		for (Player player : Bukkit.getOnlinePlayers()) {
-			player.hideEntity(Lobby_plugin.getInstance(), display);
-		}
-		p.showEntity(Lobby_plugin.getInstance(), display);
-	}
+		Bukkit.getLogger().severe("create");
+		int id = Nametag.EntityId;
+		leaderboards.get(p).put(type, id);
+		Nametag.EntityId++;
+		WrapperPlayServerSpawnEntity entity = new WrapperPlayServerSpawnEntity(id, UUID.randomUUID(), EntityTypes.TEXT_DISPLAY, new com.github.retrooper.packetevents.protocol.world.Location
+				(loc.getX(), loc.getY(), loc.getZ(), 0, 0), 0, 0, new Vector3d());
+		PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(entity);
 
-	static TextDisplay findDisplay(Player p, Location loc){
-		for(TextDisplay display : loc.getNearbyEntitiesByType(TextDisplay.class, 2.0)){
-			if(display.getPersistentDataContainer().get(new NamespacedKey("crystalized", "leaderboard"), PersistentDataType.STRING) == null){
-				continue;
-			}
-
-			if(display.getPersistentDataContainer().get(new NamespacedKey("crystalized", "leaderboard"), PersistentDataType.STRING).equals(p.getName() + "_leaderboard")){
-				return display;
-			}
-		}
-		return null;
+		Integer num = 3;
+		List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, generateText(p, type)), new EntityData(25, EntityDataTypes.INT, 1345466930));
+		WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(id, data);
+		PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(metadata);
 	}
 
 	public static Component generateText(Player p, String type){
@@ -283,6 +242,7 @@ class WinLeaderboard {
 			sum += BitmapGlyphInfo.getBitmapGlyphInfo(c).width;
 		}
 		sum += name.length() - 1;
+		//Bukkit.getLogger().severe("" + sum/2);
 		return sum / 2;
 	}
 

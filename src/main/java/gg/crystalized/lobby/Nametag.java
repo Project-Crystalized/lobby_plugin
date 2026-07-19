@@ -41,7 +41,7 @@ public class Nametag {
     int[] displayIds = new int[3];
     int[] armorIds = new int[3];
     static ArrayList<Nametag> nametags = new ArrayList<>();
-    private static int EntityId = 1000000;
+    public static int EntityId = 1000000;
     public Nametag(Player holder) {
         this.holder = holder;
         components[0] = Component.text("lvl: " + holder.getLevel()).color(GREEN).decoration(ITALIC, false).append(Component.text("   " + "[m]: " + LevelManager.getMoney(holder)).color(LIGHT_PURPLE).decoration(ITALIC, false));
