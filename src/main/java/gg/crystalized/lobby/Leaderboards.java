@@ -103,14 +103,14 @@ class WinLeaderboard {
 			@Override
 			public void run() {
 				for(Player p : Bukkit.getOnlinePlayers()) {
-					Bukkit.getLogger().severe(type);
                     leaderboards.computeIfAbsent(p, k -> new HashMap<>());
 					if(!leaderboards.get(p).containsKey(type)){
 						createDisplay(p, loc, type);
 						continue;
 					}
 					Integer num = 3;
-					List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, generateText(p, type)), new EntityData(25, EntityDataTypes.INT, 1345466930));
+					Integer one = 1;
+					List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, generateText(p, type)), new EntityData(25, EntityDataTypes.INT, 1345466930), new EntityData(27, EntityDataTypes.BYTE, one.byteValue()));
 					WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(leaderboards.get(p).get(type), data);
 					PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(metadata);
 				}
@@ -119,7 +119,6 @@ class WinLeaderboard {
 	}
 
 	static void createDisplay(Player p, Location loc, String type){
-		Bukkit.getLogger().severe("create");
 		int id = Nametag.EntityId;
 		leaderboards.get(p).put(type, id);
 		Nametag.EntityId++;
@@ -128,7 +127,8 @@ class WinLeaderboard {
 		PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(entity);
 
 		Integer num = 3;
-		List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, generateText(p, type)), new EntityData(25, EntityDataTypes.INT, 1345466930));
+		Integer one = 1;
+		List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, generateText(p, type)), new EntityData(25, EntityDataTypes.INT, 1345466930), new EntityData(27, EntityDataTypes.BYTE, one.byteValue()));
 		WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(id, data);
 		PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(metadata);
 	}
@@ -154,7 +154,7 @@ class WinLeaderboard {
 			while (res.next()) {
 				UUID uuid = Leaderboards.convertBytesToUUID(res.getBytes("player_uuid"));
 				TextComponent name = (TextComponent)Ranks.getName(Bukkit.getOfflinePlayer(uuid));
-				if(top.containsValue(name)){
+				if(top.containsKey(name)){
 					continue;
 				}
 				h++;
@@ -242,7 +242,6 @@ class WinLeaderboard {
 			sum += BitmapGlyphInfo.getBitmapGlyphInfo(c).width;
 		}
 		sum += name.length() - 1;
-		//Bukkit.getLogger().severe("" + sum/2);
 		return sum / 2;
 	}
 
