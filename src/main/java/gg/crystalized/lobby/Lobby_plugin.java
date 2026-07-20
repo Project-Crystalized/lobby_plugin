@@ -12,6 +12,8 @@ import gg.crystalized.lobby.minigames.CrystalizedChessListener;
 import gg.crystalized.lobby.statistics.StatView;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
@@ -37,8 +39,8 @@ import java.util.*;
 import java.util.logging.Level;
 
 import static gg.crystalized.lobby.statistics.Statistics.createStatistics;
-import static net.kyori.adventure.text.format.NamedTextColor.DARK_AQUA;
-import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
+import static net.kyori.adventure.text.format.TextDecoration.UNDERLINED;
 import static org.bukkit.Color.TEAL;
 
 
@@ -91,16 +93,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		this.getCommand("reload_cosmetics").setExecutor(dc);
 		this.getCommand("reload_achievements").setExecutor(dc);
 
-		Component message = Component.text("------------------------------------").color(WHITE);
-		Component message2 = Component.text("\nFound any bugs? \nReport them in our Discord! \nhttps://discord.gg/saAGYcncd7\n").color(DARK_AQUA);
-		new BukkitRunnable(){
-			public void run(){
-				for(Player p : Bukkit.getOnlinePlayers()){
-					p.setSaturation(20);
-					p.sendMessage(message.append(message2).append(message));
-				}
-			}
-		}.runTaskTimer(this, 5, 600 * 20);
+		doLobbyMessages();
 		saveResource("achievements.json", true);
 	}
 
@@ -204,6 +197,26 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 	}
 
 	private static void doLobbyMessages(){
-		//ArrayList<Component>
+		Component divider = Component.text("------------------------------------").color(WHITE);
+		Component[] messages = new Component[]{
+			Component.text("\nFound any bugs?").color(LIGHT_PURPLE).append(Component.text("\nReport them in our Discord!").color(WHITE)).append(Component.text("\nhttps://discord.gg/saAGYcncd7\n").color(LIGHT_PURPLE).decoration(UNDERLINED, true).clickEvent(ClickEvent.openUrl("https://discord.gg/saAGYcncd7"))),
+			Component.text("\nShine as bright as the sun!").color(TextColor.fromHexString(Ranks.sun_sub.color)).append(Component.text("\nBuy the " + Ranks.sun_sub.iconWithName + " rank in our Shop").color(WHITE)).append(Component.text("\ncrystalized.cc\n").color(LIGHT_PURPLE).decoration(UNDERLINED, true).clickEvent(ClickEvent.openUrl("crystalized.cc"))),
+			Component.text("\nStay safe online!").color(DARK_RED).append(Component.text("\nCrystalized Staff will never ask for your personal information.\n").color(WHITE)),
+			Component.text("\nConnect with the community").color(LIGHT_PURPLE).append(Component.text("\nJoin our Discord!").color(WHITE)).append(Component.text("\nhttps://discord.gg/saAGYcncd7\n").color(LIGHT_PURPLE).decoration(UNDERLINED, true).clickEvent(ClickEvent.openUrl("https://discord.gg/saAGYcncd7"))),
+			Component.text("\nShimmer like the moon!").color(TextColor.fromHexString(Ranks.moon_one.color)).append(Component.text("\nBuy the " + Ranks.moon_one.iconWithName + " rank in our Shop").color(WHITE)).append(Component.text("\ncrystalized.cc\n").color(LIGHT_PURPLE).decoration(UNDERLINED, true).clickEvent(ClickEvent.openUrl("crystalized.cc"))),
+			Component.text("\nWant to join the staff?").color(LIGHT_PURPLE).append(Component.text("\nApply now in our Discord").color(WHITE)).append(Component.text("\nhttps://discord.gg/saAGYcncd7\n").color(LIGHT_PURPLE).decoration(UNDERLINED, true).clickEvent(ClickEvent.openUrl("https://discord.gg/saAGYcncd7")))
+		};
+
+		new BukkitRunnable(){
+			int i = 0;
+			public void run(){
+				if(i == messages.length) i = 0;
+				for(Player p : Bukkit.getOnlinePlayers()){
+					p.setSaturation(20);
+					p.sendMessage(divider.append(messages[i]).append(divider));
+				}
+				i++;
+			}
+		}.runTaskTimer(getInstance(), 5, 600 * 20);
 	}
 }
