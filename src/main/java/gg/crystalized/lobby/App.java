@@ -90,7 +90,9 @@ public enum App {
     HandButtonW("ui/invisible", useCases.WardrobePage, useCases.Wardrobe, Component.translatable("crystalized.shardcore.shop.handheld").color(WHITE).decoration(ITALIC, false), new int[]{37, 7, 1},
             EquipmentSlot.OFF_HAND),
     ShardButtonW("ui/invisible", useCases.WardrobePage, useCases.Wardrobe, Component.translatable("crystalized.shardcore.shop.scn3").color(WHITE).decoration(ITALIC, false), new int[]{46, 7, 1},
-    EquipmentSlot.HAND);
+    EquipmentSlot.HAND),
+    AddFriend("ui/scn3/profile/addfriend", useCases.Profiles, Component.text("Add friend").color(WHITE).decoration(ITALIC, false), 23),
+    AddToParty("ui/scn3/profile/addtoparty", useCases.Profiles, Component.text("Add to party").color(WHITE).decoration(ITALIC, false), 24);
 
 
     //how buttons work {top left corner, width, height}
@@ -313,6 +315,20 @@ public enum App {
         }
         if(this == EquipBuy){
             CosmeticView.findView(p).equipOrBuy(p);
+        }
+        if(this == AddFriend){
+            ByteArrayDataOutput out = ByteStreams.newDataOutput();
+            out.writeUTF("Friend");
+            out.writeUTF(LobbyDatabase.areFriends(p, viewed) ? "remove" : "add");
+            out.writeUTF(viewed.getName());
+            p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
+        }
+        if(this == AddToParty){
+            ByteArrayDataOutput out = ByteStreams.newDataOutput();
+            out.writeUTF("Party");
+            out.writeUTF("invite");
+            out.writeUTF(viewed.getName());
+            p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
         }
         if(this.toString().contains("Stats")){
             StatView.create(p, (String)extra).startPlayerView(p.getOpenInventory().getTopInventory().getItem(2));

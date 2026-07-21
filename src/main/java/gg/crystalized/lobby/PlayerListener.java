@@ -138,6 +138,7 @@ public final class PlayerListener implements Listener {
 		}
 		Nametag.removeNametag(e.getPlayer());
 		Quest.removeQuests(e.getPlayer());
+		WinLeaderboard.leaderboards.remove(e.getPlayer());
 		App.active.remove(e.getPlayer());
 	}
 

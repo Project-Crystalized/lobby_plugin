@@ -43,7 +43,7 @@ public class Profile {
             lore.add(Component.text("Money: " + data.get("money")).color(WHITE).decoration(ITALIC, false));
             meta.lore(lore);
             head.setItemMeta(meta);
-            head.editPersistentDataContainer(pdc -> pdc.set(new NamespacedKey("crystalized", "profile_holder"), PersistentDataType.STRING, p.getName()));
+            //head.editPersistentDataContainer(pdc -> pdc.set(FriendsMenu.key, PersistentDataType.STRING, p.getName()));
             inv.setItem(2, head);
         }catch(MalformedURLException e){
             Bukkit.getLogger().warning(e.getMessage());
@@ -57,7 +57,10 @@ public class Profile {
                 inv.setItem(getCosmeticSlot(c), c.build(viewer, null, false, CosmeticView.isViewing(p.getPlayer(), c)));
             }
         }
-
+        if(!p.equals(viewer)) {
+            if(!LobbyDatabase.areFriends(viewer, p)) inv.setItem(23, App.AddFriend.build(viewer));
+            inv.setItem(24, App.AddToParty.build(viewer));
+        }
         inv.setItem(30, App.ProfileLsStats.build(viewer));
         inv.setItem(31, App.ProfileKoStats.build(viewer));
         inv.setItem(32, App.ProfileCbStats.build(viewer));
