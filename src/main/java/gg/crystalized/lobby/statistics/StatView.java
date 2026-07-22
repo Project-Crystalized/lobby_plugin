@@ -54,6 +54,7 @@ public class StatView implements Listener {
         int[] nextLine = {2, 11, 20, 29, 38, 47};
         int slot = 29;
         int line = 3;
+        if(stats == null) return;
         for(StatItem s : stats){
            if(slot >= border[line]){
                line++;

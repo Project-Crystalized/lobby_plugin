@@ -43,7 +43,7 @@ public class Profile {
             lore.add(Component.text("Money: " + data.get("money")).color(WHITE).decoration(ITALIC, false));
             meta.lore(lore);
             head.setItemMeta(meta);
-            //head.editPersistentDataContainer(pdc -> pdc.set(FriendsMenu.key, PersistentDataType.STRING, p.getName()));
+            head.editPersistentDataContainer(pdc -> pdc.set(new NamespacedKey("crystalized", "profile_holder"), PersistentDataType.STRING, p.getName()));
             inv.setItem(2, head);
         }catch(MalformedURLException e){
             Bukkit.getLogger().warning(e.getMessage());

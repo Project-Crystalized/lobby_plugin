@@ -94,9 +94,23 @@ public class Statistics implements Methods{
                 KoStats.class,
                 GOLD);
         stats.put("ko", ko);
+
+        Statistics cb = new Statistics(
+                "jdbc:sqlite:"+ System.getProperty("user.home")+"/databases/crystalblitz_db.sql",
+                "CbGamesPlayers",
+                "CrystalBlitzGames",
+                "player_uuid",
+                "games_won",
+                "map",
+                new String[]{"team", "kills", "deaths"},
+                null,
+                CbStats.class,
+                GOLD);
+        stats.put("cb", cb);
     }
 
     public ArrayList<StatItem> getPlayerStats(String alias, OfflinePlayer p, int gameId, boolean isLifetime){
+        //fails silently
         try(Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM " + playerTableName +" WHERE " + uuid + " = ? AND game = ?;");
             if(gameId == -1){
@@ -141,13 +155,14 @@ public class Statistics implements Methods{
             units.add(new StatUnit<>(p, "name", p.getName(), alias, isLifetime));
             return StatItem.makeItemFromUnit(units, alias, isLifetime);
         }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get stat data for player: " + p.getName());
+            //Bukkit.getLogger().warning(e.getMessage());
+            //Bukkit.getLogger().warning("couldn't get stat data for player: " + p.getName());
             return null;
         }
     }
 
     public ArrayList<PlayerItem> getGameStats(int page){
+        //fails silently
         try(Connection conn = DriverManager.getConnection(URL)) {
             int gameId = getGameId(page);
             PreparedStatement prep = conn.prepareStatement(buildGameString());
@@ -197,8 +212,8 @@ public class Statistics implements Methods{
             players.add(new PlayerItem(info, 0));
             return players;
         }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get game stats");
+            //Bukkit.getLogger().warning(e.getMessage());
+            //Bukkit.getLogger().warning("couldn't get game stats");
             return null;
         }
     }
