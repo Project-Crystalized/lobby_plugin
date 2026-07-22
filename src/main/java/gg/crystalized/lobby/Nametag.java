@@ -40,6 +40,8 @@ public class Nametag {
     Component[] components = new Component[3];
     int[] displayIds = new int[3];
     int[] armorIds = new int[3];
+    ArrayList<Nametag> tooFarAway = new ArrayList<>();
+    BukkitTask locationChecker = null;
     static ArrayList<Nametag> nametags = new ArrayList<>();
     public static int EntityId = 1000000;
     public Nametag(Player holder) {
@@ -101,7 +103,6 @@ public class Nametag {
     }
 
     public static Nametag getNametag(Player p){
-        //gets all tags in which p is either holder or recipient
         for(Nametag tag : nametags){
             if(tag.holder.equals(p)){
                 return tag;
@@ -113,7 +114,38 @@ public class Nametag {
     public static void reloadNametag(Player p){
         removeNametag(p);
         renderAllNametags(p);
-        new Nametag(p);
+        Nametag tag = new Nametag(p);
+        if(tag.locationChecker != null){
+            return;
+        }
+
+        tag.locationChecker = new BukkitRunnable(){
+            public void run(){
+                tag.locationChecker();
+            }
+        }.runTaskTimer(Lobby_plugin.getInstance(), 20, 20);
+    }
+
+    public void locationChecker(){
+        for(Player p : Bukkit.getOnlinePlayers()){
+            int maxDistance = 30;
+            Nametag tag = getNametag(p);
+            if(p.getLocation().distance(holder.getLocation()) <= maxDistance){
+                if(!tooFarAway.contains(tag)) continue;
+                tooFarAway.remove(tag);
+                renderNametag(holder);
+                continue;
+            }
+            if(tooFarAway.contains(tag)) continue;
+            tooFarAway.add(tag);
+            User user = PacketEvents.getAPI().getPlayerManager().getUser(holder);
+            for(int id :  ArrayUtils.addAll(tag.armorIds, tag.displayIds)) {
+                WrapperPlayServerDestroyEntities wrapper = new WrapperPlayServerDestroyEntities(id);
+                if (user != null) {
+                    user.sendPacket(wrapper);
+                }
+            }
+        }
     }
 
     public static void removeNametag(Player p){
@@ -134,6 +166,10 @@ public class Nametag {
             }
         }
         nametags.remove(remove);
+        if(remove == null){
+            return;
+        }
+        remove.locationChecker.cancel();
     }
 
     //sendToPlayer = true -> packet is sent to only p

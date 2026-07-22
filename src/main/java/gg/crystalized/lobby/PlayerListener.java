@@ -87,7 +87,7 @@ public final class PlayerListener implements Listener {
 			public void run(){
 				Nametag.reloadNametag(p);
 			}
-		}.runTaskLaterAsynchronously(Lobby_plugin.getInstance(), 20);
+		}.runTaskLater(Lobby_plugin.getInstance(), 20);
 
 		Ranks.renderTabList(p);
 
