@@ -127,13 +127,17 @@ public class Nametag {
     }
 
     public void locationChecker(){
+        int maxDistance = 30;
         for(Player p : Bukkit.getOnlinePlayers()){
-            int maxDistance = 30;
+            if(p.equals(holder)) continue;
             Nametag tag = getNametag(p);
+            if(tag == null){
+                continue;
+            }
             if(p.getLocation().distance(holder.getLocation()) <= maxDistance){
                 if(!tooFarAway.contains(tag)) continue;
                 tooFarAway.remove(tag);
-                renderNametag(holder);
+                tag.renderNametag(holder);
                 continue;
             }
             if(tooFarAway.contains(tag)) continue;
