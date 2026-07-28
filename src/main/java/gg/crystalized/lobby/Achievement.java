@@ -203,21 +203,21 @@ public class Achievement extends Quest{
 
         ArrayList<Component> lore = new ArrayList<>();
         lore.add(temp.description.color(WHITE));
-        lore.add(Component.text("Difficulty: ").color(WHITE).append(Component.translatable(difficulty.name).color(difficulty.color)).decoration(ITALIC, false));
+        lore.add(Component.translatable("crystalized.shardcore.quests.difficulty").color(WHITE).append(Component.translatable(difficulty.name).color(difficulty.color)).decoration(ITALIC, false));
         lore.add(Component.empty());
         if (stage == temp.stages.getLast()) { //achieve fully done, claimed didn't work for this
             //TODO different tooltip style
-            lore.add(Component.translatable("Achievement fully completed!").color(GOLD).decoration(ITALIC, false));
-            lore.add(Component.translatable("Well done!").color(GOLD).decoration(ITALIC, false));
+            lore.add(Component.translatable("crystalized.achievement.fully_completed").color(GOLD).decoration(ITALIC, false));
+            lore.add(Component.translatable("crystalized.achievement.well_done").color(GOLD).decoration(ITALIC, false));
             lore.add(Component.empty());
         } else if (done) {
-            lore.add(Component.translatable("Achievement completed").color(GREEN).decoration(ITALIC, false));
-            lore.add(Component.translatable("Click to claim reward").color(GREEN).decoration(ITALIC, false));
+            lore.add(Component.translatable("crystalized.achievement.completed").color(GREEN).decoration(ITALIC, false));
+            lore.add(Component.translatable("crystalized.shardcore.quests.claim").color(GREEN).decoration(ITALIC, false));
             lore.add(Component.empty());
         }
-        lore.add(Component.text("Progress: " + getProgress() + "/" + amount + "%").color(WHITE).decoration(ITALIC, false));
-        lore.add(Component.text("Reward: " + getMoney() + "[m]   " + getXp() + "xp").color(WHITE).decoration(ITALIC, false));
-        lore.add(Component.text("Stage: " + (stage + 1) + "/" + (temp.stages.size() + 1) ).color(WHITE).decoration(ITALIC, false));
+        lore.add(Component.translatable("crystalized.shardcore.quests.progress").append(Component.text(getProgress() + "/" + amount + "%")).color(WHITE).decoration(ITALIC, false));
+        lore.add(Component.translatable("crystalized.shardcore.quests.reward").append(Component.text(getMoney() + "[m]   " + getXp() + "xp")).color(WHITE).decoration(ITALIC, false));
+        lore.add(Component.translatable("crystalized.shardcore.quests.stage").append(Component.text((stage + 1) + "/" + (temp.stages.size() + 1))).color(WHITE).decoration(ITALIC, false));
 
         meta.lore(lore);
         item.setItemMeta(meta);

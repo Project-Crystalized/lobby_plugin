@@ -185,16 +185,16 @@ public class Quest {
         meta.displayName(name());
         ArrayList<Component> lore = new ArrayList<>();
         if(done){
-            lore.add(Component.translatable("Quest completed").color(GREEN).decoration(ITALIC, false));
-            lore.add(Component.translatable("Click to claim").color(GREEN).decoration(ITALIC, false));
+            lore.add(Component.translatable("crystalized.shardcore.quests.completed").color(GREEN).decoration(ITALIC, false));
+            lore.add(Component.translatable("crystalized.shardcore.quests.claim").color(GREEN).decoration(ITALIC, false));
         }else {
             lore.add(Component.text(getProgress() + "/" + amount).color(WHITE).decoration(ITALIC, false));
         }
         if(LobbyDatabase.canRerollQuest(this)){
-            lore.add(Component.text("Click to reroll Quest").color(WHITE).decoration(ITALIC, false));
+            lore.add(Component.translatable("crystalized.shardcore.quests.reroll").color(WHITE).decoration(ITALIC, false));
         }
-        lore.add(Component.text("Reward: " + difficulty.money + "[m]   " + difficulty.exp + "xp").color(WHITE).decoration(ITALIC, false));
-        lore.add(Component.text("Difficulty: ").color(GRAY).decoration(ITALIC, false).append(Component.translatable(difficulty.name).color(GRAY).decoration(ITALIC, false)));
+        lore.add(Component.translatable("crystalized.shardcore.quests.reward").append(Component.text(difficulty.money + "[m]   " + difficulty.exp + "xp")).color(WHITE).decoration(ITALIC, false));
+        lore.add(Component.translatable("crystalized.shardcore.quests.difficulty").color(GRAY).decoration(ITALIC, false).append(Component.translatable("crystalized.shardcore.quests.difficulty." + difficulty.name.toLowerCase()).color(GRAY).decoration(ITALIC, false)));
         meta.lore(lore);
         meta.setItemModel(new NamespacedKey("crystalized", difficulty.model));
         item.setItemMeta(meta);
@@ -204,18 +204,18 @@ public class Quest {
 
     public Component name(){
         if(Objects.equals(questNumber, "-1")){
-            return Component.translatable("Complete all weekly quests").color(difficulty.color).decoration(ITALIC, false);
+            return Component.translatable("crystalized.shardcore.quests.complete_all").color(difficulty.color).decoration(ITALIC, false);
         }
         List<Component> args = new ArrayList<>();
         args.add(Component.text("" + amount));
         Component c;
         if(questNumber.contains("-")){
-            c = Component.translatable("Play %1$s games of ", args);
+            c = Component.translatable("crystalized.shardcore.quests.play_amount", args);
         }else {
             c = Component.translatable(category.translationKey, args);
         }
         if(!forSeveral){
-            c = c.append(Component.translatable("one game of "));
+            c = c.append(Component.translatable("crystalized.shardcore.quests.one_game"));
         }
         c = c.append(Component.text(game.name));
         c = c.color(difficulty.color).decoration(ITALIC, false);
@@ -311,21 +311,21 @@ public class Quest {
     public enum Category{
         //IMPORTANT: the order of the categories mustn't change
         empty("empty", null, 0, 0, false, Difficulty.EXPERT, ""),
-        ls_was_winner("was_winner", Game.ls, 1, 10, false, Difficulty.MEDIUM, "Win %1$s games of "),
-        bombs_placed("placed_bombs", Game.ls, 1,3 , true, Difficulty.EASY , "Place %1$s bombs in "),
-        bombs_broken("broken_bombs", Game.ls, 1, 3, true, Difficulty.EASY, "Break %1$s bombs in "),
-        ls_kills("kills", Game.ls, 1, 7, true, Difficulty.EASY, "Kill %1$s players in "),
-        ls_assists("assists", Game.ls, 1, 5, true, Difficulty.EASY, "Assist with killing %1$s players in "),
-        ls_hits_dealt("hits_dealt", Game.ls, 20, 45, true, Difficulty.EASY, "Deal %1$s hits in "),
-        ls_damage_dealt("damage_dealt", Game.ls, 30, 100, true, Difficulty.EASY, "Deal %1$s points of damage in "),
-        ko_games_won("games_won", Game.ko, 1, 10, false, Difficulty.MEDIUM, "Win %1$s games of "),
-        ko_kills("kills", Game.ko, 5, 10, true, Difficulty.EASY, "Kill %1$s players in "),
-        ko_items_used("items_used", Game.ko, 1, 5, true, Difficulty.EASY, "Use %1$s items in "),
-        ko_blocks_placed("blocks_placed", Game.ko, 50, 150, true, Difficulty.EASY, "Place %1$s blocks in "),
-        ko_blocks_broken("blocks_broken", Game.ko, 20, 50, true, Difficulty.EASY, "Break %1$s blocks in "),
-        cb_games_won("games_won", Game.cb, 1, 10, false, Difficulty.MEDIUM, "Win %1$s games of "),
-        cb_kills("kills", Game.cb, 1, 10, true, Difficulty.EASY, "Kill %1$s player in "),
-        nexus_kills("nexus_kills", Game.cb, 1, 5, true, Difficulty.MEDIUM, "Destroy %1$s Nexus shards in ");
+        ls_was_winner("was_winner", Game.ls, 1, 10, false, Difficulty.MEDIUM, "crystalized.shardcore.quests.category.wins"),
+        bombs_placed("placed_bombs", Game.ls, 1,3 , true, Difficulty.EASY , "crystalized.shardcore.quests.catagory.bombs_placed"),
+        bombs_broken("broken_bombs", Game.ls, 1, 3, true, Difficulty.EASY, "crystalized.shardcore.quests.category.bombs_broken"),
+        ls_kills("kills", Game.ls, 1, 7, true, Difficulty.EASY, "crystalized.shardcore.quests.category.kills"),
+        ls_assists("assists", Game.ls, 1, 5, true, Difficulty.EASY, "crystalized.shardcore.quests.category.assists"),
+        ls_hits_dealt("hits_dealt", Game.ls, 20, 45, true, Difficulty.EASY, "crystalized.shardcore.quests.category.hits_dealt"),
+        ls_damage_dealt("damage_dealt", Game.ls, 30, 100, true, Difficulty.EASY, "crystalized.shardcore.quests.category.damage_dealt"),
+        ko_games_won("games_won", Game.ko, 1, 10, false, Difficulty.MEDIUM, "crystalized.shardcore.quests.category.wins"),
+        ko_kills("kills", Game.ko, 5, 10, true, Difficulty.EASY, "crystalized.shardcore.quests.category.kills"),
+        ko_items_used("items_used", Game.ko, 1, 5, true, Difficulty.EASY, "crystalized.shardcore.quests.category.items_used"),
+        ko_blocks_placed("blocks_placed", Game.ko, 50, 150, true, Difficulty.EASY, "crystalized.shardcore.quests.category.blocks_placed"),
+        ko_blocks_broken("blocks_broken", Game.ko, 20, 50, true, Difficulty.EASY, "crystalized.shardcore.quests.category.blocks_broken"),
+        cb_games_won("games_won", Game.cb, 1, 10, false, Difficulty.MEDIUM, "crystalized.shardcore.quests.category.wins"),
+        cb_kills("kills", Game.cb, 1, 10, true, Difficulty.EASY, "crystalized.shardcore.quests.category.kills"),
+        nexus_kills("nexus_kills", Game.cb, 1, 5, true, Difficulty.MEDIUM, "crystalized.shardcore.quests.category.nexus_kills");
 
         final String columnName;
         final Game game;
