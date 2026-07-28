@@ -1,54 +1,20 @@
 package gg.crystalized.lobby;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.PacketAdapter;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.reflect.StructureModifier;
-import com.comphenix.protocol.wrappers.*;
-import com.destroystokyo.paper.profile.PlayerProfile;
-import com.destroystokyo.paper.profile.ProfileProperty;
-import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.protocol.attribute.Attributes;
-import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
-import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
-import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
-import com.github.retrooper.packetevents.protocol.world.Location;
-import com.github.retrooper.packetevents.util.Vector3d;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetPassengers;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes;
-import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import org.apache.commons.lang3.SerializationUtils;
 import org.bukkit.*;
-import org.bukkit.attribute.AttributeInstance;
-import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scoreboard.*;
-import org.jetbrains.annotations.Nullable;
 
-
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
-import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
-import static org.bukkit.attribute.Attribute.SCALE;
-import static org.bukkit.attribute.AttributeModifier.Operation.ADD_SCALAR;
-import static org.bukkit.entity.EntityType.TEXT_DISPLAY;
-import static org.bukkit.entity.TextDisplay.TextAlignment.CENTER;
 import static org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY;
 import static org.bukkit.scoreboard.Team.OptionStatus.NEVER;
 
@@ -144,7 +110,7 @@ public enum Ranks {
             return Component.text("");
         }
 
-        return getNameWithName(p).append(Component.text(" joined the game").color(GREEN));
+        return getNameWithName(p).append(Component.translatable("crystalized.lobby.chat.message.player_join").color(GREEN));
     }
 
     public static void renderTabList(Player p){
@@ -161,44 +127,7 @@ public enum Ranks {
                                 color(NamedTextColor.DARK_GRAY));
 
         p.playerListName(getName(p));
-        //orderList();
     }
-    /*
-    public static void orderList(){
-        HashMap<Integer, ArrayList<Player>> map = new HashMap<>();
-        for(Player p : Bukkit.getOnlinePlayers()){
-            if(!map.containsKey(getRank(p))){
-                ArrayList<Player> list = new ArrayList<>();
-                list.add(p);
-                map.put(getRank(p), list);
-            }else {
-                ArrayList<Player> list = map.get(getRank(p));
-                list.add(p);
-                map.replace(getRank(p), list);
-            }
-        }
-
-        int i = 1;
-
-        for(int in = 10; in >= 1; in--){
-            if(!map.containsKey(in)){
-                continue;
-            }
-            for(Player p : map.get(in)){
-                p.setPlayerListOrder(i);
-                i++;
-            }
-            map.remove(in);
-        }
-        for(ArrayList<Player> li : map.values()){
-            for(Player pl : li){
-                pl.setPlayerListOrder(i);
-                i++;
-            }
-        }
-    }
-
-     */
 
     public static Player nextInLine(int i){
         for(Player p : Bukkit.getOnlinePlayers()){

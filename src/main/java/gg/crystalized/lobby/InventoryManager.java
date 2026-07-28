@@ -107,7 +107,7 @@ public class InventoryManager implements Listener {
             if(event.getClick().isShiftClick() && app.extra instanceof Location){
                 String name = item.getItemMeta().getPersistentDataContainer().get(new NamespacedKey("crystalized", "app"), PersistentDataType.STRING);
                 if(name == null || name.equals("")){
-                    return; //TODO I feel like this will one day cause problems
+                    return; //I feel like this will one day cause problems
                 }
                 ByteArrayDataOutput out = ByteStreams.newDataOutput();
                 out.writeUTF("Connect");

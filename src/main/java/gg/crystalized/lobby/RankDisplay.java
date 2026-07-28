@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -93,8 +94,8 @@ public class RankDisplay {
 				ResultSet rs2 = ps2.executeQuery();
 				PlayerRankedData prd = new PlayerRankedData(rs, p.getUniqueId());
 
-				Component text = Component.text(p.getName() + " is\n\n").append(get_rank(prd.rank)).append(Component.text("\n\nwith " + prd.rp + " rank points."));
-				text = text.append(Component.text("\nYou are number "+ rs2.getInt("row_nr") + " in rp."));
+				Component text = Component.text(p.getName()).append(Component.translatable("crystalized.game.litestrike.ranked.is").append(get_rank(prd.rank)).append(Component.translatable("crystalized.game.litestrike.ranked.with_rp", List.of(Component.text(prd.rp)))));
+				text = text.append(Component.translatable("crystalized.game.litestrike.ranked.number", List.of(Component.text(rs2.getInt("row_nr")))));
 				display.text(text);
 				for (Player player : Bukkit.getOnlinePlayers()) {
 					player.hideEntity(Lobby_plugin.getInstance(), display);

@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
 
 public class ScoreboardManager {
     public static int onlinePlayers = 0;
@@ -93,7 +94,7 @@ public class ScoreboardManager {
                             .append(text("1"))
                     );
 
-                    obj.getScore("2").customName(text("Players: ").color(NamedTextColor.GREEN)
+                    obj.getScore("2").customName(translatable("crystalized.lobby.scoreboard.players").color(NamedTextColor.GREEN)
                             .append(text("" + Bukkit.getOnlinePlayers().size()).color(NamedTextColor.WHITE))
                     );
 
@@ -101,7 +102,7 @@ public class ScoreboardManager {
                             .append(text("" + LevelManager.getMoney(p)))
                     );
 
-                    obj.getScore("6").customName(text("Rank: ").color(NamedTextColor.AQUA)
+                    obj.getScore("6").customName(translatable("crystalized.lobby.scoreboard.rank").color(NamedTextColor.AQUA)
                             .append(Ranks.getRankWithName(p))
                     );
                 } else {

@@ -14,6 +14,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
@@ -71,22 +72,22 @@ public class Setting {
     public static Component getDescription(App a, double value){
         boolean isOneOfThese = a == App.MsgSetting || a == App.PartyRequestSetting || a == App.PlayerVisibilitySetting;
         if((!hasMidValue(a) || isOneOfThese) && value == 1){
-            return Component.text("On").color(GREEN).decoration(ITALIC, false);
+            return Component.translatable("crystalized.shardcore.settings.generic.on").color(GREEN).decoration(ITALIC, false);
         }else if((!hasMidValue(a) || isOneOfThese) && value == 0){
-            return Component.text("Off").color(RED).decoration(ITALIC, false);
+            return Component.translatable("crystalized.shardcore.settings.generic.off").color(RED).decoration(ITALIC, false);
         }
 
         if(isOneOfThese && value == 0.5){
-            return Component.text("Only friends").color(YELLOW).decoration(ITALIC, false);
+            return Component.translatable("crystalized.shardcore.settings.generic.only_friends").color(YELLOW).decoration(ITALIC, false);
         }
 
         if(a == App.PlayerHeightSetting){
             if(value == 0){
-                return Component.text("Small").color(RED).decoration(ITALIC, false);
+                return Component.translatable("crystalized.shardcore.settings.height.short").color(RED).decoration(ITALIC, false);
             }else if(value == 0.5){
-                return Component.text("Default").color(YELLOW).decoration(ITALIC, false);
+                return Component.translatable("crystalized.shardcore.settings.height.default").color(YELLOW).decoration(ITALIC, false);
             }else if(value == 1){
-                return Component.text("Tall").color(GREEN).decoration(ITALIC, false);
+                return Component.translatable("crystalized.shardcore.settings.height.tall").color(GREEN).decoration(ITALIC, false);
             }
         }
         return null;
@@ -134,7 +135,7 @@ public class Setting {
 
         if(a == App.PlayerHeightSetting){
             if(Ranks.getPayRank(p) != 7){
-                p.sendMessage(Component.text("Buy [rank name here] to change your height.").color(RED));
+                p.sendMessage(Component.translatable("crystalized.shardcore.settings.message.buy_rank", List.of(Component.text(Ranks.moon_one.iconWithName))).color(RED));
                 return;
             }
         }

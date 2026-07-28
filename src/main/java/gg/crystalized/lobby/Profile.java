@@ -39,8 +39,8 @@ public class Profile {
             meta.setPlayerProfile(profile);
             meta.displayName(Ranks.getName(p));
             ArrayList<Component> lore = new ArrayList<>();
-            lore.add(Component.text("Level: " + data.get("level")).color(GREEN).decoration(ITALIC, false));
-            lore.add(Component.text("Money: " + data.get("money")).color(WHITE).decoration(ITALIC, false));
+            lore.add(Component.translatable("crystalized.shardcore.profile.level").append(Component.text(data.get("level").toString())).color(GREEN).decoration(ITALIC, false));
+            lore.add(Component.translatable("crystalized.shardcore.profile.money").append(Component.text(data.get("money").toString())).color(WHITE).decoration(ITALIC, false));
             meta.lore(lore);
             head.setItemMeta(meta);
             head.editPersistentDataContainer(pdc -> pdc.set(new NamespacedKey("crystalized", "profile_holder"), PersistentDataType.STRING, p.getName()));
