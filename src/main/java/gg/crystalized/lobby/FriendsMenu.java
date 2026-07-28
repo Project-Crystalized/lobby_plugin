@@ -49,14 +49,14 @@ public class FriendsMenu {
             ItemMeta meta = friend.getItemMeta();
             meta.displayName(Ranks.getName(Bukkit.getOfflinePlayer((String) data.get("player_name"))).decoration(ITALIC, false));
             ArrayList<Component> lore = new ArrayList<>();
-            lore.add(Component.text("Friends since: " + o[2]).color(GRAY).decoration(ITALIC, false));
-            lore.add(Component.text("[Left-click] View Profile").color(YELLOW).decoration(ITALIC, false));
-            lore.add(Component.text("[Right-click] Invite to party").color(YELLOW).decoration(ITALIC, false));
-            lore.add(Component.text("[Shift-click] Remove from friends").color(YELLOW).decoration(ITALIC, false));
+            lore.add(Component.translatable("crystalized.shardcore.party.friends_since").append(Component.text(o[2].toString())).color(GRAY).decoration(ITALIC, false));
+            lore.add(Component.translatable("crystalized.generic.left_click").append( Component.translatable("crystalized.shardcore.profile.view")).color(YELLOW).decoration(ITALIC, false));
+            lore.add(Component.translatable("crystalized.generic.right_click").append(Component.translatable("crystalized.shardcore.party.add2party")).color(YELLOW).decoration(ITALIC, false));
+            lore.add(Component.translatable("crystalized.generic.shift_click").append(Component.translatable("crystalized.shardcore.party.removefriend")).color(YELLOW).decoration(ITALIC, false));
             if(isOnline((String) data.get("player_name"))) {
-                lore.add(Component.text("online").color(GREEN));
+                lore.add(Component.translatable("crystalized.generic.online").color(GREEN));
             }else{
-                lore.add(Component.text("offline").color(RED));
+                lore.add(Component.translatable("crystalized.generic.offline").color(RED));
             }
             meta.lore(lore);
             friend.setItemMeta(meta);
@@ -168,17 +168,17 @@ public class FriendsMenu {
             ItemMeta meta = member.getItemMeta();
             meta.displayName(Ranks.getName(p).decoration(ITALIC, false));
             ArrayList<Component> lore = new ArrayList<>();
-            lore.add(Component.text("[Left-click] View Profile").color(TextColor.fromHexString("#f299da")).decoration(ITALIC, false));
+            lore.add(Component.translatable("crystalized.generic.left_click").append(Component.translatable("crystalized.shardcore.profile.view")).color(TextColor.fromHexString("#f299da")).decoration(ITALIC, false));
             if(!LobbyDatabase.areFriends(p, viewer)) {
-                lore.add(Component.text("[Right-click] Send friend request").color(TextColor.fromHexString("#f299da")).decoration(ITALIC, false));
+                lore.add(Component.translatable("crystalized.generic.right_click").append(Component.translatable("crystalized.shardcore.party.addfriend")).color(TextColor.fromHexString("#f299da")).decoration(ITALIC, false));
             }
             if(forLeader) {
-                lore.add(Component.text("[Shift-click] Remove from Party").color(TextColor.fromHexString("#f299da")).decoration(ITALIC, false));
+                lore.add(Component.translatable("crystalized.generic.shift_click").append(Component.translatable("crystalized.shardcore.party.remove")).color(TextColor.fromHexString("#f299da")).decoration(ITALIC, false));
             }
             if(isOnline(p.getName())) {
-                lore.add(Component.text("online").color(GREEN));
+                lore.add(Component.translatable("crystalized.generic.online").color(GREEN));
             }else{
-                lore.add(Component.text("offline").color(RED));
+                lore.add(Component.translatable("crystalized.generic.offline").color(RED));
             }
             meta.lore(lore);
             String name = p.getName();
