@@ -115,24 +115,22 @@ public class Cosmetic {
     public ArrayList<Component> getDescription(Boolean wearing, boolean viewing) {
         ArrayList<Component> desc = new ArrayList<>();
         if (wearing != null && wearing) {
-            desc.add(Component.text("[Right-click] take off").color(WHITE).decoration(ITALIC, false));
+            desc.add(Component.translatable("crystalized.generic.right_click").append(Component.translatable("crystalized.shardcore.shop.action.take_off")).color(WHITE).decoration(ITALIC, false));
         } else if (wearing != null && !wearing) {
-            desc.add(Component.text("[Right-click] equip").color(WHITE).decoration(ITALIC, false));
+            desc.add(Component.translatable("crystalized.generic.right_click").append(Component.translatable("crystalized.shardcore.shop.action.equip")).color(WHITE).decoration(ITALIC, false));
         } else if (obtainableLevel != null) {
-            desc.add(Component.text("[Right-click] unlock at level " + obtainableLevel).color(WHITE).decoration(ITALIC, false));
+            desc.add(Component.translatable("crystalized.generic.right_click").append( Component.translatable("crystalized.shardcore.shop.action.unlock")).append(Component.text(obtainableLevel)).color(WHITE).decoration(ITALIC, false));
         } else {
-            desc.add(Component.text("[Right-click] price: " + price).color(WHITE).decoration(ITALIC, false));
+            desc.add(Component.translatable("crystalized.generic.right_click").append( Component.translatable("crystalized.shardcore.shop.action.price")).append(Component.text(price)).color(WHITE).decoration(ITALIC, false));
         }
         if(viewing){
-            desc.add(Component.text("[Left-click] end view").color(WHITE).decoration(ITALIC, false));
+            desc.add(Component.translatable("crystalized.generic.left_click").append( Component.translatable("crystalized.shardcore.shop.action.end_view")).color(WHITE).decoration(ITALIC, false));
         }else {
-            desc.add(Component.text("[Left-click] view").color(WHITE).decoration(ITALIC, false));
+            desc.add(Component.translatable("crystalized.generic.left_click").append( Component.translatable("crystalized.shardcore.shop.action.view")).color(WHITE).decoration(ITALIC, false));
         }
         desc.add(Component.text(slot.toString()).color(BLUE).decoration(ITALIC, false));
         return desc;
     }
-
-    //TODO add translatables to everything
 
     public static void placeCosmetics(Player p, App a, int page) {
         Inventory inv = Bukkit.getServer().createInventory(null, 54, Component.text("\uA000\uA00A").color(WHITE));
@@ -216,17 +214,17 @@ public class Cosmetic {
                 }
 
                 if (LevelManager.getMoney(p) < price) {
-                    p.sendMessage(Component.text("You can't afford this cosmetic :(").color(RED));
+                    p.sendMessage(Component.translatable("crystalized.shardcore.shop.cant_afford").color(RED));
                     return;
                 }
 
                 LobbyDatabase.addCosmetic(p, this, false);
                 LevelManager.giveMoney(p, price * (-1));
                 App.Shop.action(p, p);
-                p.sendMessage(Component.text("Bought: ").color(WHITE).append(name));
+                p.sendMessage(Component.translatable("crystalized.shardcore.shop.message.bought").color(WHITE).append(name));
             }else {
                 if (isWearing(p)) {
-                    p.sendMessage(Component.text("Unequipped: ").color(WHITE).append(name));
+                    p.sendMessage(Component.translatable("crystalized.shardcore.shop.message.unequipped").color(WHITE).append(name));
                     if (slot != EquipmentSlot.HAND) {
                         p.sendEquipmentChange(p, slot, null);
                     } else {
@@ -234,7 +232,7 @@ public class Cosmetic {
                     }
 
                 } else {
-                    p.sendMessage(Component.text("Equipped: ").color(WHITE).append(name));
+                    p.sendMessage(Component.translatable("crystalized.shardcore.shop.message.equipped").color(WHITE).append(name));
                     if (slot != EquipmentSlot.HAND) {
                         p.sendEquipmentChange(p, slot, build(p, true, false, CosmeticView.isViewing(p, this)));
                     } else {
@@ -440,25 +438,25 @@ class CosmeticView{
             }
 
             if (LevelManager.getMoney(p) < currentCosmetic.price) {
-                p.sendMessage(Component.text("You can't afford this cosmetic :(").color(RED));
+                p.sendMessage(Component.translatable("crystalized.shardcore.shop.cant_afford").color(RED));
                 return;
             }
 
             LobbyDatabase.addCosmetic(p, currentCosmetic, false);
             LevelManager.giveMoney(p, currentCosmetic.price * (-1));
-            p.sendMessage(Component.text("Bought: ").color(WHITE).append(currentCosmetic.name));
+            p.sendMessage(Component.translatable("crystalized.shardcore.shop.message.bought").color(WHITE).append(currentCosmetic.name));
             App.Shop.action(p, p);
         }
 
         if (currentCosmetic.isWearing(p)) {
-            p.sendMessage(Component.text("Unequipped: ").color(WHITE).append(currentCosmetic.name));
+            p.sendMessage(Component.translatable("crystalized.shardcore.shop.message.unequipped").color(WHITE).append(currentCosmetic.name));
             if (currentCosmetic.slot != EquipmentSlot.HAND) {
                 p.sendEquipmentChange(p, currentCosmetic.slot, null);
             } else {
                 p.getInventory().setItem(4, Cosmetic.getCosmeticById(Cosmetic.DEFAULT_SHARDCORE).build(p, false, true, CosmeticView.isViewing(p, currentCosmetic)));
             }
         } else {
-            p.sendMessage(Component.text("Equipped: ").color(WHITE).append(currentCosmetic.name));
+            p.sendMessage(Component.translatable("crystalized.shardcore.shop.message.equipped").color(WHITE).append(currentCosmetic.name));
             if (currentCosmetic.slot != EquipmentSlot.HAND) {
                 p.sendEquipmentChange(p, currentCosmetic.slot, currentCosmetic.build(p, true, false, CosmeticView.isViewing(p, currentCosmetic)));
             } else {
