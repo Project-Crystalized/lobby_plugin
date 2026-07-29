@@ -146,7 +146,7 @@ public class Statistics implements Methods{
                 }
             }
             if(isLifetime){
-                units.add(new StatUnit<>(p, "percent", calculatePercent(p), alias, isLifetime));
+                units.add(new StatUnit<>(p, "percent", Component.translatable(calculatePercent(p)), alias, isLifetime));
             }else{
                 units.add(new StatUnit<>(p, "winner", getTeam(gameId, true), alias, isLifetime));
                 (statClass.cast(newInst())).extraNoLifetimeStats(p, units, gameId, isLifetime);
@@ -382,7 +382,7 @@ public class Statistics implements Methods{
         int total = getTotalGames(p);
         int won = getPlayerWins(p);
         if(total < 10){
-            return "Play at least 10 games to see your percentage";
+            return "crystalized.shardcore.stats.show_percentage";
         }
         return ((won / total) * 100) + "%";
     }

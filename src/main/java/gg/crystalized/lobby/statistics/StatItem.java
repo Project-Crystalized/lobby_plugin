@@ -62,11 +62,10 @@ public class StatItem {
             case "blocks_placed" -> Component.translatable("crystalized.shardcore.stats.blocks_placed").decoration(ITALIC, false);
             case "items_collected" -> Component.translatable("crystalized.shardcore.stats.items_collected").decoration(ITALIC, false);
             case "items_used" -> Component.translatable("crystalized.shardcore.stats.items_used").decoration(ITALIC, false);
+            case "nexus_kills" -> Component.translatable("crystalized.shardcore.stats.nexus_kills").decoration(ITALIC, false);
             case "gametype" -> Component.translatable("crystalized.shardcore.stats.gametype").decoration(ITALIC, false);
             default -> Component.text(s).decoration(ITALIC, false);
         };
-        //TODO cb stuff
-        //TODO translations
     }
 
     public Component style(Component c, String alias){
