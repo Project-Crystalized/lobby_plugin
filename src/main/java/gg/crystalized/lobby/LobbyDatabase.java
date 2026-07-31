@@ -21,21 +21,17 @@ import javax.swing.text.DateFormatter;
 
 public class LobbyDatabase {
     public static final String URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/lobby_db.sql";
-    static Connection conn = null;
-
-    public static void makeNewConnection(){
-        try{
-            if(conn != null && !conn.isClosed()) conn.close();
+    public static Connection makeNewConnection(boolean immediate) throws SQLException{
+        if(immediate) {
             Properties sqlprop = new Properties();
             sqlprop.put("transaction_mode", "IMMEDIATE");
-            conn = DriverManager.getConnection(URL, sqlprop);
+            Connection conn = DriverManager.getConnection(URL, sqlprop);
             conn.setAutoCommit(false);
-        }catch(SQLException e){
-            Bukkit.getLogger().warning("failed creating connection");
+            return conn;
         }
+        return DriverManager.getConnection(URL);
     }
     public static void setup_databases(){
-    makeNewConnection();
     String createLobbyPlayerTable = "CREATE TABLE IF NOT EXISTS LobbyPlayers ("
             + "player_uuid 			BLOB UNIQUE,"
             + "player_name 			STRING,"
@@ -106,7 +102,7 @@ public class LobbyDatabase {
     }
 
     public static HashMap<String, Object> fetchPlayerData(OfflinePlayer p){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
@@ -126,7 +122,7 @@ public class LobbyDatabase {
     }
 
     public static HashMap<String, Object> fetchPlayerData(byte[] p){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, p);
             ResultSet set = prep.executeQuery();
@@ -146,7 +142,7 @@ public class LobbyDatabase {
     }
 
     public static HashMap<String, Object> fetchPlayerData(String p){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM LobbyPlayers WHERE player_name = ?;");
             prep.setString(1, p);
             ResultSet set = prep.executeQuery();
@@ -166,7 +162,7 @@ public class LobbyDatabase {
     }
 
     public static boolean loggedInToday(Player player){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT last_login FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(player));
             ResultSet set = prep.executeQuery();
@@ -184,7 +180,7 @@ public class LobbyDatabase {
     }
 
     public static boolean loggedInYesterday(Player player){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT last_login FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(player));
             ResultSet set = prep.executeQuery();
@@ -202,7 +198,7 @@ public class LobbyDatabase {
     }
 
     public static void updateLastLogin(Player player){
-        try {
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET last_login = unixepoch() WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(player));
             prep.executeUpdate();
@@ -213,7 +209,7 @@ public class LobbyDatabase {
     }
 
     public static void updateLoginTimes(Player player){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET times_logged_in = ? WHERE player_uuid = ?;");
             prep.setInt(1, getTimesLoggedIn(player) + 1);
             prep.setBytes(2, uuid_to_bytes(player));
@@ -225,7 +221,7 @@ public class LobbyDatabase {
     }
 
     public static int getTimesLoggedIn(Player player){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT times_logged_in FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(player));
             ResultSet set = prep.executeQuery();
@@ -239,7 +235,7 @@ public class LobbyDatabase {
     }
 
     public static String getPlayerName(OfflinePlayer player){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT player_name FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(player));
             ResultSet set = prep.executeQuery();
@@ -253,7 +249,7 @@ public class LobbyDatabase {
     }
 
     public static boolean wasFirstLogin(Player player){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT last_login, first_login FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(player));
             ResultSet set = prep.executeQuery();
@@ -269,7 +265,7 @@ public class LobbyDatabase {
     }
 
     public static ArrayList<Object[]> fetchFriends(Player p){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Friends WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
@@ -292,7 +288,7 @@ public class LobbyDatabase {
     }
 
     public static ArrayList<Object[]> fetchCosmetics(OfflinePlayer p){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Cosmetics WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
@@ -315,7 +311,7 @@ public class LobbyDatabase {
     }
 
     public static void addCosmetic(Player p, Cosmetic c, boolean wearing){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("INSERT INTO Cosmetics(player_uuid, cosmetic_id, currently_wearing) VALUES(?, ?, ?);");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setInt(2, c.id);
@@ -333,7 +329,7 @@ public class LobbyDatabase {
     // 0 = false
     // 1 = true
     public static void cosmeticSetWearing(Player p, Cosmetic c, boolean wearing){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("UPDATE Cosmetics SET currently_wearing = ? WHERE player_uuid = ? AND cosmetic_id = ?;");
             int i = 0;
             if(wearing){
@@ -350,7 +346,7 @@ public class LobbyDatabase {
     }
 
     public static boolean isPlayerInDatabase(Player p){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT COUNT(*) AS count FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             if(prep.executeQuery().getInt("count") > 0){
@@ -371,7 +367,7 @@ public class LobbyDatabase {
             return true;
         }
 
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             String select = "SELECT * FROM LobbyPlayers WHERE player_uuid = ?;";
             PreparedStatement prep = conn.prepareStatement(select);
             prep.setBytes(1, uuid_to_bytes(p));
@@ -402,7 +398,7 @@ public class LobbyDatabase {
     }
 
     public static void makeNewLobbyPlayersEntry(Player p){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id, pay_rank_id, skin_url, first_login, last_login, times_logged_in, last_quest_roll, quest_rerolls)"
                     + "VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, unixepoch(), unixepoch(), 1, unixepoch(), ?);";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
@@ -419,7 +415,7 @@ public class LobbyDatabase {
     }
 
     public static void makeNewSettingsEntry(Player p){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             String makeNewEntry = "INSERT INTO Settings(player_uuid, dms, pig_game, show_players, height, friends_requests, party_requests)"
                     + "VALUES (?, 1 ,0 ,1 ,0.5 ,1, 1)";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
@@ -427,12 +423,12 @@ public class LobbyDatabase {
             prepared.executeUpdate();
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());
+            Bukkit.getLogger().warning("couldn't make settings entry for " + p.getName() + " UUID: " + p.getUniqueId());
         }
     }
 
     public static HashMap<String, Object> fetchSettings(OfflinePlayer p){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Settings WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
@@ -452,7 +448,7 @@ public class LobbyDatabase {
     }
 
     public static void updateSetting(Player p, String dbSettingName, double value){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             String makeNewEntry = "UPDATE Settings SET "+ dbSettingName + " = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setDouble(1, value);
@@ -460,38 +456,50 @@ public class LobbyDatabase {
             prepared.executeUpdate();
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());
+            Bukkit.getLogger().warning("update settings for " + p.getName() + " UUID: " + p.getUniqueId());
         }
     }
 
     public static void updatePlayerNames(Player p){
         try{
+            Properties sqlprop = new Properties();
+            sqlprop.put("transaction_mode", "IMMEDIATE");
+            Connection conn = DriverManager.getConnection(URL, sqlprop);
+            conn.setAutoCommit(false);
             String makeNewEntry = "UPDATE LobbyPlayers SET player_name = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setString(1, p.getName());
             prepared.setBytes(2, uuid_to_bytes(p));
             prepared.executeUpdate();
+            conn.commit();
+            conn.close();
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());
+            Bukkit.getLogger().warning("update name entry for " + p.getName() + " UUID: " + p.getUniqueId());
         }
     }
 
     public static void updateSkin(Player p){
         try{
+            Properties sqlprop = new Properties();
+            sqlprop.put("transaction_mode", "IMMEDIATE");
+            Connection conn = DriverManager.getConnection(URL, sqlprop);
+            conn.setAutoCommit(false);
             String makeNewEntry = "UPDATE LobbyPlayers SET skin_url = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setString(1, p.getPlayerProfile().getTextures().getSkin().toString());
             prepared.setBytes(2, uuid_to_bytes(p));
             prepared.executeUpdate();
+            conn.commit();
+            conn.close();
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());
+            Bukkit.getLogger().warning("update skin entry for " + p.getName() + " UUID: " + p.getUniqueId());
         }
     }
 
     public static void setOnline(Player p, boolean online){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             String makeNewEntry = "UPDATE LobbyPlayers SET online = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             int on = 0;
@@ -501,39 +509,51 @@ public class LobbyDatabase {
             prepared.executeUpdate();
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());
+            Bukkit.getLogger().warning("set online for " + p.getName() + " UUID: " + p.getUniqueId());
         }
     }
 
     public static void setRank(OfflinePlayer p, int rankID){
         try{
+            Properties sqlprop = new Properties();
+            sqlprop.put("transaction_mode", "IMMEDIATE");
+            Connection conn = DriverManager.getConnection(URL, sqlprop);
+            conn.setAutoCommit(false);
             String makeNewEntry = "UPDATE LobbyPlayers SET rank_id = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setInt(1, rankID);
             prepared.setBytes(2, uuid_to_bytes(p));
             prepared.executeUpdate();
+            conn.commit();
+            conn.close();
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());
+            Bukkit.getLogger().warning("set rank for " + p.getName() + " UUID: " + p.getUniqueId());
         }
     }
 
     public static void setPayedRank(OfflinePlayer p, int rankID){
         //if the rank is already there it will remove it
         try{
+            Properties sqlprop = new Properties();
+            sqlprop.put("transaction_mode", "IMMEDIATE");
+            Connection conn = DriverManager.getConnection(URL, sqlprop);
+            conn.setAutoCommit(false);
             String makeNewEntry = "UPDATE LobbyPlayers SET pay_rank_id = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, rankID == -1 ? new byte[]{} : shortToBytes(Ranks.addOrRemovePayedRank(p, rankID)));
             prepared.setBytes(2, uuid_to_bytes(p));
             prepared.executeUpdate();
+            conn.commit();
+            conn.close();
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't make database entry for " + p.getName() + " UUID: " + p.getUniqueId());
+            Bukkit.getLogger().warning("set payed rank for " + p.getName() + " UUID: " + p.getUniqueId());
         }
     }
 
     public static byte[] getPayedRank(OfflinePlayer p){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             String makeNewEntry = "SELECT pay_rank_id FROM LobbyPlayers WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, uuid_to_bytes(p));
@@ -547,7 +567,7 @@ public class LobbyDatabase {
     }
 
     public static boolean areFriends(Player p, OfflinePlayer friend){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT COUNT(*) AS count FROM Friends WHERE player_uuid = ? AND friend_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setBytes(2, uuid_to_bytes(friend));
@@ -563,7 +583,7 @@ public class LobbyDatabase {
     }
 
     public static boolean ownsCosmetic(OfflinePlayer p, Cosmetic c){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT COUNT(*) AS count FROM Cosmetics WHERE player_uuid = ? AND cosmetic_id = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setInt(2, c.id);
@@ -582,7 +602,7 @@ public class LobbyDatabase {
         if(!ownsCosmetic(p, c)){
             return false;
         }
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT currently_wearing FROM Cosmetics WHERE player_uuid = ? AND cosmetic_id = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setInt(2, c.id);
@@ -598,7 +618,7 @@ public class LobbyDatabase {
     }
 
     public static Cosmetic getShardcore(OfflinePlayer p){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT cosmetic_id FROM Cosmetics WHERE player_uuid = ? AND currently_wearing = 1;");
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
@@ -620,7 +640,7 @@ public class LobbyDatabase {
     }
 
     public static void rollOrFetchQuests(Player p){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT last_quest_roll FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
@@ -630,9 +650,15 @@ public class LobbyDatabase {
             LocalDate lastRoll = LocalDate.parse(new Date(Long.parseLong("" + seconds) * 1000).toString(), formatter);
             LocalDate currentDate = LocalDate.now();
             if(currentDate.getDayOfYear() - lastRoll.getDayOfYear() >= 7 || currentDate.getYear() != lastRoll.getYear()){
-                PreparedStatement pr = conn.prepareStatement("UPDATE LobbyPlayers SET last_quest_roll = unixepoch() WHERE player_uuid = ?;");
+                Properties sqlprop = new Properties();
+                sqlprop.put("transaction_mode", "IMMEDIATE");
+                Connection conn2 = DriverManager.getConnection(URL, sqlprop);
+                conn2.setAutoCommit(false);
+                PreparedStatement pr = conn2.prepareStatement("UPDATE LobbyPlayers SET last_quest_roll = unixepoch() WHERE player_uuid = ?;");
                 pr.setBytes(1, uuid_to_bytes(p));
                 pr.executeUpdate();
+                conn2.commit();
+                conn2.close();
                 rollQuests(p);
                 return;
             }
@@ -645,16 +671,26 @@ public class LobbyDatabase {
 
     public static void rollQuests(Player p){
         try{
+            Properties sqlprop = new Properties();
+            sqlprop.put("transaction_mode", "IMMEDIATE");
+            Connection conn = DriverManager.getConnection(URL, sqlprop);
+            conn.setAutoCommit(false);
             Quest.removeQuests(p);
             PreparedStatement prep = conn.prepareStatement("DELETE FROM Quests WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.executeUpdate();
+            conn.commit();
+            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't roll quests (1)");
         }
 
         try{
+            Properties sqlprop = new Properties();
+            sqlprop.put("transaction_mode", "IMMEDIATE");
+            Connection conn = DriverManager.getConnection(URL, sqlprop);
+            conn.setAutoCommit(false);
             Quest[] quests = Quest.rollQuests(p);
             PreparedStatement pr = conn.prepareStatement("INSERT INTO Quests(player_uuid, quest, done, claimed) VALUES (?, ?, 0, 0);");
             for(Quest q : quests){
@@ -662,16 +698,24 @@ public class LobbyDatabase {
                 pr.setString(2, q.questNumber);
                 pr.executeUpdate();
             }
+            conn.commit();
+            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't roll quests (2)");
         }
 
         try{
+            Properties sqlprop = new Properties();
+            sqlprop.put("transaction_mode", "IMMEDIATE");
+            Connection conn = DriverManager.getConnection(URL, sqlprop);
+            conn.setAutoCommit(false);
             PreparedStatement pre = conn.prepareStatement("UPDATE LobbyPlayers SET quest_rerolls = ? WHERE player_uuid = ?;");
             pre.setInt(1, Ranks.getPayRank(p) == 6 ? 1 : Ranks.getPayRank(p) == 7 ? 2 : 0);
             pre.setBytes(2, uuid_to_bytes(p));
             pre.executeUpdate();
+            conn.commit();
+            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't roll quests (3)");
@@ -679,7 +723,7 @@ public class LobbyDatabase {
     }
 
     public static void fetchQuests(Player p){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Quests WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
@@ -697,11 +741,17 @@ public class LobbyDatabase {
 
     public static void replaceQuest(OfflinePlayer p, Quest old, Quest nevv){
         try{
+            Properties sqlprop = new Properties();
+            sqlprop.put("transaction_mode", "IMMEDIATE");
+            Connection conn = DriverManager.getConnection(URL, sqlprop);
+            conn.setAutoCommit(false);
             PreparedStatement prep = conn.prepareStatement("UPDATE Quests SET quest = ? WHERE player_uuid = ? AND quest = ?;");
             prep.setString(1, nevv.questNumber);
             prep.setBytes(2, uuid_to_bytes(p));
             prep.setString(3, old.questNumber);
             prep.executeUpdate();
+            conn.commit();
+            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't replace quest");
@@ -709,7 +759,7 @@ public class LobbyDatabase {
     }
 
     public static int getLastQuestRoll(OfflinePlayer p){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT last_quest_roll FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
@@ -724,7 +774,7 @@ public class LobbyDatabase {
 
     public static boolean canRerollQuest(Quest q){
         if(Objects.equals(q.questNumber, "-1")) return false;
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT quest_rerolls FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(q.player));
             ResultSet set = prep.executeQuery();
@@ -741,9 +791,15 @@ public class LobbyDatabase {
 
     public static void rerollReduce(OfflinePlayer p){
         try{
+            Properties sqlprop = new Properties();
+            sqlprop.put("transaction_mode", "IMMEDIATE");
+            Connection conn = DriverManager.getConnection(URL, sqlprop);
+            conn.setAutoCommit(false);
             PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET quest_rerolls = quest_rerolls -1 WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.executeUpdate();
+            conn.commit();
+            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't reroll reduce");
@@ -752,10 +808,16 @@ public class LobbyDatabase {
 
     public static void setQuestRerolls(OfflinePlayer p){
         try{
+            Properties sqlprop = new Properties();
+            sqlprop.put("transaction_mode", "IMMEDIATE");
+            Connection conn = DriverManager.getConnection(URL, sqlprop);
+            conn.setAutoCommit(false);
             PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET quest_rerolls = ? WHERE player_uuid = ?;");
             prep.setInt(1, Ranks.getPayRank(p) == 6 ? 1 : Ranks.getPayRank(p) == 7 ? 2 : 0);
             prep.setBytes(2, uuid_to_bytes(p));
             prep.executeUpdate();
+            conn.commit();
+            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't get rerolls");
@@ -764,10 +826,16 @@ public class LobbyDatabase {
 
     public static void questCompleted(OfflinePlayer p, String quest){
         try{
+            Properties sqlprop = new Properties();
+            sqlprop.put("transaction_mode", "IMMEDIATE");
+            Connection conn = DriverManager.getConnection(URL, sqlprop);
+            conn.setAutoCommit(false);
             PreparedStatement prep = conn.prepareStatement("UPDATE Quests SET done = 1 WHERE player_uuid = ? AND quest = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setString(2, quest);
             prep.executeUpdate();
+            conn.commit();
+            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't complete quest");
@@ -776,10 +844,16 @@ public class LobbyDatabase {
 
     public static void questClaimed(OfflinePlayer p, String quest){
         try{
+            Properties sqlprop = new Properties();
+            sqlprop.put("transaction_mode", "IMMEDIATE");
+            Connection conn = DriverManager.getConnection(URL, sqlprop);
+            conn.setAutoCommit(false);
             PreparedStatement prep = conn.prepareStatement("UPDATE Quests SET claimed = 1 WHERE player_uuid = ? AND quest = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setString(2, quest);
             prep.executeUpdate();
+            conn.commit();
+            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't claim quest");
@@ -788,11 +862,17 @@ public class LobbyDatabase {
 
     public static void addAchievement(OfflinePlayer p, Achievement a){
         try{
+            Properties sqlprop = new Properties();
+            sqlprop.put("transaction_mode", "IMMEDIATE");
+            Connection conn = DriverManager.getConnection(URL, sqlprop);
+            conn.setAutoCommit(false);
             PreparedStatement prep = conn.prepareStatement("INSERT INTO Achievements(player_uuid, id, progress, stage, done, claimed) VALUES (?, ?, ?, 0, 0, 0);");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setString(2, a.temp.id);
             prep.setInt(3, a.progress);
             prep.executeUpdate();
+            conn.commit();
+            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't add achievement");
@@ -801,10 +881,16 @@ public class LobbyDatabase {
 
     public static void progressStage(OfflinePlayer p, Achievement a){
         try{
+            Properties sqlprop = new Properties();
+            sqlprop.put("transaction_mode", "IMMEDIATE");
+            Connection conn = DriverManager.getConnection(URL, sqlprop);
+            conn.setAutoCommit(false);
             PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET stage = stage +1 WHERE player_uuid = ? AND id = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setString(2, a.temp.id);
             prep.executeUpdate();
+            conn.commit();
+            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't progess achievement stage");
@@ -812,7 +898,7 @@ public class LobbyDatabase {
     }
 
     public static ArrayList<Achievement> getAchievements(OfflinePlayer p){
-        try{
+        try(Connection conn = DriverManager.getConnection(URL)){
             ArrayList<Achievement> list = new ArrayList<>();
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Achievements WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
@@ -831,11 +917,17 @@ public class LobbyDatabase {
 
     public static void updateAchievementDone(OfflinePlayer p, Achievement a){
         try{
+            Properties sqlprop = new Properties();
+            sqlprop.put("transaction_mode", "IMMEDIATE");
+            Connection conn = DriverManager.getConnection(URL, sqlprop);
+            conn.setAutoCommit(false);
             PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET done = ? WHERE player_uuid = ? AND id = ?;");
             prep.setInt(1, a.done ? 1 : 0);
             prep.setBytes(2, uuid_to_bytes(p));
             prep.setString(3, a.temp.id);
             prep.executeUpdate();
+            conn.commit();
+            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't set achievement done");
@@ -844,11 +936,17 @@ public class LobbyDatabase {
 
     public static void updateAchievementClaimed(OfflinePlayer p, Achievement a){
         try{
+            Properties sqlprop = new Properties();
+            sqlprop.put("transaction_mode", "IMMEDIATE");
+            Connection conn = DriverManager.getConnection(URL, sqlprop);
+            conn.setAutoCommit(false);
             PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET claimed = ? WHERE player_uuid = ? AND id = ?;");
             prep.setInt(1, a.claimed ? 1 : 0);
             prep.setBytes(2, uuid_to_bytes(p));
             prep.setString(3, a.temp.id);
             prep.executeUpdate();
+            conn.commit();
+            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't set achievement done");
