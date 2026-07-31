@@ -19,9 +19,9 @@ public class LevelManager implements Listener {
 
     public static void giveExperience(Player p, int exp){
         p.giveExp(exp);
-        try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)){
+        try{
             String insertData = "UPDATE LobbyPlayers SET exp_to_next_lvl = ?, level = ? WHERE player_uuid = ?";
-            PreparedStatement prep = conn.prepareStatement(insertData);
+            PreparedStatement prep = LobbyDatabase.conn.prepareStatement(insertData);
             prep.setFloat(1, p.getExp());
             prep.setInt(2, p.getLevel());
             prep.setBytes(3, LobbyDatabase.uuid_to_bytes(p));
@@ -75,9 +75,9 @@ public class LevelManager implements Listener {
     }
 
     public static void giveMoney(Player p, int amount){
-        try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)){
+        try{
             String insertData = "UPDATE LobbyPlayers SET money = ? WHERE player_uuid = ?";
-            PreparedStatement prep = conn.prepareStatement(insertData);
+            PreparedStatement prep = LobbyDatabase.conn.prepareStatement(insertData);
             prep.setInt(1, getMoney(p) + amount);
             prep.setBytes(2, LobbyDatabase.uuid_to_bytes(p));
             prep.executeUpdate();

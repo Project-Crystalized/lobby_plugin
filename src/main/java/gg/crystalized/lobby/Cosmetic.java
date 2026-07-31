@@ -140,16 +140,21 @@ public class Cosmetic {
             return;
         }
         int i = (page - 1) * 15;
+        int[] border = {7, 16, 25, 34, 43, 52};
+        int[] nextLine = {2, 11, 20, 29, 38, 47};
+        int slot = 29;
+        int line = 3;
         for (Cosmetic c : cosmetics) {
             if (c.slot != a.extra || c.ownsCosmetic(p)) {
                 continue;
             }
-
-            if (InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0) != null) {
-                inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), c.build(p, null, false, CosmeticView.isViewing(p, c)));
-            } else {
-                break;
+            if(slot >= border[line]){
+                if(line +1 >= nextLine.length) break;
+                line++;
+                slot = nextLine[line];
             }
+            inv.setItem(slot, c.build(p, false, false, CosmeticView.isViewing(p, c)));
+            slot++;
             i++;
         }
         p.openInventory(inv);

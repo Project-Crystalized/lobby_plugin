@@ -1,16 +1,14 @@
 package gg.crystalized.lobby;
 import java.nio.ByteBuffer;
 import java.sql.*;
+import java.sql.Date;
 import java.text.DateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import gg.crystalized.lobby.statistics.StatItem;
 import org.bukkit.Bukkit;
@@ -23,10 +21,21 @@ import javax.swing.text.DateFormatter;
 
 public class LobbyDatabase {
     public static final String URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/lobby_db.sql";
-    private static Connection conn = null;
-    public static void setup_databases(){
-        try{conn = DriverManager.getConnection(URL);}catch(SQLException e){Bukkit.getLogger().warning("failed creating connection");}
+    static Connection conn = null;
 
+    public static void makeNewConnection(){
+        try{
+            if(conn != null && !conn.isClosed()) conn.close();
+            Properties sqlprop = new Properties();
+            sqlprop.put("transaction_mode", "IMMEDIATE");
+            conn = DriverManager.getConnection(URL, sqlprop);
+            conn.setAutoCommit(false);
+        }catch(SQLException e){
+            Bukkit.getLogger().warning("failed creating connection");
+        }
+    }
+    public static void setup_databases(){
+    makeNewConnection();
     String createLobbyPlayerTable = "CREATE TABLE IF NOT EXISTS LobbyPlayers ("
             + "player_uuid 			BLOB UNIQUE,"
             + "player_name 			STRING,"
