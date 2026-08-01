@@ -36,6 +36,8 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
                 return give_xp(args, commandSender);
             case "give_money":
                 return give_money(args, commandSender);
+            case "give_cosmetic":
+                return give_cosmetic(args, commandSender);
             case "set_rank":
                 return set_rank(args, commandSender);
             case "spawn":
@@ -190,6 +192,22 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
             }
             Achievement.getFromDatabase(p);
         }
+        return true;
+    }
+
+    private boolean give_cosmetic(String[] args, CommandSender sender){
+        if(!sender.isOp()) return false;
+        if(!(args[0] instanceof String) || args[0] == null) return false;
+        Player p = Bukkit.getPlayer(args[0]);
+        Cosmetic cosmetic = null;
+        for(Cosmetic c : Cosmetic.cosmetics){
+            if(c.id == Integer.parseInt(args[1])){
+                cosmetic = c;
+                break;
+            }
+        }
+        if(cosmetic == null) return false;
+        LobbyDatabase.addCosmetic(p, cosmetic, false);
         return true;
     }
 }

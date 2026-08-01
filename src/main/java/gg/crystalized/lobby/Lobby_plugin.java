@@ -73,6 +73,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		this.getCommand("spawn").setExecutor(dc);
 		this.getCommand("reload_cosmetics").setExecutor(dc);
 		this.getCommand("reload_achievements").setExecutor(dc);
+		this.getCommand("give_cosmetic").setExecutor(dc);
 
 		doLobbyMessages();
 		saveResource("achievements.json", true);

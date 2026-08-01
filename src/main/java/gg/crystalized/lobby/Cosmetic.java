@@ -145,7 +145,7 @@ public class Cosmetic {
         int slot = 29;
         int line = 3;
         for (Cosmetic c : cosmetics) {
-            if (c.slot != a.extra || c.ownsCosmetic(p)) {
+            if (c.slot != a.extra || c.ownsCosmetic(p) || (c.price == null && c.obtainableLevel == null)) {
                 continue;
             }
             if(slot >= border[line]){
@@ -153,7 +153,7 @@ public class Cosmetic {
                 line++;
                 slot = nextLine[line];
             }
-            inv.setItem(slot, c.build(p, false, false, CosmeticView.isViewing(p, c)));
+            inv.setItem(slot, c.build(p, null, false, CosmeticView.isViewing(p, c)));
             slot++;
             i++;
         }

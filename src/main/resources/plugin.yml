@@ -50,5 +50,10 @@ commands:
     usage: "/reload_achievements"
     aliases: []
     permission: crystalized.lobby.command
+  give_cosmetic:
+    description: "gives cosmetic"
+    usage: "/give_cosmetic"
+    aliases: []
+    permission: crystalized.lobby.command
 
 
