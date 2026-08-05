@@ -41,7 +41,11 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 	}
 	@Override
 	public void onEnable() {
-		LobbyDatabase.setup_databases();
+		new BukkitRunnable(){
+			public void run() {
+				LobbyDatabase.setup_databases();
+			}
+		}.runTaskAsynchronously(this);
 		new LobbyConfig();
 		this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
 		this.getServer().getPluginManager().registerEvents(new LevelManager(), this);

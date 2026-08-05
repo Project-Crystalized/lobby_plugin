@@ -21,16 +21,6 @@ import javax.swing.text.DateFormatter;
 
 public class LobbyDatabase {
     public static final String URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/lobby_db.sql";
-    public static Connection makeNewConnection(boolean immediate) throws SQLException{
-        if(immediate) {
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
-            conn.setAutoCommit(false);
-            return conn;
-        }
-        return DriverManager.getConnection(URL);
-    }
     public static void setup_databases(){
     String createLobbyPlayerTable = "CREATE TABLE IF NOT EXISTS LobbyPlayers ("
             + "player_uuid 			BLOB UNIQUE,"
@@ -95,6 +85,8 @@ public class LobbyDatabase {
             stmt.execute(createSettingsTable);
             stmt.execute(createQuestsTable);
             stmt.execute(createAchieveTable);
+            stmt.execute("PRAGMA journal_mode=WAL;");
+            stmt.execute("PRAGMA busy_timeout = 5000;");
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("continuing without database");
