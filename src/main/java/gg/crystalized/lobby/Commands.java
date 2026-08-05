@@ -150,6 +150,8 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
         if(p.isOnline() && !Lobby_plugin.getInstance().passive_mode) {
             Ranks.renderTabList(p.getPlayer());
             Nametag.reloadNametag(p.getPlayer());
+            p.getPlayer().getInventory().clear();
+            InventoryManager.giveLobbyItems(p.getPlayer());
         }
 
         LobbyDatabase.setQuestRerolls(p);

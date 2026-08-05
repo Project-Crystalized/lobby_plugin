@@ -92,7 +92,9 @@ public enum App {
     ShardButtonW("ui/invisible", useCases.WardrobePage, useCases.Wardrobe, Component.translatable("crystalized.shardcore.shop.scn3").color(WHITE).decoration(ITALIC, false), new int[]{46, 7, 1},
     EquipmentSlot.HAND),
     AddFriend("ui/scn3/profile/addfriend", useCases.Profiles, Component.translatable("crystalized.shardcore.party.addfriend").color(WHITE).decoration(ITALIC, false), 23),
-    AddToParty("ui/scn3/profile/addtoparty", useCases.Profiles, Component.translatable("crystalized.shardcore.party.add2party").color(WHITE).decoration(ITALIC, false), 24);
+    AddToParty("ui/scn3/profile/addtoparty", useCases.Profiles, Component.translatable("crystalized.shardcore.party.add2party").color(WHITE).decoration(ITALIC, false), 24),
+    ToggleFlight_true("", useCases.Demand, Component.translatable("true").color(WHITE).decoration(ITALIC, false), 0),
+    ToggleFlight_false("", useCases.Demand, Component.translatable("false").color(WHITE).decoration(ITALIC, false), 0);
 
 
     //how buttons work {top left corner, width, height}
@@ -279,6 +281,10 @@ public enum App {
     }
 
     public void action(Player p, OfflinePlayer viewed){
+        if(this.toString().contains("ToggleFlight")){
+            p.setAllowFlight(!p.getAllowFlight());
+            p.getInventory().setItem(8, this == ToggleFlight_true ? ToggleFlight_false.build() : ToggleFlight_true.build());
+        }
         if(this == Requeue){
             ArrayList<String> plugins = new ArrayList<>();
             stream(Bukkit.getServer().getPluginManager().getPlugins()).forEach(pl -> plugins.add(pl.getName()));

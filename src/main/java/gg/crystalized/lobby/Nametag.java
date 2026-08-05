@@ -112,6 +112,9 @@ public class Nametag {
     }
 
     public static void reloadNametag(Player p){
+        if(Lobby_plugin.getInstance().passive_mode && !Lobby_plugin.getInstance().doNametagsDespitePassive){
+            return;
+        }
         removeNametag(p);
         renderAllNametags(p);
         Nametag tag = new Nametag(p);
@@ -154,6 +157,9 @@ public class Nametag {
 
     public static void removeNametag(Player p){
         //removes player's own nametag for others and all nametags for the player
+        if(Lobby_plugin.getInstance().passive_mode && !Lobby_plugin.getInstance().doNametagsDespitePassive){
+            return;
+        }
         Nametag remove = null;
         for(Nametag tag : nametags) {
             for (int id : ArrayUtils.addAll(tag.armorIds, tag.displayIds)) {

@@ -30,6 +30,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 
 	List<CrystalizedChess> ChessGames = new ArrayList<>();
 	public boolean passive_mode = false;
+	public boolean doNametagsDespitePassive = false;
 
 
 	@Override

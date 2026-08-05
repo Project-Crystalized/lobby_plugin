@@ -278,6 +278,7 @@ public class InventoryManager implements Listener {
             }
         }
         p.getInventory().setItem(4, Cosmetic.getShardcore(p).build(p, true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))));
+        if(Ranks.getRank(p) == Ranks.sun_sub) p.getInventory().setItem(8, App.ToggleFlight_true.build());
     }
 
     public static Integer placeOnRightSlot(int iterator, int end, int line, int borderrw, int borderlw){

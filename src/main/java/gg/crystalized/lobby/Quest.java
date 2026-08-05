@@ -194,7 +194,7 @@ public class Quest {
             lore.add(Component.translatable("crystalized.shardcore.quests.reroll").color(WHITE).decoration(ITALIC, false));
         }
         lore.add(Component.translatable("crystalized.shardcore.quests.reward").append(Component.text(difficulty.money + "[m]   " + difficulty.exp + "xp")).color(WHITE).decoration(ITALIC, false));
-        lore.add(Component.translatable("crystalized.shardcore.quests.difficulty").color(GRAY).decoration(ITALIC, false).append(Component.translatable("crystalized.shardcore.quests.difficulty." + difficulty.name.toLowerCase()).color(GRAY).decoration(ITALIC, false)));
+        lore.add(Component.translatable("crystalized.shardcore.quests.difficulty").color(GRAY).decoration(ITALIC, false).append(Component.translatable(difficulty.name.toLowerCase()).color(GRAY).decoration(ITALIC, false)));
         meta.lore(lore);
         meta.setItemModel(new NamespacedKey("crystalized", difficulty.model));
         item.setItemMeta(meta);
@@ -270,7 +270,7 @@ public class Quest {
     }
 
     public static void setQuests(Inventory inv, Player p){
-        int[] border = {8, 17, 26, 35, 44, 53};
+        int[] border = {7, 16, 25, 34, 43, 52};
         int[] nextLine = {2, 11, 20, 29, 38, 47};
         int slot = 29;
         int line = 3;

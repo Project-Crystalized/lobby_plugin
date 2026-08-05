@@ -9,6 +9,7 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
+import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
@@ -113,7 +114,10 @@ class WinLeaderboard {
 					Integer one = 1;
 					List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, generateText(p, type)), new EntityData(25, EntityDataTypes.INT, 1345466930), new EntityData(27, EntityDataTypes.BYTE, one.byteValue()));
 					WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(leaderboards.get(p).get(type), data);
-					PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(metadata);
+					User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
+					if(user != null) {
+						user.sendPacket(metadata);
+					}
 				}
 			}
 		}.runTaskTimer(Lobby_plugin.getInstance(), 1, (20 * 10));
