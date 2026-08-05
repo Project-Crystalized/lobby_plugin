@@ -1,0 +1,27 @@
+{
+  "HEADPHONES": {"id": 1, "model": "cosmetic/head/headphones", "level": 1, "price": null, "slot": "HEAD", "name": "crystalized.cosmetic/head/headphones"},
+  "BEANIE": {"id": 2, "model": "cosmetic/head/beanie", "level": 10, "price": null, "slot": "HEAD", "name": "crystalized.cosmetic/head/beanie"},
+  "FOX_BERET": {"id": 3, "model": "cosmetic/head/fox_beret", "level": null, "price": 150, "slot": "HEAD", "name": "crystalized.cosmetic/head/fox_beret"},
+  "COWBOY_HAT": {"id": 4, "model": "cosmetic/head/merica", "level": null, "price": 300, "slot": "HEAD", "name": "crystalized.cosmetic/head/merica"},
+  "CAPTAIN_HAT": {"id": 12, "model": "cosmetic/head/captain_hat", "level": null, "price": 300, "slot": "HEAD", "name": "crystalized.cosmetic/head/captain_hat"},
+  "CROWN": {"id": 13, "model": "cosmetic/head/crown", "level": null, "price": null, "slot": "HEAD", "name": "crystalized.cosmetic/head/crown"},
+  "LS_HEADBAND": {"id": 14, "model": "cosmetic/head/ls_headband", "level": null, "price": 200, "slot": "HEAD", "name": "crystalized.cosmetic/head/ls_headband"},
+  "MASTER_BANDANA": {"id": 15, "model": "cosmetic/head/master_bandana", "level": 50, "price": null, "slot": "HEAD", "name": "crystalized.cosmetic/head/master_bandana"},
+  "SHARDCOREVR": {"id": 16, "model": "cosmetic/head/shardcorevr", "level": null, "price": 200, "slot": "HEAD", "name": "crystalized.cosmetic/head/shardcorevr"},
+  "SUNGLASSES": {"id": 17, "model": "cosmetic/head/sunglasses", "level": null, "price": 500, "slot": "HEAD", "name": "crystalized.cosmetic/head/sunglasses"},
+
+  "HANDBAG": {"id": 5, "model": "cosmetic/handheld/handbag", "level": null, "price": 200, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/handbag"},
+  "US_FLAG": {"id": 23, "model": "cosmetic/handheld/merica_flag", "level": null, "price": 300, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/merica_flag"},
+  "GOLF_CLUB": {"id": 18, "model": "cosmetic/head/golf_club", "level": null, "price": 200, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/golf_club"},
+  "LAPTOP": {"id": 19, "model": "cosmetic/head/laptop", "level": null, "price": 150, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/laptop"},
+  "PRIDE_FLAG": {"id": 20, "model": "cosmetic/head/pride_flag", "level": null, "price": 500, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/pride_flag"},
+  "STAR_BUBBLE_WAND": {"id": 21, "model": "cosmetic/head/star_bubble_wand", "level": null, "price": 400, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/star_bubble_wand"},
+
+  "BLUE_SHARDCORE": {"id": 6, "model": "shardcorenexus3/blue", "level": null, "price": 500, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/blue"},
+  "GRAY_SHARDCORE": {"id": 7, "model": "shardcorenexus3/gray", "level": null, "price": 500, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/gray"},
+  "PURPLE_SHARDCORE": {"id": 8, "model": "shardcorenexus3/purple", "level": null, "price": 500, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/purple"},
+  "AUGUST_SHARDCORE": {"id": 9, "model": "shardcorenexus3/augustify", "level": null, "price": 500, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/augustify"},
+  "ABBY1_SHARDCORE": {"id": 10, "model": "shardcorenexus3/abby1", "level": null, "price": 500, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/abby1"},
+  "SHADOW1_SHARDCORE": {"id": 11, "model": "shardcorenexus3/shadow1", "level": null, "price": 500, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/shadow1"},
+  "LADYCAT1_SHARDCORE": {"id": 22, "model": "shardcorenexus3/ladycat1", "level": null, "price": 500, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/ladycat1"}
+}
