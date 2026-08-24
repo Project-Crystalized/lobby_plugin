@@ -110,9 +110,9 @@ public class Setting {
         if(o instanceof Double){
             return (Double)o;
         }
-        if(!(o instanceof Integer)){
-            return null;
-        }
+        //if(!(o instanceof Integer)){
+            //return null;
+        //}
         return Double.valueOf((Integer) o);
     }
 
