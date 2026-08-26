@@ -140,6 +140,7 @@ public final class PlayerListener implements Listener {
 		Quest.removeQuests(e.getPlayer());
 		WinLeaderboard.leaderboards.remove(e.getPlayer());
 		App.active.remove(e.getPlayer());
+		ScrollableView.removeView(e.getPlayer());
 	}
 
 	@EventHandler

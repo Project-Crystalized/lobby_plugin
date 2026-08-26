@@ -23,6 +23,7 @@ import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -42,6 +43,7 @@ public class InventoryManager implements Listener {
         Player p = event.getPlayer();
         if(!Lobby_plugin.getInstance().passive_mode && event.getItem().equals(Cosmetic.getShardcore(p).build(p, true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))))){
             p.openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu, event.getPlayer()));
+            ScrollableView.setView(p, App.useCases.Menu);
             for(int i = 0; i <= 54; i++){
                 if(p.getInventory().getItem(i) == null){
                     continue;
@@ -52,15 +54,18 @@ public class InventoryManager implements Listener {
             }
             return;
         }
-        if(App.identifyApp(event.getItem(), p) == null) return;
-        App.identifyApp(event.getItem(), p).action(p, p);
+        App app = App.identifyApp(event.getItem(), p);
+        if(app == null) return;
+        app.action(p, p);
+        if(app.self != null) ScrollableView.setView(p, app.self);
     }
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event){
-        if(Lobby_plugin.getInstance().passive_mode && !isLobbyInv(event.getView())){
+        Player p = (Player) event.getWhoClicked();
+        if(Lobby_plugin.getInstance().passive_mode && ScrollableView.getView(p).view == null){
             return;
         }
-        Player p = (Player) event.getWhoClicked();
+
         ItemStack item = event.getCurrentItem();
         event.setCancelled(true);
 
@@ -90,6 +95,7 @@ public class InventoryManager implements Listener {
 
             if(event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(p,true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p)))) || event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(p, true, true, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))))){
                 event.getWhoClicked().openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu, (Player)event.getWhoClicked()));
+                ScrollableView.setView(p, App.useCases.Menu);
                 for(int i = 0; i <= 54; i++){
                     if(p.getInventory().getItem(i) == null){
                         continue;
@@ -107,7 +113,7 @@ public class InventoryManager implements Listener {
             if(event.getClick().isShiftClick() && app.extra instanceof Location){
                 String name = item.getItemMeta().getPersistentDataContainer().get(new NamespacedKey("crystalized", "app"), PersistentDataType.STRING);
                 if(name == null || name.equals("")){
-                    return; //I feel like this will one day cause problems
+                    return;
                 }
                 ByteArrayDataOutput out = ByteStreams.newDataOutput();
                 out.writeUTF("Connect");
@@ -125,7 +131,7 @@ public class InventoryManager implements Listener {
                 return;
             }
             if(app.equals(App.Back)){
-                goBack(identifyInv(event.getView()), p);
+                goBack(ScrollableView.getView(p).view, p);
                 return;
             }
             if(app.equals(App.Home)){
@@ -133,6 +139,7 @@ public class InventoryManager implements Listener {
                 return;
             }
             app.action(p, p);
+            if(app.self != null) ScrollableView.setView(p, app.self);
         }else if(Cosmetic.identifyCosmetic(item) != null){
             Cosmetic c = Cosmetic.identifyCosmetic(item);
             c.clicked(event.getClick(), p, event.getSlotType(), event.getSlot(), event.getInventory());
@@ -153,16 +160,18 @@ public class InventoryManager implements Listener {
                 event.getInventory().setItem(event.getSlot(), a.build());
             }
         }else{
-            App.useCases use = identifyInv(event.getView());
+            App.useCases use = ScrollableView.getView(p).view;
             if(use == null){
                 return;
             }
             for(App a : App.values()){
                 if(a.use == use && a.slots != null && isSlotInButton(event.getSlot(), a.slots) && use == App.useCases.Shop){
-                    Cosmetic.placeCosmetics(p, a, 1);
+                    Cosmetic.placeCosmetics(p, a);
+                    ScrollableView.setView(p, App.useCases.ShopPage);
                     break;
                 }else if(a.use == use && a.slots != null && isSlotInButton(event.getSlot(), a.slots) && use == App.useCases.Wardrobe){
-                    p.openInventory(CosmeticView.getView(p).getWardrobe(a, 1));
+                    CosmeticView.getView(p).getWardrobe(a);
+                    ScrollableView.setView(p, App.useCases.WardrobePage);
                     break;
                 }
             }
@@ -171,11 +180,12 @@ public class InventoryManager implements Listener {
 
     @EventHandler
     public void onInvOpen(InventoryOpenEvent event){
-        if(Lobby_plugin.getInstance().passive_mode && !isLobbyInv(event.getView())){
+        Player p = (Player) event.getPlayer();
+        ScrollableView.getView(p).hasSomethingOpen = true;
+        if(Lobby_plugin.getInstance().passive_mode && ScrollableView.getView(p).view == null){
             return;
         }
-        App.useCases use = identifyInv(event.getView());
-        Player p = (Player) event.getPlayer();
+        App.useCases use = ScrollableView.getView(p).view;
         if(use == null){
             return;
         }
@@ -196,10 +206,12 @@ public class InventoryManager implements Listener {
 
     @EventHandler
     public void onInvClose(InventoryCloseEvent event){
-        if(Lobby_plugin.getInstance().passive_mode && !isLobbyInv(event.getView())){
+        Player p = (Player)event.getPlayer();
+        ScrollableView.getView(p).hasSomethingOpen = false;
+        ScrollableView.getView(p).view = null;
+        if(Lobby_plugin.getInstance().passive_mode && ScrollableView.getView(p).view == null){
             return;
         }
-        Player p = (Player)event.getPlayer();
         for(int i = 0; i <= 54; i++){
             if(p.getInventory().getItem(i) == null){
                 continue;
@@ -237,29 +249,6 @@ public class InventoryManager implements Listener {
         }
     }
 
-    public static App.useCases identifyInv(InventoryView inv){
-        try {
-            for (App a : App.values()) {
-                if (inv.title().equals(Component.text("\uA000\uA00A").color(WHITE))) {
-                    return App.useCases.ShopPage;
-                } else if (inv.title().equals(Component.text("\uA000\uA010").color(WHITE))) {
-                    return App.useCases.WardrobePage;
-                } else {
-                    String string = PlainTextComponentSerializer.plainText().serialize(inv.title());
-                    if (string.contains("\uA015")) { //we might have different titles for achievementspage in the future
-                        return App.useCases.AchievementsPage;
-                    }
-                }
-                if (!(a.extra instanceof String)) {
-                    continue;
-                }
-                if (((TextComponent) inv.title()).content().equals(a.extra)) {
-                    return a.self;
-                }
-            }
-        }catch(ClassCastException e){}
-        return null;
-    }
     public static void giveLobbyItems(Player p){
         if (Lobby_plugin.getInstance().passive_mode) {
             return;
@@ -281,102 +270,41 @@ public class InventoryManager implements Listener {
         if(Ranks.getRank(p) == Ranks.sun_sub) p.getInventory().setItem(8, App.ToggleFlight_true.build());
     }
 
-    public static Integer placeOnRightSlot(int iterator, int end, int line, int borderrw, int borderlw){
-        int[] border = {8, 17, 26, 35, 44, 53};
-        int[] nextLine = {2, 11, 20, 29, 38, 47};
-        int fin = iterator + nextLine[line] + borderlw;
-        boolean isInBorder = false;
-
-        for(int i : border){
-            if(fin <= i && fin >= i - borderrw){
-                isInBorder = true;
-                break;
-            }
-        }
-
-        boolean isOnNextLine = false;
-        if(!isInBorder) return fin;
-
-        if(fin == end){
-            return fin;
-        }
-
-        while(!isOnNextLine){
-            fin++;
-            for(int i : nextLine){
-                if(fin == i + borderlw){
-                    isOnNextLine = true;
-                    break;
-                }
-            }
-        }
-
-        if(fin < end){
-            return null;
-        }
-
-        return fin;
-    }
-
     //TODO this needs testing v
     public static void doScrolling(App a, Player p, InventoryView view){
-        App.useCases use = identifyInv(view);
-        if(use == App.useCases.ShopPage || use == App.useCases.WardrobePage){
-            if(view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(0, 51, 4, 1, 0)) == null || view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(15, 51, 3, 1, 0)) == null){
-                return;
-            }
-            EquipmentSlot slot = Cosmetic.identifyCosmetic(view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(0, 51, 4, 1, 0))).slot;
-            if(slot == null){
-                return;
-            }
-            int i = 1;
-            for(Cosmetic c : Cosmetic.cosmetics){
-                if(Cosmetic.identifyCosmetic(view.getTopInventory().getItem(InventoryManager.placeOnRightSlot(15, 51, 3, 1, 0))).equals(c)){
-                    break;
-                }
-                if(c.slot == slot){
-                    i++;
-                }
-            }
+        App.useCases use = ScrollableView.getView(p).view;
 
-            int page = i/15;
-            if(a == App.ScrollRight) {
-                Cosmetic.placeCosmetics(p, a, page+1);
-            }else if(page != 1){
-                Cosmetic.placeCosmetics(p, a, page-1);
-            }
+        if(a == App.ScrollRight) {
+            ScrollableView.getView(p).page++;
+        }else if(ScrollableView.getView(p).page != 0) {
+            ScrollableView.getView(p).page--;
         }
+
+        if(use == App.useCases.ShopPage){
+            Cosmetic.placeCosmetics(p, Cosmetic.getButton(view));
+        }else if(use == App.useCases.WardrobePage){
+            CosmeticView.getView(p).getWardrobe(Cosmetic.getButton(view));
+        }else if(use == App.useCases.Friends){
+            App.Friends.action(p, p);
+        }
+        ScrollableView.getView(p).view = use;
     }
 
     public static void goBack(App.useCases use, Player p){
         if(use == App.useCases.ShopPage) {
             App.Shop.action(p, p);
+            ScrollableView.setView(p, App.useCases.Shop);
         }else if (use == App.useCases.WardrobePage){
             App.Wardrobe.action(p, p);
+            ScrollableView.setView(p, App.useCases.Wardrobe);
         } else if (use == App.useCases.AchievementsPage) {
             App.Achieve.action(p, p); //unsure about this - Callum
+            ScrollableView.setView(p, App.useCases.Achievements);
         }
     }
 
     public static void home(Player p){
         p.openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu, p));
-    }
-
-    public static boolean isLobbyInv(InventoryView view){
-        for(App a : App.values()){
-            if(a.extra instanceof String && view.title() instanceof TextComponent && ((TextComponent) view.title()).content() == a.extra){
-                return true;
-            }
-        }
-
-        if(!(view.title() instanceof TextComponent)){
-            return false;
-        }
-
-        if(((TextComponent) view.title()).content().equals("\uA000\uA002") || ((TextComponent) view.title()).content().equals("\uA000\uA00A")){
-            return true;
-        }
-        return false;
     }
 
     public static boolean hasLobbyItems(Player p){
@@ -392,5 +320,51 @@ public class InventoryManager implements Listener {
             }
         }
         return false;
+    }
+}
+
+class ScrollableView{
+    //this class takes note of all lobby inventory types not just scrollables
+    public static ArrayList<ScrollableView> views = new ArrayList<>();
+    Player viewer;
+    int page = 0;
+    App.useCases view;
+    boolean hasSomethingOpen = false;
+
+    public ScrollableView(Player viewer) {
+        this.viewer = viewer;
+        views.add(this);
+    }
+
+    public static ScrollableView getView(Player p){
+        //gets the player's view or generates a new one if there is none
+        ScrollableView view = null;
+        for(ScrollableView s : views){
+            if(s.viewer.equals(p)){
+                view = s;
+                break;
+            }
+        }
+        if(view == null){
+            return new ScrollableView(p);
+        }
+        return view;
+    }
+
+    public static void setView(Player p, App.useCases use){
+        ScrollableView view = getView(p);
+        view.view = use;
+        view.page = 0;
+    }
+
+    public static void removeView(Player p){
+        ScrollableView view = null;
+        for(ScrollableView s : views){
+            if(s.viewer.equals(p)){
+                view = s;
+                break;
+            }
+        }
+        views.remove(view);
     }
 }

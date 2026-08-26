@@ -354,7 +354,7 @@ public enum App {
         else if(extra instanceof String){
             Inventory inv = prepareInv((String) extra, 54, self, p);
             if(this == App.Friends){
-                FriendsMenu.placeFriends(p, inv);
+                FriendsMenu.placeFriends(p, inv, ScrollableView.getView(p).page);
                 ByteArrayDataOutput out = ByteStreams.newDataOutput();
                 out.writeUTF("Party");
                 out.writeUTF("members");

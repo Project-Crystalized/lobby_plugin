@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -70,16 +71,29 @@ public class FriendsMenu {
         return null;
     }
 
-    public static void placeFriends(Player p, Inventory inv){
-        ArrayList<Object[]> list = LobbyDatabase.fetchFriends(p);
-        int i = 0;
-        for(Object[] o : list){
+    public static void placeFriends(Player p, Inventory inv, int page){
+        List<Object[]> friends = LobbyDatabase.fetchFriends(p);
+        if(friends == null) return;
+        int i = page * 15;
+        int[] border = {7, 16, 25, 34, 43, 52};
+        int[] nextLine = {2, 11, 20, 29, 38, 47};
+        int slot = 29;
+        int line = 3;
+        if(i > friends.size()){
+            i = (page -1) * 15;
+            ScrollableView.getView(p).page--;
+        }
+        friends = friends.subList(i, friends.size());
+        for(Object[] o : friends){
             checkOnline(p, Bukkit.getOfflinePlayer((String)LobbyDatabase.fetchPlayerData((byte[]) o[1]).get("player_name")));
             ItemStack stack = buildFriend(o);
-            if(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0) != null) {
-                inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), stack);
+            if(slot >= border[line]){
+                if(line +1 >= nextLine.length) break;
+                line++;
+                slot = nextLine[line];
             }
-            i++;
+            inv.setItem(slot, stack);
+            slot++;
         }
     }
 

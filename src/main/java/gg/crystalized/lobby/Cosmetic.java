@@ -18,8 +18,10 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.*;
@@ -37,7 +39,7 @@ import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 import static org.bukkit.event.inventory.InventoryType.SlotType.ARMOR;
 
-public class Cosmetic {
+public class Cosmetic{
     public static final int DEFAULT_SHARDCORE = 6;
     public static ArrayList<Cosmetic> cosmetics = new ArrayList<>();
     final int id;
@@ -68,6 +70,7 @@ public class Cosmetic {
             }
         }catch(IOException e){
             Bukkit.getLogger().severe("[Lobby_plugin] Couldn't get cosmetics from json continuing without.");
+            Bukkit.getLogger().severe(e.getMessage());
         }
     }
 
@@ -120,7 +123,7 @@ public class Cosmetic {
             desc.add(Component.translatable("crystalized.generic.right_click").append(Component.translatable("crystalized.shardcore.shop.action.equip")).color(WHITE).decoration(ITALIC, false));
         } else if (obtainableLevel != null) {
             desc.add(Component.translatable("crystalized.generic.right_click").append( Component.translatable("crystalized.shardcore.shop.action.unlock")).append(Component.text(obtainableLevel)).color(WHITE).decoration(ITALIC, false));
-        } else {
+        } else if(price != null){
             desc.add(Component.translatable("crystalized.generic.right_click").append( Component.translatable("crystalized.shardcore.shop.action.price")).append(Component.text(price)).color(WHITE).decoration(ITALIC, false));
         }
         if(viewing){
@@ -132,22 +135,31 @@ public class Cosmetic {
         return desc;
     }
 
-    public static void placeCosmetics(Player p, App a, int page) {
+    public static void placeCosmetics(Player p, App a) {
         Inventory inv = Bukkit.getServer().createInventory(null, 54, Component.text("\uA000\uA00A").color(WHITE));
         App.UITemplates.createUI(inv, App.useCases.ShopPage);
         if (a == App.WebButton) {
             //TODO set website URL here
             return;
         }
-        int i = (page - 1) * 15;
+        int i = ScrollableView.getView(p).page * 15;
         int[] border = {7, 16, 25, 34, 43, 52};
         int[] nextLine = {2, 11, 20, 29, 38, 47};
         int slot = 29;
         int line = 3;
-        for (Cosmetic c : cosmetics) {
-            if (c.slot != a.extra || c.ownsCosmetic(p) || (c.price == null && c.obtainableLevel == null)) {
+        List<Cosmetic> cos = new ArrayList<>();
+        for(Cosmetic c : Cosmetic.getCosmeticsBySlot((EquipmentSlot)a.extra)){
+            if (c.ownsCosmetic(p) || (c.price == null && c.obtainableLevel == null)) {
                 continue;
             }
+            cos.add(c);
+        }
+        if(i > cos.size()){
+            i = (ScrollableView.getView(p).page -1) * 15;
+            ScrollableView.getView(p).page--;
+        }
+        cos = cos.subList(i, cos.size());
+        for (Cosmetic c : cos) {
             if(slot >= border[line]){
                 if(line +1 >= nextLine.length) break;
                 line++;
@@ -155,9 +167,30 @@ public class Cosmetic {
             }
             inv.setItem(slot, c.build(p, null, false, CosmeticView.isViewing(p, c)));
             slot++;
-            i++;
         }
         p.openInventory(inv);
+    }
+
+    public static ArrayList<Cosmetic> getCosmeticsBySlot(EquipmentSlot slot){
+        ArrayList<Cosmetic> cos = new ArrayList<>();
+        for (Cosmetic c : cosmetics) {
+            if(c.slot == slot){
+                cos.add(c);
+            }
+        }
+        return cos;
+    }
+
+    public static App getButton(InventoryView view){
+        EquipmentSlot slot = Cosmetic.identifyCosmetic(view.getTopInventory().getItem(29)).slot;
+        App ap = null;
+        for(App app : App.values()){
+            if(app.extra == slot){
+                ap = app;
+                break;
+            }
+        }
+        return ap;
     }
 
     // 0 = false
@@ -359,32 +392,41 @@ class CosmeticView{
         return findView(p);
     }
 
-    public Inventory getWardrobe(App a, int page){
+    public void getWardrobe(App a){
         String titlePart = "\uA00F";
         if(currentCosmetic != null || a != App.Wardrobe){
             titlePart = "\uA010";
         }
 
-        if(titlePart.equals("\uA00F")){
-            return App.prepareInv("\uA000" + titlePart, 54, App.useCases.Wardrobe, p);
-        }
-
         Inventory inv = Bukkit.createInventory(null, 54, Component.text("\uA000" + titlePart).color(WHITE));
         App.UITemplates.createUI(inv, App.useCases.ShopPage);
-        int i = (page - 1) * 15;
-        for (Cosmetic c : Cosmetic.cosmetics) {
-            if (!(a.extra instanceof EquipmentSlot) || !c.slot.equals(a.extra) || !c.ownsCosmetic(p)) {
+        int i = ScrollableView.getView(p).page * 15;
+        int[] border = {7, 16, 25, 34, 43, 52};
+        int[] nextLine = {2, 11, 20, 29, 38, 47};
+        int slot = 29;
+        int line = 3;
+        List<Cosmetic> cos = new ArrayList<>();
+        for(Cosmetic c : Cosmetic.getCosmeticsBySlot((EquipmentSlot)a.extra)){
+            if (!c.ownsCosmetic(p)) {
                 continue;
             }
-
-            if (InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0) != null) {
-                inv.setItem(InventoryManager.placeOnRightSlot(i, 51, 3, 1, 0), c.build(p, LobbyDatabase.isWearing(p,c), false, isViewing(p, c)));
-            } else {
-                break;
-            }
-            i++;
+            cos.add(c);
         }
-        return inv;
+        if(i > cos.size()){
+            i = (ScrollableView.getView(p).page -1) * 15;
+            ScrollableView.getView(p).page--;
+        }
+        cos = cos.subList(i, cos.size());
+        for (Cosmetic c : cos) {
+            if(slot >= border[line]){
+                if(line +1 >= nextLine.length) break;
+                line++;
+                slot = nextLine[line];
+            }
+            inv.setItem(slot, c.build(p, c.isWearing(p), false, CosmeticView.isViewing(p, c)));
+            slot++;
+        }
+        p.openInventory(inv);
     }
 
     public void giveItems(){
