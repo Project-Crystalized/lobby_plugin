@@ -185,6 +185,14 @@ public class InventoryManager implements Listener {
         if(Lobby_plugin.getInstance().passive_mode && ScrollableView.getView(p).view == null){
             return;
         }
+        for(int i = 0; i <= 54; i++){
+            if(p.getInventory().getItem(i) == null){
+                continue;
+            }
+            if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(p, true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))))){
+                p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(p, true, true, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))));
+            }
+        }
         App.useCases use = ScrollableView.getView(p).view;
         if(use == null){
             return;
@@ -192,14 +200,6 @@ public class InventoryManager implements Listener {
         for(App a : App.values()){
             if(a.use == use && a.slots != null){
                 fillButtons(a.slots, event.getInventory(), a.name);
-            }
-        }
-        for(int i = 0; i <= 54; i++){
-            if(p.getInventory().getItem(i) == null){
-                continue;
-            }
-            if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(p, true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))))){
-                p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(p, true, true, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))));
             }
         }
     }
