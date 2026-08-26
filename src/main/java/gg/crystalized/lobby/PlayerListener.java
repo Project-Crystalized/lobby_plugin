@@ -268,6 +268,15 @@ public final class PlayerListener implements Listener {
 			view.endView();
 		}
 	}
+
+	@EventHandler
+	public void onTeleport(PlayerTeleportEvent e){
+		new BukkitRunnable(){
+			public void run(){
+				Nametag.reloadNametag(e.getPlayer());
+			}
+		}.runTaskLater(Lobby_plugin.getInstance(), 3);
+	}
 }
 class LobbyChatRenderer implements ChatRenderer.ViewerUnaware{
 
