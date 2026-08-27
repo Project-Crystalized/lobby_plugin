@@ -22,6 +22,7 @@ import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.codehaus.plexus.util.IOUtil;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -67,8 +68,16 @@ public class Cosmetic{
                 cosmetics.add(c);
             }
         }catch(IOException e){
-            Bukkit.getLogger().severe("[Lobby_plugin] Couldn't get cosmetics from json continuing without.");
-            Bukkit.getLogger().severe(e.getMessage());
+            if(!(e instanceof FileNotFoundException)){
+                Bukkit.getLogger().severe("[Lobby_plugin] Couldn't get cosmetics from json continuing without.");
+                Bukkit.getLogger().severe(e.getMessage());
+            }
+            try {
+                String string = IOUtil.toString(Lobby_plugin.getInstance().getResource("achievements.json"));
+            }catch(IOException ex){
+                Bukkit.getLogger().severe("[Lobby_plugin] Couldn't copy cosmetics.json into databases folder.");
+                Bukkit.getLogger().severe(e.getMessage());
+            }
         }
     }
 

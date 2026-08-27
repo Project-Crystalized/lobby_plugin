@@ -127,7 +127,10 @@ class WinLeaderboard {
 		Integer one = 1;
 		List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, generateText(p, type)), new EntityData(25, EntityDataTypes.INT, 1345466930), new EntityData(27, EntityDataTypes.BYTE, one.byteValue()));
 		WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(id, data);
-		PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(metadata);
+		User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
+		if(user != null) {
+			PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(metadata);
+		}
 	}
 
 	public static Component generateText(Player p, String type){

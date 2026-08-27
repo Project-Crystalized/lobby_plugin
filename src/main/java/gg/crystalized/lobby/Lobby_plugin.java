@@ -82,6 +82,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 
 		doLobbyMessages();
 		saveResource("achievements.json", true);
+		saveResource("cosmetics.json", true);
 	}
 
 	@Override

@@ -709,6 +709,7 @@ public class LobbyDatabase {
     }
 
     public static void fetchQuests(Player p){
+        Quest.removeQuests(p);
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Quests WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
