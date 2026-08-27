@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -167,7 +166,7 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
             return false;
         }
 
-        ((Player)sender).teleport(LobbyConfig.Locations.get("spawn"), TeleportFlag.EntityState.RETAIN_PASSENGERS);
+        ((Player)sender).teleport(LobbyConfig.Locations.get("spawn"));
         return true;
     }
 

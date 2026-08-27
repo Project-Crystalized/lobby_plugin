@@ -267,7 +267,14 @@ public class InventoryManager implements Listener {
             }
         }
         p.getInventory().setItem(4, Cosmetic.getShardcore(p).build(p, true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))));
-        if(Ranks.getRank(p) == Ranks.sun_sub) p.getInventory().setItem(8, App.ToggleFlight_true.build());
+        if(Ranks.getPayRank(p) == Ranks.sun_sub.ordinal()){
+            p.getInventory().setItem(8, App.ToggleFlight_true.build());
+            p.getInventory().setItem(7, App.ToggleAbility_true.build());
+            return;
+        }
+        if(Ranks.getPayRank(p) == Ranks.moon_one.ordinal()){
+            p.getInventory().setItem(8, App.ToggleAbility_true.build());
+        }
     }
 
     //TODO this needs testing v

@@ -1,7 +1,6 @@
 package gg.crystalized.lobby;
 
 import io.papermc.paper.chat.ChatRenderer;
-import io.papermc.paper.entity.TeleportFlag;
 import io.papermc.paper.event.packet.PlayerChunkLoadEvent;
 import io.papermc.paper.event.player.AbstractChatEvent;
 import io.papermc.paper.event.player.AsyncChatEvent;
@@ -75,7 +74,8 @@ public final class PlayerListener implements Listener {
 		}
 
 		ScoreboardManager.SetScoreboard(p);
-		p.teleport(LobbyConfig.Locations.get("spawn"), TeleportFlag.EntityState.RETAIN_PASSENGERS);
+		p.teleport(LobbyConfig.Locations.get("spawn"));
+		p.clearActivePotionEffects();
 		p.addPotionEffect(
 				new PotionEffect(PotionEffectType.HUNGER, PotionEffect.INFINITE_DURATION, 1, false, false, true));
 		p.setGameMode(GameMode.ADVENTURE);

@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import static gg.crystalized.lobby.LobbyDatabase.ownsCosmetic;
-import static io.papermc.paper.entity.TeleportFlag.EntityState.RETAIN_PASSENGERS;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
@@ -342,7 +341,7 @@ class CosmeticView{
         mannequin.spawn(loc);
 
         loc.setX(loc.getX() + 2);
-        p.teleport(loc, RETAIN_PASSENGERS);
+        p.teleport(loc);
         p.lookAt(mannequin.getEntity(), LookAnchor.EYES, LookAnchor.EYES);
         giveItems();
         for(Player player : Bukkit.getOnlinePlayers()){
@@ -373,7 +372,7 @@ class CosmeticView{
         views.remove(this);
         mannequin.despawn();
         p.setGameMode(GameMode.SURVIVAL);
-        p.teleport(LobbyConfig.Locations.get("spawn"), RETAIN_PASSENGERS);
+        p.teleport(LobbyConfig.Locations.get("spawn"));
         p.getInventory().clear();
         InventoryManager.giveLobbyItems(p);
         new BukkitRunnable(){

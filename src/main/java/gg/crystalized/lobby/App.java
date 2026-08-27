@@ -5,9 +5,10 @@ import com.google.common.io.ByteStreams;
 import gg.crystalized.lobby.statistics.StatView;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.CustomModelData;
-import io.papermc.paper.entity.TeleportFlag;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
+import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
@@ -15,6 +16,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 
 import java.util.ArrayList;
@@ -26,6 +29,10 @@ import static gg.crystalized.lobby.Quest.setQuests;
 import static java.util.Arrays.stream;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
+import static org.bukkit.attribute.Attribute.*;
+import static org.bukkit.attribute.AttributeModifier.Operation.ADD_NUMBER;
+import static org.bukkit.attribute.AttributeModifier.Operation.ADD_SCALAR;
+import static org.bukkit.potion.PotionEffectType.JUMP_BOOST;
 
 public enum App {
     Litestrike("ui/scn3/games/litestrike", useCases.Games, new useCases[]{useCases.Navigator},Component.translatable("crystalized.game.litestrike.name").color(GREEN).decoration(ITALIC, false), 29, LobbyConfig.Locations.get("litestrike_hub")),
@@ -93,8 +100,10 @@ public enum App {
     EquipmentSlot.HAND),
     AddFriend("ui/scn3/profile/addfriend", useCases.Profiles, Component.translatable("crystalized.shardcore.party.addfriend").color(WHITE).decoration(ITALIC, false), 23),
     AddToParty("ui/scn3/profile/addtoparty", useCases.Profiles, Component.translatable("crystalized.shardcore.party.add2party").color(WHITE).decoration(ITALIC, false), 24),
-    ToggleFlight_true("", useCases.Demand, Component.translatable("true").color(WHITE).decoration(ITALIC, false), 0),
-    ToggleFlight_false("", useCases.Demand, Component.translatable("false").color(WHITE).decoration(ITALIC, false), 0);
+    ToggleFlight_true("", useCases.Demand, Component.translatable("turn on flight").color(WHITE).decoration(ITALIC, false), 0),
+    ToggleFlight_false("", useCases.Demand, Component.translatable("turn off flight").color(WHITE).decoration(ITALIC, false), 0),
+    ToggleAbility_true("", useCases.Demand, Component.translatable("turn on bounciness").color(WHITE).decoration(ITALIC, false), 0),
+    ToggleAbility_false("", useCases.Demand, Component.translatable("turn off bounciness").color(WHITE).decoration(ITALIC, false), 0);
 
 
     //how buttons work {top left corner, width, height}
@@ -280,10 +289,34 @@ public enum App {
         }
     }
 
+    public void doAbility(Player p){
+        AttributeInstance bounce = p.getAttribute(BOUNCINESS);
+        AttributeInstance airDrag = p.getAttribute(AIR_DRAG_MODIFIER);
+        AttributeInstance friction = p.getAttribute(FRICTION_MODIFIER);
+        if(p.getPotionEffect(JUMP_BOOST) != null){
+            bounce.removeModifier(new NamespacedKey("crystalized", "rank"));
+            airDrag.removeModifier(new NamespacedKey("crystalized", "rank"));
+            friction.removeModifier(new NamespacedKey("crystalized", "rank"));
+            p.removePotionEffect(JUMP_BOOST);
+            return;
+        }
+        AttributeModifier bounceModifier = new AttributeModifier(new NamespacedKey("crystalized", "rank"), 1, ADD_NUMBER);
+        AttributeModifier dragModifier = new AttributeModifier(new NamespacedKey("crystalized", "rank"), -1, ADD_NUMBER);
+        AttributeModifier frictionModifier = new AttributeModifier(new NamespacedKey("crystalized", "rank"), -1, ADD_NUMBER);
+        bounce.addTransientModifier(bounceModifier);
+        airDrag.addTransientModifier(dragModifier);
+        friction.addTransientModifier(frictionModifier);
+        p.addPotionEffect(new PotionEffect(JUMP_BOOST, PotionEffect.INFINITE_DURATION, 2));
+    }
+
     public void action(Player p, OfflinePlayer viewed){
         if(this.toString().contains("ToggleFlight")){
             p.setAllowFlight(!p.getAllowFlight());
             p.getInventory().setItem(8, this == ToggleFlight_true ? ToggleFlight_false.build() : ToggleFlight_true.build());
+        }
+        if(this.toString().contains("ToggleAbility")){
+            doAbility(p);
+            p.getInventory().setItem(Ranks.getPayRank(p) == Ranks.sun_sub.ordinal() ? 7 : 8, this == ToggleAbility_true ? ToggleAbility_false.build() : ToggleAbility_true.build());
         }
         if(this == Requeue){
             ArrayList<String> plugins = new ArrayList<>();
@@ -349,7 +382,7 @@ public enum App {
                 p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
                 return;
             }
-            p.teleport((Location)extra, TeleportFlag.EntityState.RETAIN_PASSENGERS);
+            p.teleport((Location)extra);
         }
         else if(extra instanceof String){
             Inventory inv = prepareInv((String) extra, 54, self, p);

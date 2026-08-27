@@ -7,7 +7,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import gg.crystalized.lobby.statistics.StatView;
-import io.papermc.paper.entity.TeleportFlag;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.trait.SkinTrait;
@@ -316,7 +315,7 @@ class NPCData{
             p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main",
                     out.toByteArray());
         }else if(action instanceof Location){
-            p.teleport((Location) action, TeleportFlag.EntityState.RETAIN_PASSENGERS);
+            p.teleport((Location) action);
         }else if(action instanceof ArrayList){
             Component c = Component.text("[" + name + "] ").color(TextColor.fromHexString("#bf8032"));
             for(String s : (ArrayList<String>)action){
