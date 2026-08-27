@@ -173,7 +173,7 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
             return false;
         }
         Cosmetic.cosmetics.clear();
-        Cosmetic.createCosmetics();
+        Cosmetic.createCosmetics(false);
         return true;
     }
 

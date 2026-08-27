@@ -58,7 +58,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 
 		Commands dc = new Commands();
 		this.getCommand("set_rank").setExecutor(dc);
-		Cosmetic.createCosmetics();
+		Cosmetic.createCosmetics(false);
 		PacketEvents.getAPI().init();
 
 		//this needs to load in game servers - Callum

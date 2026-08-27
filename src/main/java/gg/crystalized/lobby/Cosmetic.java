@@ -26,7 +26,9 @@ import org.codehaus.plexus.util.IOUtil;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +59,7 @@ public class Cosmetic{
         this.name = name;
     }
 
-    public static void createCosmetics(){
+    public static void createCosmetics(boolean triedAlready){
         try {
             final String directory = Files.readString(Paths.get(System.getProperty("user.home") + "/databases/cosmetics.json"));
             JsonObject json = JsonParser.parseString(directory).getAsJsonObject();
@@ -68,15 +70,29 @@ public class Cosmetic{
                 cosmetics.add(c);
             }
         }catch(IOException e){
-            if(!(e instanceof FileNotFoundException)){
-                Bukkit.getLogger().severe("[Lobby_plugin] Couldn't get cosmetics from json continuing without.");
-                Bukkit.getLogger().severe(e.getMessage());
-            }
-            try {
-                String string = IOUtil.toString(Lobby_plugin.getInstance().getResource("achievements.json"));
+            try{
+                if(triedAlready || (!(e instanceof FileNotFoundException || e instanceof NoSuchFileException) && !Objects.equals(e.getMessage(), Files.readString(Paths.get(System.getProperty("user.home") + "/databases/cosmetics.json"))))){
+                    Bukkit.getLogger().severe("[Lobby_plugin] Couldn't get cosmetics from json continuing without.");
+                    Bukkit.getLogger().severe(e.getMessage());
+                    return;
+                }
+                InputStream in = Lobby_plugin.getInstance().getResource("cosmetics.json");
+                OutputStream out = Files.newOutputStream(Paths.get(System.getProperty("user.home") + "/databases/cosmetics.json"));
+                try {
+                    byte[] buffer = new byte[1024];
+                    int length;
+                    while ((length = in.read(buffer)) > 0) {
+                        out.write(buffer, 0, length);
+                    }
+                }finally{
+                    in.close();
+                    out.close();
+                }
+                createCosmetics(true);
             }catch(IOException ex){
                 Bukkit.getLogger().severe("[Lobby_plugin] Couldn't copy cosmetics.json into databases folder.");
                 Bukkit.getLogger().severe(e.getMessage());
+                e.printStackTrace();
             }
         }
     }
@@ -143,6 +159,9 @@ public class Cosmetic{
     }
 
     public static void placeCosmetics(Player p, App a) {
+        if(a == null){
+            return;
+        }
         Inventory inv = Bukkit.getServer().createInventory(null, 54, Component.text("\uA000\uA00A").color(WHITE));
         App.UITemplates.createUI(inv, App.useCases.ShopPage);
         if (a == App.WebButton) {
@@ -190,6 +209,9 @@ public class Cosmetic{
 
     public static App getButton(InventoryView view){
         EquipmentSlot slot = Cosmetic.identifyCosmetic(view.getTopInventory().getItem(29)).slot;
+        if(slot == null){
+            return null;
+        }
         App ap = null;
         for(App app : App.values()){
             if(app.extra == slot){
@@ -400,6 +422,9 @@ class CosmeticView{
     }
 
     public void getWardrobe(App a){
+        if(a == null){
+            return;
+        }
         String titlePart = "\uA00F";
         if(currentCosmetic != null || a != App.Wardrobe){
             titlePart = "\uA010";
