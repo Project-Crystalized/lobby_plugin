@@ -11,14 +11,12 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 import static org.bukkit.attribute.Attribute.SCALE;
-import static org.bukkit.attribute.AttributeModifier.Operation.ADD_NUMBER;
 import static org.bukkit.attribute.AttributeModifier.Operation.ADD_SCALAR;
 
 public class Setting {

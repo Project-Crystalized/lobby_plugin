@@ -11,9 +11,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.*;
 import org.geysermc.floodgate.api.FloodgateApi;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 

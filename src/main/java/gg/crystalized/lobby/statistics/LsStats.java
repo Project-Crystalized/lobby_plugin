@@ -1,23 +1,14 @@
 package gg.crystalized.lobby.statistics;
 
-import com.destroystokyo.paper.profile.PlayerProfile;
-import gg.crystalized.lobby.LobbyDatabase;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.profile.PlayerTextures;
 
-import java.nio.ByteBuffer;
 import java.sql.*;
 import java.util.*;
-import java.util.function.Function;
 
 import static net.kyori.adventure.text.Component.translatable;
 import static net.kyori.adventure.text.format.NamedTextColor.*;

@@ -17,7 +17,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
 
 import java.util.ArrayList;
@@ -31,7 +30,6 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 import static org.bukkit.attribute.Attribute.*;
 import static org.bukkit.attribute.AttributeModifier.Operation.ADD_NUMBER;
-import static org.bukkit.attribute.AttributeModifier.Operation.ADD_SCALAR;
 import static org.bukkit.potion.PotionEffectType.JUMP_BOOST;
 
 public enum App {
