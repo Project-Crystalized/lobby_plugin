@@ -143,12 +143,14 @@ public class InventoryManager implements Listener {
                 Quest.identifyQuest(p, item).rerollQuest();
                 Quest.setQuests(event.getInventory(), p);
             }
-        }else if(Achievement.identifyAchievement(p, item) != null){
+        }else if(Achievement.identifyAchievement(p, item) != null) {
             Achievement a = Achievement.identifyAchievement(p, item);
-            if(a.done && p.getUniqueId().equals(a.player.getUniqueId())){
+            if (a.done && p.getUniqueId().equals(a.player.getUniqueId())) {
                 a.claim();
                 event.getInventory().setItem(event.getSlot(), a.build());
             }
+        }else if(Navigation.getNavigationItem(item) != null){
+            p.teleport(Navigation.getNavigationItem(item).loc);
         }else{
             App.useCases use = ScrollableView.getView(p).view;
             if(use == null){

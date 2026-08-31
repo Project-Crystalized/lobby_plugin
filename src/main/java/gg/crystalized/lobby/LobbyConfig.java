@@ -7,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import gg.crystalized.lobby.statistics.StatView;
+import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.trait.SkinTrait;
@@ -15,8 +16,10 @@ import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Mannequin;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -30,6 +33,8 @@ import java.util.concurrent.CompletionStage;
 import java.util.logging.Level;
 
 import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
+import static org.bukkit.entity.EntityType.MANNEQUIN;
+import static org.bukkit.profile.PlayerTextures.SkinModel.SLIM;
 
 public class LobbyConfig {
    public static HashMap<String, Location> Locations = new HashMap<>();
@@ -279,6 +284,17 @@ class NPCData{
 
     public void spawnNPC(){
         try {
+            /*
+            Mannequin npc = (Mannequin)loc.getWorld().spawnEntity(loc, MANNEQUIN);
+            ResolvableProfile.Builder profile = ResolvableProfile.resolvableProfile();
+            ResolvableProfile.SkinPatchBuilder builder = ResolvableProfile.SkinPatch.skinPatch();
+            builder.body(new NamespacedKey("minecraft", "entity/player/slim/alex"));
+            builder.model(SLIM);
+            profile.skinPatch(builder.build());
+            profile.uuid(UUID.randomUUID());
+            profile.name(name);
+            npc.setProfile(profile.build());
+             */
             NPC npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.PLAYER, name, loc);
             SkinTrait trait = npc.getOrAddTrait(SkinTrait.class);
             trait.setSkinPersistent(skinName, skinSignature, skinValue);

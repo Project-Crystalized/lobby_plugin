@@ -178,36 +178,42 @@ public class Nametag {
     private void makeDisplay(boolean sendToPlayer, Player p, int i){
         WrapperPlayServerSpawnEntity entity = new WrapperPlayServerSpawnEntity(displayIds[i], UUID.randomUUID(), EntityTypes.TEXT_DISPLAY, new com.github.retrooper.packetevents.protocol.world.Location
                 (holder.getLocation().getX(), holder.getLocation().getY(), holder.getLocation().getZ(), 0, 0), 0, 0, new Vector3d());
-        if(sendToPlayer) PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(entity); else sendToEveryoneApartFrom(p, entity);
+        User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
+        if(user == null) return;
+        if(sendToPlayer) user.sendPacket(entity); else sendToEveryoneApartFrom(p, entity);
 
         Integer num = 3;
         List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, components[i]));
         WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(displayIds[i], data);
-        if(sendToPlayer) PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(metadata); else sendToEveryoneApartFrom(p, metadata);
+        if(sendToPlayer) user.sendPacket(metadata); else sendToEveryoneApartFrom(p, metadata);
     }
 
     private void makeArmorStand(boolean sendToPlayer, Player p, int i){
+        User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
+        if(user == null) return;
         WrapperPlayServerSpawnEntity armor = new WrapperPlayServerSpawnEntity(armorIds[i], UUID.randomUUID(), EntityTypes.ARMOR_STAND, new Location
                 (holder.getLocation().getX(), holder.getLocation().getY(), holder.getLocation().getZ(), 0, 0), 0, 0, new Vector3d());
-        if(sendToPlayer) PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(armor); else sendToEveryoneApartFrom(p, armor);
+        if(sendToPlayer) user.sendPacket(armor); else sendToEveryoneApartFrom(p, armor);
 
         WrapperPlayServerUpdateAttributes attribute = new WrapperPlayServerUpdateAttributes(armorIds[i], List.of(new WrapperPlayServerUpdateAttributes.Property(Attributes.SCALE, 0.15, List.of(new WrapperPlayServerUpdateAttributes.PropertyModifier(Attributes.SCALE.getName(), 0, WrapperPlayServerUpdateAttributes.PropertyModifier.Operation.ADDITION)))));
-        if(sendToPlayer) PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(attribute); else sendToEveryoneApartFrom(p, attribute);
+        if(sendToPlayer) user.sendPacket(attribute); else sendToEveryoneApartFrom(p, attribute);
 
         List<EntityData<?>> data= List.of(new EntityData(0, EntityDataTypes.BYTE, ((Integer)0x20).byteValue()));
         WrapperPlayServerEntityMetadata meta = new WrapperPlayServerEntityMetadata(armorIds[i], data);
-        if(sendToPlayer) PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(meta); else sendToEveryoneApartFrom(p, meta);
+        if(sendToPlayer) user.sendPacket(meta); else sendToEveryoneApartFrom(p, meta);
     }
 
     private void setPassengers(boolean sendToPlayer, Player p, int i){
+        User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
+        if(user == null) return;
         WrapperPlayServerSetPassengers passengers;
         if(i == 0){
             passengers = new WrapperPlayServerSetPassengers(holder.getEntityId(), new int[]{armorIds[i]});
         }else {
             passengers = new WrapperPlayServerSetPassengers(displayIds[i-1], new int[]{armorIds[i]});
         }
-        if(sendToPlayer) PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(passengers); else sendToEveryoneApartFrom(p, passengers);
+        if(sendToPlayer) user.sendPacket(passengers); else sendToEveryoneApartFrom(p, passengers);
         WrapperPlayServerSetPassengers pass = new WrapperPlayServerSetPassengers(armorIds[i], new int[]{displayIds[i]});
-        if(sendToPlayer) PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(pass); else sendToEveryoneApartFrom(p, pass);
+        if(sendToPlayer) user.sendPacket(pass); else sendToEveryoneApartFrom(p, pass);
     }
 }
