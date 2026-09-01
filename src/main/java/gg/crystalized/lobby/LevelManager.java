@@ -63,7 +63,7 @@ public class LevelManager implements Listener {
         if(!(event.getOldLevel() < event.getNewLevel())){
             return;
         }
-        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, SoundCategory.AMBIENT, 1, 1); //TODO add better soundeffect
+        p.playSound(p.getLocation(), "crystalized:effect/level_up", SoundCategory.AMBIENT, 4, 1); //TODO add better soundeffect
         p.sendActionBar(Component.text("LEVEL UP!").color(AQUA).decoration(BOLD, true)); //TODO make a better like thing for this idk how to call it
 
         for(Cosmetic c : Cosmetic.cosmetics){

@@ -5,6 +5,7 @@ import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 import gg.crystalized.lobby.minigames.CrystalizedChess;
 import gg.crystalized.lobby.minigames.CrystalizedChessListener;
+import gg.crystalized.lobby.parkour.ParkourListener;
 import gg.crystalized.lobby.statistics.StatView;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import net.kyori.adventure.text.Component;
@@ -53,6 +54,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		this.getServer().getPluginManager().registerEvents(new InventoryManager(), this);
 		this.getServer().getPluginManager().registerEvents(new EntityRefresh(), this);
 		this.getServer().getPluginManager().registerEvents(new StatView(null, "ls"), this);
+		this.getServer().getPluginManager().registerEvents(new ParkourListener(), this);
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "crystalized:main");
 		this.getServer().getMessenger().registerIncomingPluginChannel(this, "crystalized:main", this);
 
@@ -188,10 +190,10 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		Component divider = Component.text("------------------------------------").color(WHITE);
 		Component[] messages = new Component[]{
 			Component.translatable("crystalized.lobby.chat.message.found_bugs").color(LIGHT_PURPLE).append(Component.translatable("crystalized.lobby.chat.message.report_bugs").color(WHITE)).append(Component.text("\nhttps://discord.gg/saAGYcncd7\n").color(LIGHT_PURPLE).decoration(UNDERLINED, true).clickEvent(ClickEvent.openUrl("https://discord.gg/saAGYcncd7"))),
-			Component.translatable("crystalized.lobby.chat.message.sun").color(TextColor.fromHexString(Ranks.sun_sub.color)).append(Component.translatable("crystalized.lobby.chat.message.buy_rank", List.of(Component.text(Ranks.sun_sub.iconWithName))).color(WHITE)).append(Component.text("\ncrystalized.cc\n").color(LIGHT_PURPLE).decoration(UNDERLINED, true).clickEvent(ClickEvent.openUrl("crystalized.cc"))),
+			//Component.translatable("crystalized.lobby.chat.message.sun").color(TextColor.fromHexString(Ranks.sun_sub.color)).append(Component.translatable("crystalized.lobby.chat.message.buy_rank", List.of(Component.text(Ranks.sun_sub.iconWithName))).color(WHITE)).append(Component.text("\ncrystalized.cc\n").color(LIGHT_PURPLE).decoration(UNDERLINED, true).clickEvent(ClickEvent.openUrl("crystalized.cc"))),
 			Component.translatable("crystalized.lobby.chat.message.stay_safe").color(DARK_RED).append(Component.translatable("crystalized.lobby.chat.message.staff_will_never").color(WHITE)),
 			Component.translatable("crystalized.lobby.chat.message.connect").color(LIGHT_PURPLE).append(Component.translatable("crystalized.lobby.chat.message.join").color(WHITE)).append(Component.text("\nhttps://discord.gg/saAGYcncd7\n").color(LIGHT_PURPLE).decoration(UNDERLINED, true).clickEvent(ClickEvent.openUrl("https://discord.gg/saAGYcncd7"))),
-			Component.translatable("crystalized.lobby.chat.message.moon").color(TextColor.fromHexString(Ranks.moon_one.color)).append(Component.translatable("crystalized.lobby.chat.message.buy_rank", List.of(Component.text(Ranks.moon_one.iconWithName))).color(WHITE)).append(Component.text("\ncrystalized.cc\n").color(LIGHT_PURPLE).decoration(UNDERLINED, true).clickEvent(ClickEvent.openUrl("crystalized.cc"))),
+			//Component.translatable("crystalized.lobby.chat.message.moon").color(TextColor.fromHexString(Ranks.moon_one.color)).append(Component.translatable("crystalized.lobby.chat.message.buy_rank", List.of(Component.text(Ranks.moon_one.iconWithName))).color(WHITE)).append(Component.text("\ncrystalized.cc\n").color(LIGHT_PURPLE).decoration(UNDERLINED, true).clickEvent(ClickEvent.openUrl("crystalized.cc"))),
 			Component.translatable("crystalized.lobby.chat.message.staff").color(LIGHT_PURPLE).append(Component.translatable("crystalized.lobby.chat.message.apply").color(WHITE)).append(Component.text("\nhttps://discord.gg/saAGYcncd7\n").color(LIGHT_PURPLE).decoration(UNDERLINED, true).clickEvent(ClickEvent.openUrl("https://discord.gg/saAGYcncd7")))
 		};
 

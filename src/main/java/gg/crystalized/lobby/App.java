@@ -98,10 +98,10 @@ public enum App {
     EquipmentSlot.HAND),
     AddFriend("ui/scn3/profile/addfriend", useCases.Profiles, Component.translatable("crystalized.shardcore.party.addfriend").color(WHITE).decoration(ITALIC, false), 23),
     AddToParty("ui/scn3/profile/addtoparty", useCases.Profiles, Component.translatable("crystalized.shardcore.party.add2party").color(WHITE).decoration(ITALIC, false), 24),
-    ToggleFlight_true("", useCases.Demand, Component.translatable("turn on flight").color(WHITE).decoration(ITALIC, false), 0),
-    ToggleFlight_false("", useCases.Demand, Component.translatable("turn off flight").color(WHITE).decoration(ITALIC, false), 0),
-    ToggleAbility_true("", useCases.Demand, Component.translatable("turn on bounciness").color(WHITE).decoration(ITALIC, false), 0),
-    ToggleAbility_false("", useCases.Demand, Component.translatable("turn off bounciness").color(WHITE).decoration(ITALIC, false), 0);
+    ToggleFlight_true("item/orb/winged_orb", useCases.Demand, Component.translatable("turn on flight").color(WHITE).decoration(ITALIC, false), 0),
+    ToggleFlight_false("item/orb/winged_ord", useCases.Demand, Component.translatable("turn off flight").color(WHITE).decoration(ITALIC, false), 0),
+    ToggleAbility_true("item/orb/boost_orb", useCases.Demand, Component.translatable("turn on bounciness").color(WHITE).decoration(ITALIC, false), 0),
+    ToggleAbility_false("item/orb/boost_orb", useCases.Demand, Component.translatable("turn off bounciness").color(WHITE).decoration(ITALIC, false), 0);
 
 
     //how buttons work {top left corner, width, height}
