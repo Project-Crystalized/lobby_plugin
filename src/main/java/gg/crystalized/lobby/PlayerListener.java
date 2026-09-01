@@ -119,7 +119,7 @@ public final class PlayerListener implements Listener {
 		if(view != null && view.isRunning()){
 			view.endView();
 		}
-		Nametag.removeNametag(e.getPlayer());
+		Nametag.disconnect(e.getPlayer());
 		Quest.removeQuests(e.getPlayer());
 		WinLeaderboard.leaderboards.remove(e.getPlayer());
 		App.active.remove(e.getPlayer());

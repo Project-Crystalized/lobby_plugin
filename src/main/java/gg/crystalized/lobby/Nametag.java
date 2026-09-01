@@ -173,6 +173,24 @@ public class Nametag {
         remove.locationChecker.cancel();
     }
 
+    public static void disconnect(Player p){
+        if(Lobby_plugin.getInstance().passive_mode && !Lobby_plugin.getInstance().doNametagsDespitePassive){
+            return;
+        }
+        Nametag tag = getNametag(p);
+        if (tag == null) return;
+        new BukkitRunnable() {
+            public void run() {
+                for (int id : ArrayUtils.addAll(tag.armorIds, tag.displayIds)) {
+                    WrapperPlayServerDestroyEntities wrapper = new WrapperPlayServerDestroyEntities(id);
+                    sendToEveryoneApartFrom(p, wrapper);
+                }
+            }
+        }.runTaskAsynchronously(Lobby_plugin.getInstance());
+        nametags.remove(tag);
+        tag.locationChecker.cancel();
+    }
+
     //sendToPlayer = true -> packet is sent to only p
     //sendToPlayer = false -> packet is sent to everyone but p
     private void makeDisplay(boolean sendToPlayer, Player p, int i){
