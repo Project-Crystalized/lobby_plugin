@@ -354,7 +354,9 @@ public class LobbyDatabase {
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.setString(2, p.getName());
             prepared.setBytes(3, new byte[]{});
-            prepared.setString(4, p.getPlayerProfile().getTextures().getSkin().toString());
+            //Skin can be null in offline mode (name-derived UUID, no textures) - store empty string instead of NPEing
+            java.net.URL skin = p.getPlayerProfile().getTextures().getSkin();
+            prepared.setString(4, skin == null ? "" : skin.toString());
             prepared.setInt(5, Ranks.getPayRank(p) == 6 ? 1 : Ranks.getPayRank(p) == 7 ? 2 : 0);
             prepared.executeUpdate();
         }catch(SQLException e) {
@@ -436,7 +438,9 @@ public class LobbyDatabase {
             conn.setAutoCommit(false);
             String makeNewEntry = "UPDATE LobbyPlayers SET skin_url = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
-            prepared.setString(1, p.getPlayerProfile().getTextures().getSkin().toString());
+            //Skin can be null in offline mode (no textures) - store empty string instead of NPEing
+            java.net.URL skin = p.getPlayerProfile().getTextures().getSkin();
+            prepared.setString(1, skin == null ? "" : skin.toString());
             prepared.setBytes(2, uuid_to_bytes(p));
             prepared.executeUpdate();
             conn.commit();

@@ -34,7 +34,10 @@ public class Profile {
             SkullMeta meta = (SkullMeta) head.getItemMeta();
             PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID());
             PlayerTextures textures = profile.getTextures();
-            textures.setSkin(new URL((String)data.get("skin_url")));
+            //skin_url may be empty for offline-mode players (no textures) - skip to avoid MalformedURLException
+            if(!((String) data.get("skin_url")).isEmpty()){
+                textures.setSkin(new URL((String)data.get("skin_url")));
+            }
             profile.setTextures(textures);
             meta.setPlayerProfile(profile);
             meta.displayName(Ranks.getName(p));

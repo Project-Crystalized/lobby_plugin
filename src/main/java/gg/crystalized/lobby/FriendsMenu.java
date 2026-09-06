@@ -42,7 +42,10 @@ public class FriendsMenu {
             SkullMeta skull = (SkullMeta) friend.getItemMeta();
             PlayerProfile profile = (PlayerProfile) Bukkit.createPlayerProfile(UUID.randomUUID());
             PlayerTextures texture = profile.getTextures();
-            texture.setSkin(skinURL);
+            //skin_url may be empty for offline-mode players - skip to avoid MalformedURLException
+            if(!((String) data.get("skin_url")).isEmpty()){
+                texture.setSkin(skinURL);
+            }
             profile.setTextures(texture);
             skull.setPlayerProfile(profile);
             friend.setItemMeta(skull);
@@ -174,7 +177,10 @@ public class FriendsMenu {
             SkullMeta skull = (SkullMeta) member.getItemMeta();
             PlayerProfile profile = (PlayerProfile) Bukkit.createPlayerProfile(UUID.randomUUID());
             PlayerTextures texture = profile.getTextures();
-            texture.setSkin(skinURL);
+            //skin_url may be empty for offline-mode players - skip to avoid MalformedURLException
+            if(!((String) data.get("skin_url")).isEmpty()){
+                texture.setSkin(skinURL);
+            }
             profile.setTextures(texture);
             skull.setPlayerProfile(profile);
             member.setItemMeta(skull);
