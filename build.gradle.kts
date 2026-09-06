@@ -34,7 +34,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:26.2.build.+")
     implementation("org.xerial:sqlite-jdbc:3.47.0.0")
     compileOnly("com.comphenix.protocol:ProtocolLib:5.3.0")
-    compileOnly("net.citizensnpcs:citizens-main:2.0.37-SNAPSHOT") {
+    compileOnly("net.citizensnpcs:citizens-main:2.0.43-SNAPSHOT") {
         exclude(group = "*", module = "*")
     }
     compileOnly("org.geysermc.floodgate:api:2.2.3-SNAPSHOT")
