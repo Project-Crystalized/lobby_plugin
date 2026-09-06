@@ -89,7 +89,8 @@ public class Nametag {
     private static void sendToEveryoneApartFrom(Player p, PacketWrapper<?> wrapper){
         for(Player player : Bukkit.getOnlinePlayers()){
             if (p.equals(player)) continue;
-            PacketEvents.getAPI().getPlayerManager().getUser(player).sendPacket(wrapper);
+            User user = PacketEvents.getAPI().getPlayerManager().getUser(player);
+            if(user != null) user.sendPacket(wrapper);
         }
     }
 
