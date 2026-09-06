@@ -263,7 +263,7 @@ public class Achievement extends Quest{
 
     private void showNotif() {
         Player p = Bukkit.getPlayer(player.getName());
-        NamespacedKey tempkey = new NamespacedKey("crystalized", "preperaingachievement_" + p.getUniqueId().toString().toLowerCase() + "_" + temp.id);
+        NamespacedKey tempkey = new NamespacedKey("crystalized", "preperaingachievement_" + p.getUniqueId().toString().toLowerCase() + "_" + temp.id + "_" + stage);
         if (Bukkit.getServer().getAdvancement(tempkey) != null) {return;}
 
         //send chat message
@@ -305,7 +305,6 @@ public class Achievement extends Quest{
                 public void run() {
                     p.getAdvancementProgress(a).revokeCriteria("thing");
                     Bukkit.getUnsafe().removeAdvancement(tempkey);
-                    Bukkit.getServer().reloadData(); //for the above to work
                     cancel();
                 }
             }.runTaskTimer(Lobby_plugin.getInstance(), 2, 1);
