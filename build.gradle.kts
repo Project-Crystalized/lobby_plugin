@@ -43,7 +43,7 @@ dependencies {
     compileOnly ("com.github.bhlangonijr:chesslib:1.3.4")
 
     compileOnly ("net.dmulloy2:ProtocolLib:5.4.0")
-    compileOnly("com.github.retrooper:packetevents-spigot:2.12.2")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.13.0")
 }
 
 

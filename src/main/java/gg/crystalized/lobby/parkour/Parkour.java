@@ -1,20 +1,34 @@
 package gg.crystalized.lobby.parkour;
 
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
+import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
+import com.github.retrooper.packetevents.util.Vector3d;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
 import gg.crystalized.lobby.InventoryManager;
 import gg.crystalized.lobby.Lobby_plugin;
+import gg.crystalized.lobby.Nametag;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.SulfurCube;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
 import static org.bukkit.Material.COAL;
@@ -27,13 +41,16 @@ public class Parkour {
     String name;
     Location[] checkpoints;
     Location leaderboard;
+    Entity checkpointEntity;
 
     public Parkour(TextColor color, String name, Location[] checkpoints, Location leaderboard) {
         this.color = color;
         this.name = name;
         this.checkpoints = checkpoints;
         this.leaderboard = leaderboard;
+        checkpointEntity = spawnParkourStart();
         parkours.add(this);
+
     }
 
     public static Parkour findParkour(Location start){
@@ -43,8 +60,22 @@ public class Parkour {
         return null;
     }
 
-    public static void showParkourStart(){
+    public Entity spawnParkourStart(){
+        SulfurCube e = (SulfurCube)checkpoints[0].getWorld().spawnEntity(checkpoints[0], EntityType.SULFUR_CUBE);
+        e.setWander(false);
+        return e;
+    }
 
+    public static void hideParkourStarts(Player p){
+        for(Parkour parkour : parkours){
+            p.hideEntity(Lobby_plugin.getInstance(), parkour.checkpointEntity);
+        }
+    }
+
+    public static void showParkourStarts(Player p){
+        for(Parkour parkour : parkours){
+            p.showEntity(Lobby_plugin.getInstance(), parkour.checkpointEntity);
+        }
     }
 }
 
@@ -54,13 +85,17 @@ class ParkourRun{
     Parkour course;
     Timer timer;
     int lastCheckpoint;
+    int entityIdNextCheckpoint;
 
     public ParkourRun(Player p, Parkour course) {
         this.p = p;
         this.course = course;
         this.lastCheckpoint = 0;
         timer = new Timer();
+        entityIdNextCheckpoint = Nametag.EntityId;
+        Nametag.EntityId++;
         giveItemsAndRemoveAbilities();
+        Parkour.hideParkourStarts(p);
         running.add(this);
     }
 
@@ -109,6 +144,7 @@ class ParkourRun{
 
     public void onCheckpoint(){
         lastCheckpoint++;
+        showOrHideCheckpoint();
         if(lastCheckpoint == course.checkpoints.length-1){
             stop(true);
         }
@@ -119,8 +155,25 @@ class ParkourRun{
         p.getInventory().clear();
         InventoryManager.giveLobbyItems(p);
         timer.task.cancel();
+        Parkour.showParkourStarts(p);
         running.remove(this);
         if(finished) ParkourDatabase.saveRun(this);
+    }
+
+    public void showOrHideCheckpoint(){
+        if(lastCheckpoint + 1 > course.checkpoints.length -1){
+            WrapperPlayServerDestroyEntities wrapper = new WrapperPlayServerDestroyEntities(entityIdNextCheckpoint);
+            PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(wrapper);
+            return;
+        }
+        Location loc = course.checkpoints[lastCheckpoint+1];
+        WrapperPlayServerSpawnEntity entity = new WrapperPlayServerSpawnEntity(entityIdNextCheckpoint, UUID.randomUUID(), EntityTypes.SULFUR_CUBE, new com.github.retrooper.packetevents.protocol.world.Location
+                (loc.getX(), loc.getY(), loc.getZ(), 0, 0), 0, 0, new Vector3d());
+        PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(entity);
+
+        List<EntityData<?>> data = List.of(new EntityData(0, EntityDataTypes.BYTE, 0x40));
+        WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(entityIdNextCheckpoint, data);
+        PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(metadata);
     }
 }
 

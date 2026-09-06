@@ -5,6 +5,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class ParkourListener implements Listener {
@@ -42,5 +43,12 @@ public class ParkourListener implements Listener {
         if(p.getInventory().getItem(8).equals(item)){
             run.stop(false);
         }
+    }
+
+    @EventHandler
+    public void onDisconnect(PlayerQuitEvent e){
+        ParkourRun run = ParkourRun.getRun(e.getPlayer());
+        if(run == null) return;
+        run.stop(false);
     }
 }
