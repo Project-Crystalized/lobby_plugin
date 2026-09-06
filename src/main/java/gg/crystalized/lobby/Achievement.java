@@ -263,7 +263,11 @@ public class Achievement extends Quest{
 
     private void showNotif() {
         Player p = Bukkit.getPlayer(player.getName());
-        NamespacedKey tempkey = new NamespacedKey("crystalized", "preperaingachievement_" + p.getUniqueId().toString().toLowerCase() + "_" + temp.id);
+        if (p == null) {
+            Lobby_plugin.getInstance().getLogger().warning("Could not show achievement toast for " + player.getName() + ", player is offline");
+            return;
+        }
+        NamespacedKey tempkey = new NamespacedKey("crystalized", "preperaingachievement_" + p.getUniqueId().toString().toLowerCase() + "_" + temp.id + "_" + stage);
         if (Bukkit.getServer().getAdvancement(tempkey) != null) {return;}
 
         //send chat message
@@ -303,12 +307,14 @@ public class Achievement extends Quest{
             //we need to delay this, otherwise the notification wont send
             new BukkitRunnable() {
                 public void run() {
-                    p.getAdvancementProgress(a).revokeCriteria("thing");
+                    if (p.isOnline()) {
+                        p.getAdvancementProgress(a).revokeCriteria("thing");
+                    } else {
+                        Lobby_plugin.getInstance().getLogger().warning("Could not revoke achievement toast criteria for " + p.getName() + ", player went offline");
+                    }
                     Bukkit.getUnsafe().removeAdvancement(tempkey);
-                    Bukkit.getServer().reloadData(); //for the above to work
-                    cancel();
                 }
-            }.runTaskTimer(Lobby_plugin.getInstance(), 2, 1);
+            }.runTaskLater(Lobby_plugin.getInstance(), 2);
 
         } catch (Exception ex) {
             Lobby_plugin.getInstance().getLogger().warning("Could not send Advancement Toast, is the lobby plugin up to date?");

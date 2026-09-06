@@ -78,6 +78,7 @@ public class LevelManager implements Listener {
 
     public static int getMoney(Player p){
         HashMap<String, Object> map = LobbyDatabase.fetchPlayerData(p);
+        if(map.get("money") == null) return 0;
         return (Integer) map.get("money");
     }
 

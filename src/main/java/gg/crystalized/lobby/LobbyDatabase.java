@@ -346,43 +346,6 @@ public class LobbyDatabase {
         }
     }
 
-    public static boolean nullScan(Player p){
-        //returns true if null was found in the database or there wasn't an entry
-        if(!isPlayerInDatabase(p)) {
-            makeNewLobbyPlayersEntry(p);
-            return true;
-        }
-
-        try(Connection conn = DriverManager.getConnection(URL)){
-            String select = "SELECT * FROM LobbyPlayers WHERE player_uuid = ?;";
-            PreparedStatement prep = conn.prepareStatement(select);
-            prep.setBytes(1, uuid_to_bytes(p));
-            ResultSet set = prep.executeQuery();
-            ResultSetMetaData data = set.getMetaData();
-            set.next();
-            boolean retur = false;
-            for(int i = 0; i < data.getColumnCount(); i++){
-               Object o = set.getObject(i);
-               if(set.wasNull()) retur = true;
-               if(data.getColumnLabel(i).equals("first_login") || data.getColumnLabel(i).equals("last_login") || data.getColumnLabel(i).equals("last_quest_roll")){
-                   set.updateInt(i, ((Long)Instant.now().getEpochSecond()).intValue());
-               }else if(data.getColumnLabel(i).equals("times_logged_in")){
-                   set.updateInt(i, 1);
-               }else if(data.getColumnLabel(i).equals("quest_rerolls")){
-                   set.updateInt(i, Ranks.getPayRank(p) == 6 ? 1 : Ranks.getPayRank(p) == 7 ? 2 : 0);
-               }else{
-                   set.updateInt(i, 0);
-               }
-            }
-
-
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't scan for null");
-        }
-        return false; //FIXme remove this
-    }
-
     public static void makeNewLobbyPlayersEntry(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
             String makeNewEntry = "INSERT INTO LobbyPlayers(player_uuid, player_name,exp_to_next_lvl, level, money, online, rank_id, pay_rank_id, skin_url, first_login, last_login, times_logged_in, last_quest_roll, quest_rerolls)"
@@ -391,7 +354,9 @@ public class LobbyDatabase {
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.setString(2, p.getName());
             prepared.setBytes(3, new byte[]{});
-            prepared.setString(4, p.getPlayerProfile().getTextures().getSkin().toString());
+            //Skin can be null in offline mode (name-derived UUID, no textures) - store empty string instead of NPEing
+            java.net.URL skin = p.getPlayerProfile().getTextures().getSkin();
+            prepared.setString(4, skin == null ? "" : skin.toString());
             prepared.setInt(5, Ranks.getPayRank(p) == 6 ? 1 : Ranks.getPayRank(p) == 7 ? 2 : 0);
             prepared.executeUpdate();
         }catch(SQLException e) {
@@ -473,7 +438,9 @@ public class LobbyDatabase {
             conn.setAutoCommit(false);
             String makeNewEntry = "UPDATE LobbyPlayers SET skin_url = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
-            prepared.setString(1, p.getPlayerProfile().getTextures().getSkin().toString());
+            //Skin can be null in offline mode (no textures) - store empty string instead of NPEing
+            java.net.URL skin = p.getPlayerProfile().getTextures().getSkin();
+            prepared.setString(1, skin == null ? "" : skin.toString());
             prepared.setBytes(2, uuid_to_bytes(p));
             prepared.executeUpdate();
             conn.commit();
