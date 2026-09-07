@@ -35,14 +35,16 @@ public class LobbyDatabase {
     String createFriendsTable = "CREATE TABLE IF NOT EXISTS Friends ("
             + "player_uuid 			BLOB,"
             + "friend_uuid 	BLOB,"
-            + "date   STRING"
+            + "date   STRING,"
+            + "UNIQUE(player_uuid, friend_uuid)"
             + ");";
 
     //cosmetics will have an id
     String createCosmeticsTable = "CREATE TABLE IF NOT EXISTS Cosmetics ("
             + "player_uuid        BLOB,"
             + "cosmetic_id        INTEGER,"
-            + "currently_wearing   INTEGER"
+            + "currently_wearing   INTEGER,"
+            + "UNIQUE(player_uuid, cosmetic_id)"
             +");";
 
     String createSettingsTable = "CREATE TABLE IF NOT EXISTS Settings ("
@@ -59,7 +61,8 @@ public class LobbyDatabase {
             + "player_uuid        BLOB,"
             + "quest        TEXT,"
             + "done      INTEGER,"
-            + "claimed    INTEGER"
+            + "claimed    INTEGER,"
+            + "UNIQUE(player_uuid, quest)"
             +");";
     String createAchieveTable = "CREATE TABLE IF NOT EXISTS Achievements ("
             + "player_uuid        BLOB,"
@@ -67,7 +70,8 @@ public class LobbyDatabase {
             + "progress INTEGER,"
             + "stage      INTEGER,"
             + "done     INTEGER,"
-            + "claimed    INTEGER"
+            + "claimed    INTEGER,"
+            + "UNIQUE(player_uuid, internal_name)"
             +");";
 
         try (Connection conn = DriverManager.getConnection(URL)) {

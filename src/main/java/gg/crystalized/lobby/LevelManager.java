@@ -70,7 +70,7 @@ public class LevelManager implements Listener {
             if(c.obtainableLevel == null){
                 continue;
             }
-            if(c.obtainableLevel <= event.getNewLevel()){
+            if(c.obtainableLevel <= event.getNewLevel() && !LobbyDatabase.ownsCosmetic(p, c)){
                 LobbyDatabase.addCosmetic(p, c, false);
             }
         }
