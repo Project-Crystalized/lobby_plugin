@@ -233,8 +233,8 @@ public class Achievement extends Quest{
         }
         App.Achieve.deactivateApps(player);
         deactivateIconsBlink(player, this);
-        LobbyDatabase.updateAchievementDone(player, this);
-        LobbyDatabase.updateAchievementClaimed(player, this);
+        LobbyDatabase.setAchievementDone(player, this);
+        LobbyDatabase.setAchievementClaimed(player, this);
         for(Achievement a : getAchievements(player)){
             if(a.done && !a.claimed) return;
         }
@@ -244,7 +244,7 @@ public class Achievement extends Quest{
     @Override
     void complete(){
         done = true;
-        LobbyDatabase.updateAchievementDone(player, this);
+        if(!LobbyDatabase.tryComplete(player, this)) return;
         showNotif();
     }
 
@@ -342,6 +342,9 @@ public class Achievement extends Quest{
             while (set.next()) {
                 if (set.getString("internal_name").equals(temp.internalName)) {
                     progress = set.getInt("progress");
+                    done = set.getInt("done") == 1;
+                    claimed = set.getInt("claimed") == 1;
+                    stage = set.getInt("stage");
                     break;
                 }
             }

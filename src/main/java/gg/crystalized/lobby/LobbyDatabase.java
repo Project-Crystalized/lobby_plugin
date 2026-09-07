@@ -872,7 +872,7 @@ public class LobbyDatabase {
         }
     }
 
-    public static void updateAchievementDone(OfflinePlayer p, Achievement a){
+    public static void setAchievementDone(OfflinePlayer p, Achievement a){
         try{
             Properties sqlprop = new Properties();
             sqlprop.put("transaction_mode", "IMMEDIATE");
@@ -891,7 +891,20 @@ public class LobbyDatabase {
         }
     }
 
-    public static void updateAchievementClaimed(OfflinePlayer p, Achievement a){
+    public static boolean tryComplete(OfflinePlayer p, Achievement a){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET done = 1 WHERE player_uuid = ? AND internal_name = ? AND done = 0;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            prep.setString(2, a.temp.internalName);
+            return prep.executeUpdate() > 0;
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't set achievement done");
+            return false;
+        }
+    }
+
+    public static void setAchievementClaimed(OfflinePlayer p, Achievement a){
         try{
             Properties sqlprop = new Properties();
             sqlprop.put("transaction_mode", "IMMEDIATE");
