@@ -32,7 +32,7 @@ public class Achievement extends Quest{
     AchieveTemplate temp;
 
     public Achievement(OfflinePlayer player, AchieveTemplate temp, int progress, int stage, boolean done, boolean claimed){
-        //super(player, temp.id + temp.stages.get(stage), done, claimed); //causes an exception
+        //super(player, temp.id + temp.stages + stage, done, claimed); //causes an exception
         super(player, "-1" , done, claimed);
         this.stage = stage;
         this.temp = temp;
@@ -205,7 +205,7 @@ public class Achievement extends Quest{
         lore.add(temp.description.color(WHITE));
         lore.add(Component.translatable("crystalized.shardcore.quests.difficulty").color(WHITE).append(Component.translatable(difficulty.name).color(difficulty.color)).decoration(ITALIC, false));
         lore.add(Component.empty());
-        if (stage == temp.stages.getLast()) { //achieve fully done, claimed didn't work for this
+        if (stage == temp.stages) { //achieve fully done, claimed didn't work for this
             //TODO different tooltip style
             lore.add(Component.translatable("crystalized.achievement.fully_completed").color(GOLD).decoration(ITALIC, false));
             lore.add(Component.translatable("crystalized.achievement.well_done").color(GOLD).decoration(ITALIC, false));
@@ -217,7 +217,7 @@ public class Achievement extends Quest{
         }
         lore.add(Component.translatable("crystalized.shardcore.quests.progress").append(Component.text(getProgress() + "/" + amount + "%")).color(WHITE).decoration(ITALIC, false));
         lore.add(Component.translatable("crystalized.shardcore.quests.reward").append(Component.text(getMoney() + "[m]   " + getXp() + "xp")).color(WHITE).decoration(ITALIC, false));
-        lore.add(Component.translatable("crystalized.shardcore.quests.stage").append(Component.text((stage + 1) + "/" + (temp.stages.size() + 1))).color(WHITE).decoration(ITALIC, false));
+        lore.add(Component.translatable("crystalized.shardcore.quests.stage").append(Component.text((stage + 1) + "/" + (temp.stages + 1))).color(WHITE).decoration(ITALIC, false));
 
         meta.lore(lore);
         item.setItemMeta(meta);
@@ -230,7 +230,7 @@ public class Achievement extends Quest{
     void claim(){
         LevelManager.giveExperience(player.getPlayer(), getXp());
         LevelManager.giveMoney(player.getPlayer(), getMoney());
-        if (stage != temp.stages.getLast() - 1) {
+        if (stage != temp.stages - 1) {
             stage++;
             LobbyDatabase.progressStage(player, this);
             done = false;
@@ -241,7 +241,7 @@ public class Achievement extends Quest{
         } else {
             //TODO placeholder sound, different than the other one
             player.getPlayer().playSound(player.getPlayer(), "minecraft:entity.player.levelup", 1, 1);
-            stage = temp.stages.getLast();
+            stage = temp.stages;
             claimed = true;
         }
         App.Achieve.deactivateApps(player);
@@ -465,44 +465,40 @@ public class Achievement extends Quest{
 
 class AchieveTemplate{
 
-    String internalName;
-    String id;
-    List<Integer> stages;
-    int reward_money;
-    int reward_xp;
-    Component name;
-    Component description;
-    Achievement.achievementCategories category;
-    Quest.Difficulty difficulty;
+    final String internalName;
+    final String id;
+    final int stages;
+    final int reward_money;
+    final int reward_xp;
+    final Component name;
+    final Component description;
+    final Achievement.achievementCategories category;
+    final Quest.Difficulty difficulty;
 
     public AchieveTemplate(String id, String name, String difficulty, Achievement.achievementCategories category, JsonObject json) {
         this.internalName = name;
         this.id = id;
         this.difficulty = Quest.Difficulty.valueOf(difficulty);
-        if (this.difficulty.equals(Quest.Difficulty.EXPERT)) {
-            this.stages = List.of(1, 2, 3, 4); //doing an expert achievement 10 times is way too painful
-        } else {
-            this.stages = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9);
-        }
-        this.reward_money = this.difficulty.money;
-        this.reward_xp = this.difficulty.exp;
-        this.name = Component.translatable("crystalized.achievement." + name + ".name").decoration(ITALIC, false);
-        this.description = Component.translatable("crystalized.achievement." + name + ".desc").decoration(ITALIC, false);
-        this.category = category;
-
         if (json.has("replaceStages")) {
-            List<JsonElement> list = json.get("replaceStages").getAsJsonArray().asList();
-            this.stages = new ArrayList<>();
-            for (JsonElement e : list) {
-                this.stages.add(e.getAsInt());
-            }
+            this.stages = json.get("replaceStages").getAsJsonArray().size();
+        } else if (this.difficulty.equals(Quest.Difficulty.EXPERT)) {
+            this.stages = 4; //doing an expert achievement 10 times is way too painful
+        } else {
+            this.stages = 9;
         }
         if (json.has("replaceRewardMoney")) {
             this.reward_money = json.get("replaceRewardMoney").getAsInt();
+        } else {
+            this.reward_money = this.difficulty.money;
         }
         if (json.has("replaceRewardXP")) {
             this.reward_xp = json.get("replaceRewardXP").getAsInt();
+        } else {
+            this.reward_xp = this.difficulty.exp;
         }
+        this.name = Component.translatable("crystalized.achievement." + name + ".name").decoration(ITALIC, false);
+        this.description = Component.translatable("crystalized.achievement." + name + ".desc").decoration(ITALIC, false);
+        this.category = category;
     }
 
     public static AchieveTemplate getAchieveTemplate(String id){
