@@ -41,16 +41,15 @@ public class Achievement extends Quest{
         this.progress = progress;
     }
 
-    public enum achievementCategories{
-        general("general"),
-        ls("litestrike"),
-        ko("knockoff"),
-        cb("crystalblitz"),
-        //br("battleroyale")
-        ;
+    public enum AchievementCategories{
+        GENERAL("general"),
+        LS("litestrike"),
+        KO("knockoff"),
+        CB("crystalblitz"),;
+        //BR("battleroyale") ;
 
-        String jsonname; //achievements.json
-        achievementCategories(String jsonname) {
+        final String jsonname; //achievements.json
+        AchievementCategories(String jsonname) {
             this.jsonname = jsonname;
         }
     }
@@ -61,23 +60,11 @@ public class Achievement extends Quest{
             JsonObject json = JsonParser.parseString(string).getAsJsonObject();
             JsonObject categories = json.get("achievements").getAsJsonObject();
 
-            //probably a better way of doing this, JsonObject doesn't work with for loops so this is the next best rn - Callum
-            //These are split just to make the json look nice
-            for (JsonElement e : categories.get("general").getAsJsonArray()) {
-                JsonObject j = e.getAsJsonObject();
-                templates.add(new AchieveTemplate(j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.general, j));
-            }
-            for (JsonElement e : categories.get("litestrike").getAsJsonArray()) {
-                JsonObject j = e.getAsJsonObject();
-                templates.add(new AchieveTemplate(j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.ls, j));
-            }
-            for (JsonElement e : categories.get("knockoff").getAsJsonArray()) {
-                JsonObject j = e.getAsJsonObject();
-                templates.add(new AchieveTemplate(j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.ko, j));
-            }
-            for (JsonElement e : categories.get("crystalblitz").getAsJsonArray()) {
-                JsonObject j = e.getAsJsonObject();
-                templates.add(new AchieveTemplate(j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.cb, j));
+            for (AchievementCategories cat : AchievementCategories.values()) {
+                for (JsonElement e : categories.get(cat.jsonname).getAsJsonArray()) {
+                    JsonObject j = e.getAsJsonObject();
+                    templates.add(new AchieveTemplate(j.get("name").getAsString(), j.get("difficulty").getAsString(), cat, j));
+                }
             }
 
             Lobby_plugin.getInstance().getLogger().log(Level.INFO, "Loaded " + templates.size() + " achievements from json.");
@@ -382,10 +369,10 @@ public class Achievement extends Quest{
         //TODO this works, but deactivateIconsBlink doesn't work when claiming, disabling for now to stop confusion - Callum
         /*if (ach.done && !ach.claimed) {
             switch (ach.temp.category) {
-                case general -> {App.AchieveGeneralCategory.activateApps(p);}
-                case ls -> {App.AchieveLsCategory.activateApps(p);}
-                case ko -> {App.AchieveKoCategory.activateApps(p);}
-                case cb -> {App.AchieveCbCategory.activateApps(p);}
+                case GENERAL -> {App.AchieveGeneralCategory.activateApps(p);}
+                case LS -> {App.AchieveLsCategory.activateApps(p);}
+                case KO -> {App.AchieveKoCategory.activateApps(p);}
+                case CB -> {App.AchieveCbCategory.activateApps(p);}
             }
             App.Achieve.activateApps(p);
         }*/
@@ -394,10 +381,10 @@ public class Achievement extends Quest{
     private static void deactivateIconsBlink(OfflinePlayer p, Achievement ach) {
         /*if (ach.done && !ach.claimed) {
             switch (ach.temp.category) {
-                case general -> {App.AchieveGeneralCategory.deactivateApps(p);}
-                case ls -> {App.AchieveLsCategory.deactivateApps(p);}
-                case ko -> {App.AchieveKoCategory.deactivateApps(p);}
-                case cb -> {App.AchieveCbCategory.deactivateApps(p);}
+                case GENERAL -> {App.AchieveGeneralCategory.deactivateApps(p);}
+                case LS -> {App.AchieveLsCategory.deactivateApps(p);}
+                case KO -> {App.AchieveKoCategory.deactivateApps(p);}
+                case CB -> {App.AchieveCbCategory.deactivateApps(p);}
             }
             App.Achieve.deactivateApps(p);
         }*/
@@ -431,7 +418,7 @@ public class Achievement extends Quest{
         }
     }
 
-    public static void setAchievements(Inventory inv, OfflinePlayer p, achievementCategories category){
+    public static void setAchievements(Inventory inv, OfflinePlayer p, AchievementCategories category){
         int[] border = {7, 16, 25, 34, 43, 52};
         int[] nextLine = {2, 11, 20, 29, 38, 47};
         int slot = 29;
@@ -471,10 +458,10 @@ class AchieveTemplate{
     final int reward_xp;
     final Component name;
     final Component description;
-    final Achievement.achievementCategories category;
+    final Achievement.AchievementCategories category;
     final Quest.Difficulty difficulty;
 
-    public AchieveTemplate(String name, String difficulty, Achievement.achievementCategories category, JsonObject json) {
+    public AchieveTemplate(String name, String difficulty, Achievement.AchievementCategories category, JsonObject json) {
         this.internalName = name;
         this.difficulty = Quest.Difficulty.valueOf(difficulty);
         if (json.has("replaceStages")) {
