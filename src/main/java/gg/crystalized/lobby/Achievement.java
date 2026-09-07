@@ -32,7 +32,7 @@ public class Achievement extends Quest{
     AchieveTemplate temp;
 
     public Achievement(OfflinePlayer player, AchieveTemplate temp, int progress, int stage, boolean done, boolean claimed){
-        //super(player, temp.id + temp.stages + stage, done, claimed); //causes an exception
+        //super(player, temp.internalName + temp.stages + stage, done, claimed); //causes an exception
         super(player, "-1" , done, claimed);
         this.stage = stage;
         this.temp = temp;
@@ -65,19 +65,19 @@ public class Achievement extends Quest{
             //These are split just to make the json look nice
             for (JsonElement e : categories.get("general").getAsJsonArray()) {
                 JsonObject j = e.getAsJsonObject();
-                templates.add(new AchieveTemplate(j.get("databaseid").getAsString(), j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.general, j));
+                templates.add(new AchieveTemplate(j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.general, j));
             }
             for (JsonElement e : categories.get("litestrike").getAsJsonArray()) {
                 JsonObject j = e.getAsJsonObject();
-                templates.add(new AchieveTemplate(j.get("databaseid").getAsString(), j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.ls, j));
+                templates.add(new AchieveTemplate(j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.ls, j));
             }
             for (JsonElement e : categories.get("knockoff").getAsJsonArray()) {
                 JsonObject j = e.getAsJsonObject();
-                templates.add(new AchieveTemplate(j.get("databaseid").getAsString(), j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.ko, j));
+                templates.add(new AchieveTemplate(j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.ko, j));
             }
             for (JsonElement e : categories.get("crystalblitz").getAsJsonArray()) {
                 JsonObject j = e.getAsJsonObject();
-                templates.add(new AchieveTemplate(j.get("databaseid").getAsString(), j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.cb, j));
+                templates.add(new AchieveTemplate(j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.cb, j));
             }
 
             Lobby_plugin.getInstance().getLogger().log(Level.INFO, "Loaded " + templates.size() + " achievements from json.");
@@ -130,8 +130,8 @@ public class Achievement extends Quest{
 
         for(AchieveTemplate t : templates){
             for(Achievement ach : achieve){
-                String id = ach.temp.id;
-                if(id.equals(t.id)){
+                String id = ach.temp.internalName;
+                if(id.equals(t.internalName)){
                     a.remove(t);
                 }
             }
@@ -170,7 +170,7 @@ public class Achievement extends Quest{
                     prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
                     ResultSet set = prep.executeQuery();
                     while (set.next()) {
-                        if (set.getString("id").equals(a.temp.id)) {
+                        if (set.getString("internal_name").equals(a.temp.internalName)) {
                             int done = set.getInt("done");
                             a.done = done == 1;
 
@@ -267,7 +267,7 @@ public class Achievement extends Quest{
             Lobby_plugin.getInstance().getLogger().warning("Could not show achievement toast for " + player.getName() + ", player is offline");
             return;
         }
-        NamespacedKey tempkey = new NamespacedKey("crystalized", "preperaingachievement_" + p.getUniqueId().toString().toLowerCase() + "_" + temp.id + "_" + stage);
+        NamespacedKey tempkey = new NamespacedKey("crystalized", "preperaingachievement_" + p.getUniqueId().toString().toLowerCase() + "_" + temp.internalName + "_" + stage);
         if (Bukkit.getServer().getAdvancement(tempkey) != null) {return;}
 
         //send chat message
@@ -328,10 +328,10 @@ public class Achievement extends Quest{
 
         //save to database
         try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
-            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET progress = ? WHERE player_uuid = ? AND id = ?;");
+            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET progress = ? WHERE player_uuid = ? AND internal_name = ?;");
             prep.setInt(1, progress);
             prep.setBytes(2, LobbyDatabase.uuid_to_bytes(player));
-            prep.setString(3, temp.id);
+            prep.setString(3, temp.internalName);
             prep.executeUpdate();
             //Bukkit.getServer().sendRichMessage("Saved Achievement progress for " + temp.internalName + " | " + percentage);
         } catch (SQLException ex) {
@@ -353,7 +353,7 @@ public class Achievement extends Quest{
             prep.setBytes(1, LobbyDatabase.uuid_to_bytes(player));
             ResultSet set = prep.executeQuery();
             while (set.next()) {
-                if (set.getString("id").equals(temp.id)) {
+                if (set.getString("internal_name").equals(temp.internalName)) {
                     progress = set.getInt("progress");
                     break;
                 }
@@ -466,7 +466,6 @@ public class Achievement extends Quest{
 class AchieveTemplate{
 
     final String internalName;
-    final String id;
     final int stages;
     final int reward_money;
     final int reward_xp;
@@ -475,9 +474,8 @@ class AchieveTemplate{
     final Achievement.achievementCategories category;
     final Quest.Difficulty difficulty;
 
-    public AchieveTemplate(String id, String name, String difficulty, Achievement.achievementCategories category, JsonObject json) {
+    public AchieveTemplate(String name, String difficulty, Achievement.achievementCategories category, JsonObject json) {
         this.internalName = name;
-        this.id = id;
         this.difficulty = Quest.Difficulty.valueOf(difficulty);
         if (json.has("replaceStages")) {
             this.stages = json.get("replaceStages").getAsJsonArray().size();
@@ -501,9 +499,9 @@ class AchieveTemplate{
         this.category = category;
     }
 
-    public static AchieveTemplate getAchieveTemplate(String id){
+    public static AchieveTemplate getAchieveTemplate(String internalName){
         for(AchieveTemplate t : Achievement.templates){
-            if(t.id.equals(id.trim())){
+            if(t.internalName.equals(internalName.trim())){
                 return t;
             }
         }

@@ -3,31 +3,31 @@
 
 	"achievements": {
 		"general": [
-			{"name": "general_chesswin", "difficulty": "EASY", "databaseid": 10}
+			{"name": "general_chesswin", "difficulty": "EASY"}
 		],
 		"litestrike": [
-			{"name": "ls_win", "difficulty": "EASY", "databaseid": 20},
-			{"name": "ls_lastalive", "difficulty": "MEDIUM", "databaseid": 21},
-			{"name": "ls_ace", "difficulty": "HARD", "databaseid": 22},
-			{"name": "ls_quickdefuser", "difficulty": "HARD", "databaseid": 23},
-			{"name": "ls_ricochet", "difficulty": "EXPERT", "databaseid": 24},
-			{"name": "ls_onlyweapons", "difficulty": "EXPERT", "databaseid": 25, "replaceStages":[1], "replaceRewardMoney":200, "replaceRewardXP":200}
+			{"name": "ls_win", "difficulty": "EASY"},
+			{"name": "ls_lastalive", "difficulty": "MEDIUM"},
+			{"name": "ls_ace", "difficulty": "HARD"},
+			{"name": "ls_quickdefuser", "difficulty": "HARD"},
+			{"name": "ls_ricochet", "difficulty": "EXPERT"},
+			{"name": "ls_onlyweapons", "difficulty": "EXPERT", "replaceStages":[1], "replaceRewardMoney":200, "replaceRewardXP":200}
 		],
 		"knockoff": [
-			{"name": "ko_win", "difficulty": "MEDIUM", "databaseid": 30},
-			{"name": "ko_glovekill", "difficulty": "EASY", "databaseid": 31},
-			{"name": "ko_unlocker", "difficulty": "EASY", "databaseid": 32},
-			{"name": "ko_deflector", "difficulty": "MEDIUM", "databaseid": 33},
-			{"name": "ko_grapplekill", "difficulty": "MEDIUM", "databaseid": 34},
-			{"name": "ko_flawlesswin", "difficulty": "HARD", "databaseid": 35}
+			{"name": "ko_win", "difficulty": "MEDIUM"},
+			{"name": "ko_glovekill", "difficulty": "EASY"},
+			{"name": "ko_unlocker", "difficulty": "EASY"},
+			{"name": "ko_deflector", "difficulty": "MEDIUM"},
+			{"name": "ko_grapplekill", "difficulty": "MEDIUM"},
+			{"name": "ko_flawlesswin", "difficulty": "HARD"}
 		],
 		"crystalblitz": [
-			{"name": "cb_win", "difficulty": "MEDIUM", "databaseid": 40},
-			{"name": "cb_nexusshards", "difficulty": "EASY", "databaseid": 41},
-			{"name": "cb_clutch", "difficulty": "MEDIUM", "databaseid": 42},
-			{"name": "cb_puritarian", "difficulty": "MEDIUM", "databaseid": 43},
-			{"name": "cb_nexuscollecter", "difficulty": "HARD", "databaseid": 44},
-			{"name": "cb_elimeveryone", "difficulty": "EXPERT", "databaseid": 45}
+			{"name": "cb_win", "difficulty": "MEDIUM"},
+			{"name": "cb_nexusshards", "difficulty": "EASY"},
+			{"name": "cb_clutch", "difficulty": "MEDIUM"},
+			{"name": "cb_puritarian", "difficulty": "MEDIUM"},
+			{"name": "cb_nexuscollecter", "difficulty": "HARD"},
+			{"name": "cb_elimeveryone", "difficulty": "EXPERT"}
 		]
 	}
 }

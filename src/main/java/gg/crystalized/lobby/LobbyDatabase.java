@@ -63,7 +63,7 @@ public class LobbyDatabase {
             +");";
     String createAchieveTable = "CREATE TABLE IF NOT EXISTS Achievements ("
             + "player_uuid        BLOB,"
-            + "id        TEXT,"
+            + "internal_name        TEXT,"
             + "progress INTEGER,"
             + "stage      INTEGER,"
             + "done     INTEGER,"
@@ -819,9 +819,9 @@ public class LobbyDatabase {
             sqlprop.put("transaction_mode", "IMMEDIATE");
             Connection conn = DriverManager.getConnection(URL, sqlprop);
             conn.setAutoCommit(false);
-            PreparedStatement prep = conn.prepareStatement("INSERT INTO Achievements(player_uuid, id, progress, stage, done, claimed) VALUES (?, ?, ?, 0, 0, 0);");
+            PreparedStatement prep = conn.prepareStatement("INSERT INTO Achievements(player_uuid, internal_name, progress, stage, done, claimed) VALUES (?, ?, ?, 0, 0, 0);");
             prep.setBytes(1, uuid_to_bytes(p));
-            prep.setString(2, a.temp.id);
+            prep.setString(2, a.temp.internalName);
             prep.setInt(3, a.progress);
             prep.executeUpdate();
             conn.commit();
@@ -838,9 +838,9 @@ public class LobbyDatabase {
             sqlprop.put("transaction_mode", "IMMEDIATE");
             Connection conn = DriverManager.getConnection(URL, sqlprop);
             conn.setAutoCommit(false);
-            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET stage = stage +1 WHERE player_uuid = ? AND id = ?;");
+            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET stage = stage +1 WHERE player_uuid = ? AND internal_name = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
-            prep.setString(2, a.temp.id);
+            prep.setString(2, a.temp.internalName);
             prep.executeUpdate();
             conn.commit();
             conn.close();
@@ -857,7 +857,7 @@ public class LobbyDatabase {
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
             while(set.next()){
-                Achievement a = new Achievement(p, AchieveTemplate.getAchieveTemplate(set.getString("id")), set.getInt("stage"), set.getInt("progress"), set.getInt("done") == 1, set.getInt("claimed") == 1);
+                Achievement a = new Achievement(p, AchieveTemplate.getAchieveTemplate(set.getString("internal_name")), set.getInt("stage"), set.getInt("progress"), set.getInt("done") == 1, set.getInt("claimed") == 1);
                 list.add(a);
             }
             return list;
@@ -874,10 +874,10 @@ public class LobbyDatabase {
             sqlprop.put("transaction_mode", "IMMEDIATE");
             Connection conn = DriverManager.getConnection(URL, sqlprop);
             conn.setAutoCommit(false);
-            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET done = ? WHERE player_uuid = ? AND id = ?;");
+            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET done = ? WHERE player_uuid = ? AND internal_name = ?;");
             prep.setInt(1, a.done ? 1 : 0);
             prep.setBytes(2, uuid_to_bytes(p));
-            prep.setString(3, a.temp.id);
+            prep.setString(3, a.temp.internalName);
             prep.executeUpdate();
             conn.commit();
             conn.close();
@@ -893,10 +893,10 @@ public class LobbyDatabase {
             sqlprop.put("transaction_mode", "IMMEDIATE");
             Connection conn = DriverManager.getConnection(URL, sqlprop);
             conn.setAutoCommit(false);
-            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET claimed = ? WHERE player_uuid = ? AND id = ?;");
+            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET claimed = ? WHERE player_uuid = ? AND internal_name = ?;");
             prep.setInt(1, a.claimed ? 1 : 0);
             prep.setBytes(2, uuid_to_bytes(p));
-            prep.setString(3, a.temp.id);
+            prep.setString(3, a.temp.internalName);
             prep.executeUpdate();
             conn.commit();
             conn.close();
