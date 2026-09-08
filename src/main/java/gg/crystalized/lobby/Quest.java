@@ -169,11 +169,6 @@ public class Quest {
         App.Quest.deactivateApps(player);
     }
 
-    void complete(){
-        LobbyDatabase.questCompleted(player, questNumber);
-        done = true;
-    }
-
     public ItemStack build(){
         if(claimed){
             return null;
@@ -251,7 +246,8 @@ public class Quest {
             if(q.done) continue;
             int progress = q.getProgress();
             if(progress >= q.amount){
-                q.complete();
+        				LobbyDatabase.questCompleted(q.player, q.questNumber);
+        				q.done = true;
                 App.Quest.activateApps(p);
             }
         }

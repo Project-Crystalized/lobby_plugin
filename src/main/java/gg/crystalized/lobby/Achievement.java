@@ -24,21 +24,27 @@ import java.util.logging.Level;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
-public class Achievement extends Quest{
+public class Achievement{
     static ArrayList<AchieveTemplate> templates = new ArrayList<>();
     static ArrayList<Achievement> achievements = new ArrayList<>();
+    OfflinePlayer player;
+    boolean done;
+    boolean claimed;
+    int amount;
+    Quest.Difficulty difficulty;
     int stage; //subtracted by 1, stage 1 is 0, stage 2 is 1, so on.
     int progress; //percentage
     AchieveTemplate temp;
 
     public Achievement(OfflinePlayer player, AchieveTemplate temp, int progress, int stage, boolean done, boolean claimed){
-        //super(player, temp.internalName + temp.stages + stage, done, claimed); //causes an exception
-        super(player, "-1" , done, claimed);
+        this.player = player;
         this.stage = stage;
         this.temp = temp;
-        this.amount = 100; //max percentage
-        this.difficulty = temp.difficulty; //dumb
         this.progress = progress;
+        this.done = done;
+        this.claimed = claimed;
+        this.amount = 100; //max percentage
+        this.difficulty = temp.difficulty;
     }
 
     public enum AchievementCategories{
@@ -175,7 +181,6 @@ public class Achievement extends Quest{
         }
     }
 
-    @Override
     public ItemStack build(){
         boolean showIcon = stage > 0 && !claimed;
         ItemStack item = new ItemStack(Material.COAL);
@@ -212,8 +217,6 @@ public class Achievement extends Quest{
         return item;
     }
 
-    //no access modifier to prevent other plugins calling this directly - Callum
-    @Override
     void claim(){
         LevelManager.giveExperience(player.getPlayer(), getXp());
         LevelManager.giveMoney(player.getPlayer(), getMoney());
@@ -221,6 +224,7 @@ public class Achievement extends Quest{
             stage++;
             LobbyDatabase.progressStage(player, this);
             done = false;
+            LobbyDatabase.setAchievementDone(player, this);
             //TODO placeholder sound
             player.getPlayer().playSound(player.getPlayer(), "minecraft:entity.experience_orb.pickup", 1, 1);
             amount = 100; //dumb shit
@@ -233,19 +237,10 @@ public class Achievement extends Quest{
         }
         App.Achieve.deactivateApps(player);
         deactivateIconsBlink(player, this);
-        LobbyDatabase.setAchievementDone(player, this);
         LobbyDatabase.setAchievementClaimed(player, this);
         for(Achievement a : getAchievements(player)){
             if(a.done && !a.claimed) return;
         }
-    }
-
-    //no access modifier to prevent other plugins calling this directly - Callum
-    @Override
-    void complete(){
-        done = true;
-        if(!LobbyDatabase.tryComplete(player, this)) return;
-        showNotif();
     }
 
     private void showNotif() {
@@ -265,7 +260,7 @@ public class Achievement extends Quest{
         )).color(GOLD));
 
         //sound
-        if (difficulty.equals(Difficulty.EXPERT)) {
+        if (difficulty.equals(Quest.Difficulty.EXPERT)) {
             p.playSound(p, "crystalized:effect.achievement_obtain_expert", 0.25F, 1);
         } else {
             p.playSound(p, "crystalized:effect.achievement_obtain", 1, 1);
@@ -334,7 +329,6 @@ public class Achievement extends Quest{
         setProgress(getProgress() + percentageToAdd);
     }
 
-    @Override
     public int getProgress(){
         try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Achievements WHERE player_uuid = ?;");
@@ -363,8 +357,11 @@ public class Achievement extends Quest{
             int progress = ach.getProgress();
             //int progress = ach.progress;
             if(progress >= ach.amount){
-                ach.complete();
-                makeIconsBlink(p, ach);
+        				ach.done = true;
+        				if(LobbyDatabase.tryComplete(ach.player, ach)) {
+        					ach.showNotif();
+                	makeIconsBlink(p, ach);
+								};
             }
         }
     }
