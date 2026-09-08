@@ -222,9 +222,9 @@ public class Achievement{
         LevelManager.giveMoney(player.getPlayer(), getMoney());
         if (stage != temp.stages - 1) {
             stage++;
-            LobbyDatabase.progressStage(player, this);
+            LobbyDatabase.progressStage(this);
             done = false;
-            LobbyDatabase.setAchievementDone(player, this);
+            LobbyDatabase.setAchievementDone(this);
             //TODO placeholder sound
             player.getPlayer().playSound(player.getPlayer(), "minecraft:entity.experience_orb.pickup", 1, 1);
             amount = 100; //dumb shit
@@ -237,7 +237,7 @@ public class Achievement{
         }
         App.Achieve.deactivateApps(player);
         deactivateIconsBlink(player, this);
-        LobbyDatabase.setAchievementClaimed(player, this);
+        LobbyDatabase.setAchievementClaimed(this);
         for(Achievement a : getAchievements(player)){
             if(a.done && !a.claimed) return;
         }
@@ -358,7 +358,7 @@ public class Achievement{
             //int progress = ach.progress;
             if(progress >= ach.amount){
         				ach.done = true;
-        				if(LobbyDatabase.tryComplete(ach.player, ach)) {
+        				if(LobbyDatabase.tryComplete(ach)) {
         					ach.showNotif();
                 	makeIconsBlink(p, ach);
 								};

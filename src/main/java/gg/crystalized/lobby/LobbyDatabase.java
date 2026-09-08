@@ -836,14 +836,14 @@ public class LobbyDatabase {
         }
     }
 
-    public static void progressStage(OfflinePlayer p, Achievement a){
+    public static void progressStage(Achievement a){
         try{
             Properties sqlprop = new Properties();
             sqlprop.put("transaction_mode", "IMMEDIATE");
             Connection conn = DriverManager.getConnection(URL, sqlprop);
             conn.setAutoCommit(false);
             PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET stage = stage +1 WHERE player_uuid = ? AND internal_name = ?;");
-            prep.setBytes(1, uuid_to_bytes(p));
+            prep.setBytes(1, uuid_to_bytes(a.player));
             prep.setString(2, a.temp.internalName);
             prep.executeUpdate();
             conn.commit();
@@ -872,7 +872,7 @@ public class LobbyDatabase {
         }
     }
 
-    public static void setAchievementDone(OfflinePlayer p, Achievement a){
+    public static void setAchievementDone(Achievement a){
         try{
             Properties sqlprop = new Properties();
             sqlprop.put("transaction_mode", "IMMEDIATE");
@@ -880,7 +880,7 @@ public class LobbyDatabase {
             conn.setAutoCommit(false);
             PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET done = ? WHERE player_uuid = ? AND internal_name = ?;");
             prep.setInt(1, a.done ? 1 : 0);
-            prep.setBytes(2, uuid_to_bytes(p));
+            prep.setBytes(2, uuid_to_bytes(a.player));
             prep.setString(3, a.temp.internalName);
             prep.executeUpdate();
             conn.commit();
@@ -891,10 +891,10 @@ public class LobbyDatabase {
         }
     }
 
-    public static boolean tryComplete(OfflinePlayer p, Achievement a){
+    public static boolean tryComplete(Achievement a){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET done = 1 WHERE player_uuid = ? AND internal_name = ? AND done = 0;");
-            prep.setBytes(1, uuid_to_bytes(p));
+            prep.setBytes(1, uuid_to_bytes(a.player));
             prep.setString(2, a.temp.internalName);
             return prep.executeUpdate() > 0;
         }catch(SQLException e){
@@ -904,7 +904,7 @@ public class LobbyDatabase {
         }
     }
 
-    public static void setAchievementClaimed(OfflinePlayer p, Achievement a){
+    public static void setAchievementClaimed(Achievement a){
         try{
             Properties sqlprop = new Properties();
             sqlprop.put("transaction_mode", "IMMEDIATE");
@@ -912,7 +912,7 @@ public class LobbyDatabase {
             conn.setAutoCommit(false);
             PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET claimed = ? WHERE player_uuid = ? AND internal_name = ?;");
             prep.setInt(1, a.claimed ? 1 : 0);
-            prep.setBytes(2, uuid_to_bytes(p));
+            prep.setBytes(2, uuid_to_bytes(a.player));
             prep.setString(3, a.temp.internalName);
             prep.executeUpdate();
             conn.commit();
