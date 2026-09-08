@@ -12,10 +12,10 @@
 
   "HANDBAG": {"id": 5, "model": "cosmetic/handheld/handbag", "level": null, "price": 200, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/handbag"},
   "US_FLAG": {"id": 23, "model": "cosmetic/handheld/merica_flag", "level": null, "price": 300, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/merica_flag"},
-  "GOLF_CLUB": {"id": 18, "model": "cosmetic/head/golf_club", "level": null, "price": 200, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/golf_club"},
-  "LAPTOP": {"id": 19, "model": "cosmetic/head/laptop", "level": null, "price": 150, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/laptop"},
-  "PRIDE_FLAG": {"id": 20, "model": "cosmetic/head/pride_flag", "level": null, "price": 500, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/pride_flag"},
-  "STAR_BUBBLE_WAND": {"id": 21, "model": "cosmetic/head/star_bubble_wand", "level": null, "price": 400, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/star_bubble_wand"},
+  "GOLF_CLUB": {"id": 18, "model": "cosmetic/handheld/golf_club", "level": null, "price": 200, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/golf_club"},
+  "LAPTOP": {"id": 19, "model": "cosmetic/handheld/laptop", "level": null, "price": 150, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/laptop"},
+  "PRIDE_FLAG": {"id": 20, "model": "cosmetic/handheld/pride_flag", "level": null, "price": 500, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/pride_flag"},
+  "STAR_BUBBLE_WAND": {"id": 21, "model": "cosmetic/handheld/star_bubble_wand", "level": null, "price": 400, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/star_bubble_wand"},
 
   "BLUE_SHARDCORE": {"id": 6, "model": "shardcorenexus3/blue", "level": null, "price": 500, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/blue"},
   "GRAY_SHARDCORE": {"id": 7, "model": "shardcorenexus3/gray", "level": null, "price": 500, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/gray"},
