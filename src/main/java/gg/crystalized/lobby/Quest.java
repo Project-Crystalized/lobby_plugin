@@ -15,15 +15,18 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 import static gg.crystalized.lobby.LobbyDatabase.uuid_to_bytes;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 public class Quest {
-    static ArrayList<Quest> allQuests = new ArrayList<>();
+    static Map<UUID, List<Quest>> allQuests = new HashMap<>();
     String questNumber;
     OfflinePlayer player;
     Game game;
@@ -85,7 +88,7 @@ public class Quest {
     }
 
     public static Quest[] rollQuests(Player p){
-        removeQuests(p);
+        allQuests.remove(p.getUniqueId());
         Quest[] quests = new Quest[7];
         ArrayList<Category> alreadyRolled = new ArrayList<>();
         for(int i = 0; i < quests.length -1; i++) {
@@ -111,7 +114,7 @@ public class Quest {
             quests[i] = quest;
         }
         quests[6] = new Quest(p, null, false, null, 6);
-        allQuests.addAll(Arrays.asList(quests));
+        allQuests.put(p.getUniqueId(), new ArrayList<>(Arrays.asList(quests)));
         return quests;
     }
 
@@ -131,29 +134,15 @@ public class Quest {
         }
 
         Quest quest = new Quest(player, game, forSeveral, category, amount);
-        allQuests.remove(this);
-        allQuests.add(quest);
+        allQuests.get(player.getUniqueId()).remove(this);
+        allQuests.get(player.getUniqueId()).add(quest);
         LobbyDatabase.replaceQuest(player, this, quest);
         LobbyDatabase.rerollReduce(player); 
     }
 
-    public static void removeQuests(Player p){
-        for(int i = 0; i < allQuests.size(); i++){
-            if(allQuests.get(i).player.equals(p)){
-                allQuests.remove(i);
-                i--;
-            }
-        }
-    }
-
     public static ArrayList<Quest> getQuests(OfflinePlayer p){
-        ArrayList<Quest> quests = new ArrayList<>();
-        for(Quest q : allQuests){
-            if(q.player.equals(p)){
-                quests.add(q);
-            }
-        }
-        return quests;
+        List<Quest> quests = allQuests.get(p.getUniqueId());
+        return quests == null ? new ArrayList<>() : new ArrayList<>(quests);
     }
 
     void claim(){
@@ -167,11 +156,6 @@ public class Quest {
         }
 
         App.Quest.deactivateApps(player);
-    }
-
-    void complete(){
-        LobbyDatabase.questCompleted(player, questNumber);
-        done = true;
     }
 
     public ItemStack build(){
@@ -251,7 +235,8 @@ public class Quest {
             if(q.done) continue;
             int progress = q.getProgress();
             if(progress >= q.amount){
-                q.complete();
+        				LobbyDatabase.questCompleted(q.player, q.questNumber);
+        				q.done = true;
                 App.Quest.activateApps(p);
             }
         }

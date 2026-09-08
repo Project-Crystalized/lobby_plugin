@@ -24,21 +24,27 @@ import java.util.logging.Level;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
-public class Achievement extends Quest{
+public class Achievement{
     static ArrayList<AchieveTemplate> templates = new ArrayList<>();
-    static ArrayList<Achievement> achievements = new ArrayList<>();
+    static Map<UUID, List<Achievement>> achievements = new HashMap<>();
+    OfflinePlayer player;
+    boolean done;
+    boolean claimed;
+    int amount;
+    Quest.Difficulty difficulty;
     int stage; //subtracted by 1, stage 1 is 0, stage 2 is 1, so on.
     int progress; //percentage
     AchieveTemplate temp;
 
     public Achievement(OfflinePlayer player, AchieveTemplate temp, int progress, int stage, boolean done, boolean claimed){
-        //super(player, temp.internalName + temp.stages + stage, done, claimed); //causes an exception
-        super(player, "-1" , done, claimed);
+        this.player = player;
         this.stage = stage;
         this.temp = temp;
-        this.amount = 100; //max percentage
-        this.difficulty = temp.difficulty; //dumb
         this.progress = progress;
+        this.done = done;
+        this.claimed = claimed;
+        this.amount = 100; //max percentage
+        this.difficulty = temp.difficulty;
     }
 
     public enum AchievementCategories{
@@ -83,14 +89,8 @@ public class Achievement extends Quest{
     //can confuse devs for other plugins, making this a private method
     private static ArrayList<Achievement> getAchievements(OfflinePlayer p){
         getFromDatabase(p);
-        ArrayList<Achievement> achieve = new ArrayList<>();
-        for(Achievement a : achievements){
-            if (a.player.equals(p)) {
-                achieve.add(a);
-            }
-        }
-
-        return achieve;
+        List<Achievement> achieve = achievements.get(p.getUniqueId());
+        return achieve == null ? new ArrayList<>() : new ArrayList<>(achieve);
     }
 
     //for plugins to use
@@ -104,14 +104,14 @@ public class Achievement extends Quest{
     }
 
     public static void getFromDatabase(OfflinePlayer p){
-        if(dontGetAchieve(p)) return;
+        if(achievements.containsKey(p.getUniqueId())) return;
         ArrayList<Achievement> achieve = LobbyDatabase.getAchievements(p);
         ArrayList<AchieveTemplate> a = (ArrayList<AchieveTemplate>) templates.clone();
         if(achieve == null){
             return;
         }
         if(achieve.size() == templates.size()){
-            achievements.addAll(achieve);
+            achievements.put(p.getUniqueId(), achieve);
             return;
         }
 
@@ -127,16 +127,7 @@ public class Achievement extends Quest{
         for(AchieveTemplate t : a){
             LobbyDatabase.addAchievement(p, new Achievement(p, t, 0, 1, false, false));
         }
-        achievements.addAll(LobbyDatabase.getAchievements(p));
-    }
-
-    public static boolean dontGetAchieve(OfflinePlayer p){
-        for(Achievement a : achievements){
-            if(a.player.getUniqueId().equals(p.getUniqueId())){
-                return true;
-            }
-        }
-        return false;
+        achievements.put(p.getUniqueId(), LobbyDatabase.getAchievements(p));
     }
 
     public static Achievement identifyAchievement(Player p, ItemStack i){
@@ -150,32 +141,31 @@ public class Achievement extends Quest{
     }
 
     public static void resyncInfo(OfflinePlayer p) {
-        for (Achievement a : achievements) {
-            if (a.player.equals(p)) {
-                try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
-                    PreparedStatement prep = conn.prepareStatement("SELECT * FROM Achievements WHERE player_uuid = ?;");
-                    prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
-                    ResultSet set = prep.executeQuery();
-                    while (set.next()) {
-                        if (set.getString("internal_name").equals(a.temp.internalName)) {
-                            int done = set.getInt("done");
-                            a.done = done == 1;
+        List<Achievement> list = achievements.get(p.getUniqueId());
+        if (list == null) return;
+        for (Achievement a : list) {
+            try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
+                PreparedStatement prep = conn.prepareStatement("SELECT * FROM Achievements WHERE player_uuid = ?;");
+                prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
+                ResultSet set = prep.executeQuery();
+                while (set.next()) {
+                    if (set.getString("internal_name").equals(a.temp.internalName)) {
+                        int done = set.getInt("done");
+                        a.done = done == 1;
 
-                            int claimed = set.getInt("claimed");
-                            a.claimed = claimed == 1;
+                        int claimed = set.getInt("claimed");
+                        a.claimed = claimed == 1;
 
-                            a.stage = set.getInt("stage");
-                            makeIconsBlink(p, a);
-                        }
+                        a.stage = set.getInt("stage");
+                        makeIconsBlink(p, a);
                     }
-                } catch (SQLException ex) {
-                    Lobby_plugin.getInstance().getLogger().warning(ex.toString());
                 }
+            } catch (SQLException ex) {
+                Lobby_plugin.getInstance().getLogger().warning(ex.toString());
             }
         }
     }
 
-    @Override
     public ItemStack build(){
         boolean showIcon = stage > 0 && !claimed;
         ItemStack item = new ItemStack(Material.COAL);
@@ -212,15 +202,14 @@ public class Achievement extends Quest{
         return item;
     }
 
-    //no access modifier to prevent other plugins calling this directly - Callum
-    @Override
     void claim(){
         LevelManager.giveExperience(player.getPlayer(), getXp());
         LevelManager.giveMoney(player.getPlayer(), getMoney());
         if (stage != temp.stages - 1) {
             stage++;
-            LobbyDatabase.progressStage(player, this);
+            LobbyDatabase.progressStage(this);
             done = false;
+            LobbyDatabase.setAchievementDone(this);
             //TODO placeholder sound
             player.getPlayer().playSound(player.getPlayer(), "minecraft:entity.experience_orb.pickup", 1, 1);
             amount = 100; //dumb shit
@@ -233,19 +222,10 @@ public class Achievement extends Quest{
         }
         App.Achieve.deactivateApps(player);
         deactivateIconsBlink(player, this);
-        LobbyDatabase.setAchievementDone(player, this);
-        LobbyDatabase.setAchievementClaimed(player, this);
+        LobbyDatabase.setAchievementClaimed(this);
         for(Achievement a : getAchievements(player)){
             if(a.done && !a.claimed) return;
         }
-    }
-
-    //no access modifier to prevent other plugins calling this directly - Callum
-    @Override
-    void complete(){
-        done = true;
-        if(!LobbyDatabase.tryComplete(player, this)) return;
-        showNotif();
     }
 
     private void showNotif() {
@@ -265,7 +245,7 @@ public class Achievement extends Quest{
         )).color(GOLD));
 
         //sound
-        if (difficulty.equals(Difficulty.EXPERT)) {
+        if (difficulty.equals(Quest.Difficulty.EXPERT)) {
             p.playSound(p, "crystalized:effect.achievement_obtain_expert", 0.25F, 1);
         } else {
             p.playSound(p, "crystalized:effect.achievement_obtain", 1, 1);
@@ -334,7 +314,6 @@ public class Achievement extends Quest{
         setProgress(getProgress() + percentageToAdd);
     }
 
-    @Override
     public int getProgress(){
         try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Achievements WHERE player_uuid = ?;");
@@ -363,8 +342,11 @@ public class Achievement extends Quest{
             int progress = ach.getProgress();
             //int progress = ach.progress;
             if(progress >= ach.amount){
-                ach.complete();
-                makeIconsBlink(p, ach);
+        				ach.done = true;
+        				if(LobbyDatabase.tryComplete(ach)) {
+        					ach.showNotif();
+                	makeIconsBlink(p, ach);
+								};
             }
         }
     }

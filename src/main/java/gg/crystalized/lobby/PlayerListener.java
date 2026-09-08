@@ -120,7 +120,8 @@ public final class PlayerListener implements Listener {
 			view.endView();
 		}
 		Nametag.disconnect(e.getPlayer());
-		Quest.removeQuests(e.getPlayer());
+		Quest.allQuests.remove(e.getPlayer().getUniqueId());
+		Achievement.achievements.remove(e.getPlayer().getUniqueId());
 		WinLeaderboard.leaderboards.remove(e.getPlayer());
 		App.active.remove(e.getPlayer());
 		ScrollableView.removeView(e.getPlayer());
