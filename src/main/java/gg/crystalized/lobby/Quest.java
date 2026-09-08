@@ -88,7 +88,7 @@ public class Quest {
     }
 
     public static Quest[] rollQuests(Player p){
-        removeQuests(p);
+        allQuests.remove(p.getUniqueId());
         Quest[] quests = new Quest[7];
         ArrayList<Category> alreadyRolled = new ArrayList<>();
         for(int i = 0; i < quests.length -1; i++) {
@@ -138,10 +138,6 @@ public class Quest {
         allQuests.get(player.getUniqueId()).add(quest);
         LobbyDatabase.replaceQuest(player, this, quest);
         LobbyDatabase.rerollReduce(player); 
-    }
-
-    public static void removeQuests(Player p){
-        allQuests.remove(p.getUniqueId());
     }
 
     public static ArrayList<Quest> getQuests(OfflinePlayer p){

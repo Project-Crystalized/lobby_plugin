@@ -104,7 +104,7 @@ public class Achievement{
     }
 
     public static void getFromDatabase(OfflinePlayer p){
-        if(dontGetAchieve(p)) return;
+        if(achievements.containsKey(p.getUniqueId())) return;
         ArrayList<Achievement> achieve = LobbyDatabase.getAchievements(p);
         ArrayList<AchieveTemplate> a = (ArrayList<AchieveTemplate>) templates.clone();
         if(achieve == null){
@@ -128,14 +128,6 @@ public class Achievement{
             LobbyDatabase.addAchievement(p, new Achievement(p, t, 0, 1, false, false));
         }
         achievements.put(p.getUniqueId(), LobbyDatabase.getAchievements(p));
-    }
-
-    public static void removeAchievements(Player p){
-        achievements.remove(p.getUniqueId());
-    }
-
-    public static boolean dontGetAchieve(OfflinePlayer p){
-        return achievements.containsKey(p.getUniqueId());
     }
 
     public static Achievement identifyAchievement(Player p, ItemStack i){

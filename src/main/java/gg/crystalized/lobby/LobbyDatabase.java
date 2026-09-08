@@ -631,7 +631,7 @@ public class LobbyDatabase {
             sqlprop.put("transaction_mode", "IMMEDIATE");
             Connection conn = DriverManager.getConnection(URL, sqlprop);
             conn.setAutoCommit(false);
-            Quest.removeQuests(p);
+            Quest.allQuests.remove(p.getUniqueId());
             PreparedStatement prep = conn.prepareStatement("DELETE FROM Quests WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.executeUpdate();
@@ -679,7 +679,7 @@ public class LobbyDatabase {
     }
 
     public static void fetchQuests(Player p){
-        Quest.removeQuests(p);
+        Quest.allQuests.remove(p.getUniqueId());
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT * FROM Quests WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
