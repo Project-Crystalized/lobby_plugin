@@ -311,11 +311,12 @@ public class Achievement extends Quest{
 
     //for plugins to use
     public void setProgress(int percentage) {
+        if (done) return;
         progress = percentage;
 
         //save to database
         try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
-            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET progress = ? WHERE player_uuid = ? AND internal_name = ?;");
+            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET progress = ? WHERE player_uuid = ? AND internal_name = ? AND done = 0;");
             prep.setInt(1, progress);
             prep.setBytes(2, LobbyDatabase.uuid_to_bytes(player));
             prep.setString(3, temp.internalName);
