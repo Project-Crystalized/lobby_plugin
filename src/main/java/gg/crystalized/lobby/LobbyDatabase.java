@@ -861,7 +861,7 @@ public class LobbyDatabase {
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
             while(set.next()){
-                Achievement a = new Achievement(p, AchieveTemplate.getAchieveTemplate(set.getString("internal_name")), set.getInt("stage"), set.getInt("progress"), set.getInt("done") == 1, set.getInt("claimed") == 1);
+                Achievement a = new Achievement(p, AchieveTemplate.getAchieveTemplate(set.getString("internal_name")), set.getInt("progress"), set.getInt("stage"), set.getInt("done") == 1, set.getInt("claimed") == 1);
                 list.add(a);
             }
             return list;
@@ -920,6 +920,29 @@ public class LobbyDatabase {
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't set achievement done");
+        }
+    }
+
+    public static void syncAchievements(OfflinePlayer p, List<Achievement> list){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT internal_name, progress, done, claimed, stage FROM Achievements WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            ResultSet set = prep.executeQuery();
+            while(set.next()){
+                String internalName = set.getString("internal_name");
+                for(Achievement a : list){
+                    if(a.temp.internalName.equals(internalName)){
+                        a.progress = set.getInt("progress");
+                        a.done = set.getInt("done") == 1;
+                        a.claimed = set.getInt("claimed") == 1;
+                        a.stage = set.getInt("stage");
+                        break;
+                    }
+                }
+            }
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't sync achievements");
         }
     }
 

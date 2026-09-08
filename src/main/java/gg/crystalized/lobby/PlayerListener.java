@@ -49,8 +49,7 @@ public final class PlayerListener implements Listener {
 			Achievement.createNewAchievements(p);
 		}
 
-		if (!Lobby_plugin.getInstance().passive_mode) Achievement.getFromDatabase(p); //needs to run before resyncInfo
-		Achievement.resyncInfo(p);
+		if (!Lobby_plugin.getInstance().passive_mode) Achievement.getFromDatabase(p);
 
 		if(Lobby_plugin.getInstance().passive_mode){
 			return;
