@@ -16,7 +16,8 @@ public class ParkourDatabase {
                 + "player_uuid 			BLOB,"
                 + "best_time 			INTEGER,"
                 + "course 			STRING,"
-                + "date 			INTEGER);";
+                + "date 			INTEGER,"
+                + "UNIQUE(player_uuid, course));";
         try (Connection conn = DriverManager.getConnection(URL)) {
             Statement stmt = conn.createStatement();
             stmt.execute(createTable);
@@ -26,57 +27,20 @@ public class ParkourDatabase {
         }
     }
 
-    public static int getBestTime(OfflinePlayer p, String courseName){
-        try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("SELECT best_time FROM ParkourTimes WHERE player_uuid = ? AND course = ?;");
-            prep.setBytes(1, uuid_to_bytes(p));
-            prep.setString(2, courseName);
-            ResultSet set = prep.executeQuery();
-            if(!set.isBeforeFirst()) return 0;
-            set.next();
-            return set.getInt("best_time");
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
-        }
-        return 0;
-    }
-
-    public static void insert(OfflinePlayer p, String courseName, int best_time){
-        try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("INSERT INTO ParkourTimes(player_uuid, best_time, course, date) VALUES(?, ?, ?, unixepoch());");
-            prep.setBytes(1, uuid_to_bytes(p));
-            prep.setInt(2, best_time);
-            prep.setString(3, courseName);
-            prep.executeUpdate();
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't insert parkour data for " + p.getName() + "UUID: " + p.getUniqueId());
-        }
-    }
-
-    public static void update(OfflinePlayer p, String courseName, int best_time){
-        try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("UPDATE ParkourTimes SET best_time = ?, date = unixepoch() WHERE player_uuid = ? AND courseName = ?;");
-            prep.setInt(1, best_time);
-            prep.setBytes(2, uuid_to_bytes(p));
-            prep.setString(3, courseName);
-            prep.executeUpdate();
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't update parkour data for " + p.getName() + "UUID: " + p.getUniqueId());
-        }
-    }
-
     public static void saveRun(ParkourRun run){
         int timeInTenths = run.timer.tenth + (run.timer.seconds * 10) + (run.timer.minutes * 60 * 10) + (run.timer.hours * 60 * 60 * 10);
-        int best_time = getBestTime(run.p, run.course.name);
-        if(best_time == 0){
-            insert(run.p, run.course.name, timeInTenths);
-            return;
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("INSERT INTO ParkourTimes(player_uuid, best_time, course, date) VALUES(?, ?, ?, unixepoch()) "
+                    + "ON CONFLICT(player_uuid, course) DO UPDATE SET best_time = excluded.best_time, date = unixepoch() "
+                    + "WHERE excluded.best_time < ParkourTimes.best_time;");
+            prep.setBytes(1, uuid_to_bytes(run.p));
+            prep.setInt(2, timeInTenths);
+            prep.setString(3, run.course.name);
+            prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't save parkour data for " + run.p.getName() + "UUID: " + run.p.getUniqueId());
         }
-        if(best_time >= timeInTenths) return;
-        update(run.p, run.course.name, timeInTenths);
     }
 
     public static byte[] uuid_to_bytes(OfflinePlayer p) {

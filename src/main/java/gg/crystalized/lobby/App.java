@@ -48,10 +48,10 @@ public enum App {
               "\uA000\uA009"),
     Achieve("ui/scn3/achivements", useCases.Achievements, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.achivements.name").color(WHITE).decoration(ITALIC, false), 32,
             "\uA000\uA011"),
-    AchieveGeneralCategory("ui/scn3/achivements/category_general", useCases.AchievementsPage, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.achievement.category.general").decoration(ITALIC, false), 29, Achievement.achievementCategories.general),
-    AchieveLsCategory("ui/scn3/games/litestrike", useCases.AchievementsPage, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.achievement.category.ls").decoration(ITALIC, false), 30, Achievement.achievementCategories.ls),
-    AchieveKoCategory("ui/scn3/games/knockoff", useCases.AchievementsPage, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.achievement.category.ko").decoration(ITALIC, false), 31, Achievement.achievementCategories.ko),
-    AchieveCbCategory("ui/scn3/games/crystalblitz", useCases.AchievementsPage, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.achievement.category.cb").decoration(ITALIC, false), 32, Achievement.achievementCategories.cb),
+    AchieveGeneralCategory("ui/scn3/achivements/category_general", useCases.AchievementsPage, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.achievement.category.general").decoration(ITALIC, false), 29, Achievement.AchievementCategories.GENERAL),
+    AchieveLsCategory("ui/scn3/games/litestrike", useCases.AchievementsPage, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.achievement.category.ls").decoration(ITALIC, false), 30, Achievement.AchievementCategories.LS),
+    AchieveKoCategory("ui/scn3/games/knockoff", useCases.AchievementsPage, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.achievement.category.ko").decoration(ITALIC, false), 31, Achievement.AchievementCategories.KO),
+    AchieveCbCategory("ui/scn3/games/crystalblitz", useCases.AchievementsPage, new useCases[]{useCases.Achievements}, Component.translatable("crystalized.achievement.category.cb").decoration(ITALIC, false), 32, Achievement.AchievementCategories.CB),
     Quest("ui/scn3/quests", useCases.Quests, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.translatable("crystalized.shardcore.quests.name").color(WHITE).decoration(ITALIC, false), 33,
             "\uA000\uA014"),
     Shop("ui/scn3/shop", useCases.Shop, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.shop.name").color(WHITE).decoration(ITALIC, false), 38,
@@ -403,7 +403,7 @@ public enum App {
             p.openInventory(inv);
         }
         //no idea where this is supposed to go, work well here tho - Callum
-        else if (extra instanceof Achievement.achievementCategories category) {
+        else if (extra instanceof Achievement.AchievementCategories category) {
             String title = "\uA000\uA015"; //TODO different titles for different categories
             Inventory inv = prepareInv(title, 54, self, p);
             Achievement.setAchievements(inv, viewed, category);

@@ -32,7 +32,7 @@ public class Achievement extends Quest{
     AchieveTemplate temp;
 
     public Achievement(OfflinePlayer player, AchieveTemplate temp, int progress, int stage, boolean done, boolean claimed){
-        //super(player, temp.id + temp.stages.get(stage), done, claimed); //causes an exception
+        //super(player, temp.internalName + temp.stages + stage, done, claimed); //causes an exception
         super(player, "-1" , done, claimed);
         this.stage = stage;
         this.temp = temp;
@@ -41,16 +41,15 @@ public class Achievement extends Quest{
         this.progress = progress;
     }
 
-    public enum achievementCategories{
-        general("general"),
-        ls("litestrike"),
-        ko("knockoff"),
-        cb("crystalblitz"),
-        //br("battleroyale")
-        ;
+    public enum AchievementCategories{
+        GENERAL("general"),
+        LS("litestrike"),
+        KO("knockoff"),
+        CB("crystalblitz"),;
+        //BR("battleroyale") ;
 
-        String jsonname; //achievements.json
-        achievementCategories(String jsonname) {
+        final String jsonname; //achievements.json
+        AchievementCategories(String jsonname) {
             this.jsonname = jsonname;
         }
     }
@@ -61,23 +60,11 @@ public class Achievement extends Quest{
             JsonObject json = JsonParser.parseString(string).getAsJsonObject();
             JsonObject categories = json.get("achievements").getAsJsonObject();
 
-            //probably a better way of doing this, JsonObject doesn't work with for loops so this is the next best rn - Callum
-            //These are split just to make the json look nice
-            for (JsonElement e : categories.get("general").getAsJsonArray()) {
-                JsonObject j = e.getAsJsonObject();
-                templates.add(new AchieveTemplate(j.get("databaseid").getAsString(), j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.general, j));
-            }
-            for (JsonElement e : categories.get("litestrike").getAsJsonArray()) {
-                JsonObject j = e.getAsJsonObject();
-                templates.add(new AchieveTemplate(j.get("databaseid").getAsString(), j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.ls, j));
-            }
-            for (JsonElement e : categories.get("knockoff").getAsJsonArray()) {
-                JsonObject j = e.getAsJsonObject();
-                templates.add(new AchieveTemplate(j.get("databaseid").getAsString(), j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.ko, j));
-            }
-            for (JsonElement e : categories.get("crystalblitz").getAsJsonArray()) {
-                JsonObject j = e.getAsJsonObject();
-                templates.add(new AchieveTemplate(j.get("databaseid").getAsString(), j.get("name").getAsString(), j.get("difficulty").getAsString(), achievementCategories.cb, j));
+            for (AchievementCategories cat : AchievementCategories.values()) {
+                for (JsonElement e : categories.get(cat.jsonname).getAsJsonArray()) {
+                    JsonObject j = e.getAsJsonObject();
+                    templates.add(new AchieveTemplate(j.get("name").getAsString(), j.get("difficulty").getAsString(), cat, j));
+                }
             }
 
             Lobby_plugin.getInstance().getLogger().log(Level.INFO, "Loaded " + templates.size() + " achievements from json.");
@@ -130,8 +117,8 @@ public class Achievement extends Quest{
 
         for(AchieveTemplate t : templates){
             for(Achievement ach : achieve){
-                String id = ach.temp.id;
-                if(id.equals(t.id)){
+                String id = ach.temp.internalName;
+                if(id.equals(t.internalName)){
                     a.remove(t);
                 }
             }
@@ -170,7 +157,7 @@ public class Achievement extends Quest{
                     prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
                     ResultSet set = prep.executeQuery();
                     while (set.next()) {
-                        if (set.getString("id").equals(a.temp.id)) {
+                        if (set.getString("internal_name").equals(a.temp.internalName)) {
                             int done = set.getInt("done");
                             a.done = done == 1;
 
@@ -205,7 +192,7 @@ public class Achievement extends Quest{
         lore.add(temp.description.color(WHITE));
         lore.add(Component.translatable("crystalized.shardcore.quests.difficulty").color(WHITE).append(Component.translatable(difficulty.name).color(difficulty.color)).decoration(ITALIC, false));
         lore.add(Component.empty());
-        if (stage == temp.stages.getLast()) { //achieve fully done, claimed didn't work for this
+        if (stage == temp.stages) { //achieve fully done, claimed didn't work for this
             //TODO different tooltip style
             lore.add(Component.translatable("crystalized.achievement.fully_completed").color(GOLD).decoration(ITALIC, false));
             lore.add(Component.translatable("crystalized.achievement.well_done").color(GOLD).decoration(ITALIC, false));
@@ -217,7 +204,7 @@ public class Achievement extends Quest{
         }
         lore.add(Component.translatable("crystalized.shardcore.quests.progress").append(Component.text(getProgress() + "/" + amount + "%")).color(WHITE).decoration(ITALIC, false));
         lore.add(Component.translatable("crystalized.shardcore.quests.reward").append(Component.text(getMoney() + "[m]   " + getXp() + "xp")).color(WHITE).decoration(ITALIC, false));
-        lore.add(Component.translatable("crystalized.shardcore.quests.stage").append(Component.text((stage + 1) + "/" + (temp.stages.size() + 1))).color(WHITE).decoration(ITALIC, false));
+        lore.add(Component.translatable("crystalized.shardcore.quests.stage").append(Component.text((stage + 1) + "/" + (temp.stages + 1))).color(WHITE).decoration(ITALIC, false));
 
         meta.lore(lore);
         item.setItemMeta(meta);
@@ -230,7 +217,7 @@ public class Achievement extends Quest{
     void claim(){
         LevelManager.giveExperience(player.getPlayer(), getXp());
         LevelManager.giveMoney(player.getPlayer(), getMoney());
-        if (stage != temp.stages.getLast() - 1) {
+        if (stage != temp.stages - 1) {
             stage++;
             LobbyDatabase.progressStage(player, this);
             done = false;
@@ -241,13 +228,13 @@ public class Achievement extends Quest{
         } else {
             //TODO placeholder sound, different than the other one
             player.getPlayer().playSound(player.getPlayer(), "minecraft:entity.player.levelup", 1, 1);
-            stage = temp.stages.getLast();
+            stage = temp.stages;
             claimed = true;
         }
         App.Achieve.deactivateApps(player);
         deactivateIconsBlink(player, this);
-        LobbyDatabase.updateAchievementDone(player, this);
-        LobbyDatabase.updateAchievementClaimed(player, this);
+        LobbyDatabase.setAchievementDone(player, this);
+        LobbyDatabase.setAchievementClaimed(player, this);
         for(Achievement a : getAchievements(player)){
             if(a.done && !a.claimed) return;
         }
@@ -257,7 +244,7 @@ public class Achievement extends Quest{
     @Override
     void complete(){
         done = true;
-        LobbyDatabase.updateAchievementDone(player, this);
+        if(!LobbyDatabase.tryComplete(player, this)) return;
         showNotif();
     }
 
@@ -267,7 +254,7 @@ public class Achievement extends Quest{
             Lobby_plugin.getInstance().getLogger().warning("Could not show achievement toast for " + player.getName() + ", player is offline");
             return;
         }
-        NamespacedKey tempkey = new NamespacedKey("crystalized", "preperaingachievement_" + p.getUniqueId().toString().toLowerCase() + "_" + temp.id + "_" + stage);
+        NamespacedKey tempkey = new NamespacedKey("crystalized", "preperaingachievement_" + p.getUniqueId().toString().toLowerCase() + "_" + temp.internalName + "_" + stage);
         if (Bukkit.getServer().getAdvancement(tempkey) != null) {return;}
 
         //send chat message
@@ -324,14 +311,15 @@ public class Achievement extends Quest{
 
     //for plugins to use
     public void setProgress(int percentage) {
+        if (done) return;
         progress = percentage;
 
         //save to database
         try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
-            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET progress = ? WHERE player_uuid = ? AND id = ?;");
+            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET progress = ? WHERE player_uuid = ? AND internal_name = ? AND done = 0;");
             prep.setInt(1, progress);
             prep.setBytes(2, LobbyDatabase.uuid_to_bytes(player));
-            prep.setString(3, temp.id);
+            prep.setString(3, temp.internalName);
             prep.executeUpdate();
             //Bukkit.getServer().sendRichMessage("Saved Achievement progress for " + temp.internalName + " | " + percentage);
         } catch (SQLException ex) {
@@ -353,8 +341,11 @@ public class Achievement extends Quest{
             prep.setBytes(1, LobbyDatabase.uuid_to_bytes(player));
             ResultSet set = prep.executeQuery();
             while (set.next()) {
-                if (set.getString("id").equals(temp.id)) {
+                if (set.getString("internal_name").equals(temp.internalName)) {
                     progress = set.getInt("progress");
+                    done = set.getInt("done") == 1;
+                    claimed = set.getInt("claimed") == 1;
+                    stage = set.getInt("stage");
                     break;
                 }
             }
@@ -382,10 +373,10 @@ public class Achievement extends Quest{
         //TODO this works, but deactivateIconsBlink doesn't work when claiming, disabling for now to stop confusion - Callum
         /*if (ach.done && !ach.claimed) {
             switch (ach.temp.category) {
-                case general -> {App.AchieveGeneralCategory.activateApps(p);}
-                case ls -> {App.AchieveLsCategory.activateApps(p);}
-                case ko -> {App.AchieveKoCategory.activateApps(p);}
-                case cb -> {App.AchieveCbCategory.activateApps(p);}
+                case GENERAL -> {App.AchieveGeneralCategory.activateApps(p);}
+                case LS -> {App.AchieveLsCategory.activateApps(p);}
+                case KO -> {App.AchieveKoCategory.activateApps(p);}
+                case CB -> {App.AchieveCbCategory.activateApps(p);}
             }
             App.Achieve.activateApps(p);
         }*/
@@ -394,10 +385,10 @@ public class Achievement extends Quest{
     private static void deactivateIconsBlink(OfflinePlayer p, Achievement ach) {
         /*if (ach.done && !ach.claimed) {
             switch (ach.temp.category) {
-                case general -> {App.AchieveGeneralCategory.deactivateApps(p);}
-                case ls -> {App.AchieveLsCategory.deactivateApps(p);}
-                case ko -> {App.AchieveKoCategory.deactivateApps(p);}
-                case cb -> {App.AchieveCbCategory.deactivateApps(p);}
+                case GENERAL -> {App.AchieveGeneralCategory.deactivateApps(p);}
+                case LS -> {App.AchieveLsCategory.deactivateApps(p);}
+                case KO -> {App.AchieveKoCategory.deactivateApps(p);}
+                case CB -> {App.AchieveCbCategory.deactivateApps(p);}
             }
             App.Achieve.deactivateApps(p);
         }*/
@@ -431,7 +422,7 @@ public class Achievement extends Quest{
         }
     }
 
-    public static void setAchievements(Inventory inv, OfflinePlayer p, achievementCategories category){
+    public static void setAchievements(Inventory inv, OfflinePlayer p, AchievementCategories category){
         int[] border = {7, 16, 25, 34, 43, 52};
         int[] nextLine = {2, 11, 20, 29, 38, 47};
         int slot = 29;
@@ -465,49 +456,43 @@ public class Achievement extends Quest{
 
 class AchieveTemplate{
 
-    String internalName;
-    String id;
-    List<Integer> stages;
-    int reward_money;
-    int reward_xp;
-    Component name;
-    Component description;
-    Achievement.achievementCategories category;
-    Quest.Difficulty difficulty;
+    final String internalName;
+    final int stages;
+    final int reward_money;
+    final int reward_xp;
+    final Component name;
+    final Component description;
+    final Achievement.AchievementCategories category;
+    final Quest.Difficulty difficulty;
 
-    public AchieveTemplate(String id, String name, String difficulty, Achievement.achievementCategories category, JsonObject json) {
+    public AchieveTemplate(String name, String difficulty, Achievement.AchievementCategories category, JsonObject json) {
         this.internalName = name;
-        this.id = id;
         this.difficulty = Quest.Difficulty.valueOf(difficulty);
-        if (this.difficulty.equals(Quest.Difficulty.EXPERT)) {
-            this.stages = List.of(1, 2, 3, 4); //doing an expert achievement 10 times is way too painful
-        } else {
-            this.stages = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9);
-        }
-        this.reward_money = this.difficulty.money;
-        this.reward_xp = this.difficulty.exp;
-        this.name = Component.translatable("crystalized.achievement." + name + ".name").decoration(ITALIC, false);
-        this.description = Component.translatable("crystalized.achievement." + name + ".desc").decoration(ITALIC, false);
-        this.category = category;
-
         if (json.has("replaceStages")) {
-            List<JsonElement> list = json.get("replaceStages").getAsJsonArray().asList();
-            this.stages = new ArrayList<>();
-            for (JsonElement e : list) {
-                this.stages.add(e.getAsInt());
-            }
+            this.stages = json.get("replaceStages").getAsJsonArray().size();
+        } else if (this.difficulty.equals(Quest.Difficulty.EXPERT)) {
+            this.stages = 4; //doing an expert achievement 10 times is way too painful
+        } else {
+            this.stages = 9;
         }
         if (json.has("replaceRewardMoney")) {
             this.reward_money = json.get("replaceRewardMoney").getAsInt();
+        } else {
+            this.reward_money = this.difficulty.money;
         }
         if (json.has("replaceRewardXP")) {
             this.reward_xp = json.get("replaceRewardXP").getAsInt();
+        } else {
+            this.reward_xp = this.difficulty.exp;
         }
+        this.name = Component.translatable("crystalized.achievement." + name + ".name").decoration(ITALIC, false);
+        this.description = Component.translatable("crystalized.achievement." + name + ".desc").decoration(ITALIC, false);
+        this.category = category;
     }
 
-    public static AchieveTemplate getAchieveTemplate(String id){
+    public static AchieveTemplate getAchieveTemplate(String internalName){
         for(AchieveTemplate t : Achievement.templates){
-            if(t.id.equals(id.trim())){
+            if(t.internalName.equals(internalName.trim())){
                 return t;
             }
         }
