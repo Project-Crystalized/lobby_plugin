@@ -37,6 +37,9 @@ public final class PlayerListener implements Listener {
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
 
+		LevelManager.moneyCache.remove(p.getUniqueId());
+		Ranks.rankCache.remove(p.getUniqueId());
+
 		e.joinMessage(Ranks.getJoinMessage(p));
 		App.active.put(p, new ArrayList<>());
 
@@ -121,6 +124,8 @@ public final class PlayerListener implements Listener {
 		Nametag.disconnect(e.getPlayer());
 		Quest.allQuests.remove(e.getPlayer().getUniqueId());
 		Achievement.achievements.remove(e.getPlayer().getUniqueId());
+		LevelManager.moneyCache.remove(e.getPlayer().getUniqueId());
+		Ranks.rankCache.remove(e.getPlayer().getUniqueId());
 		WinLeaderboard.leaderboards.remove(e.getPlayer());
 		App.active.remove(e.getPlayer());
 		ScrollableView.removeView(e.getPlayer());

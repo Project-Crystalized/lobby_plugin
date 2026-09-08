@@ -482,6 +482,7 @@ public class LobbyDatabase {
             prepared.executeUpdate();
             conn.commit();
             conn.close();
+            Ranks.rankCache.remove(p.getUniqueId());
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("set rank for " + p.getName() + " UUID: " + p.getUniqueId());
@@ -502,6 +503,7 @@ public class LobbyDatabase {
             prepared.executeUpdate();
             conn.commit();
             conn.close();
+            Ranks.rankCache.remove(p.getUniqueId());
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("set payed rank for " + p.getName() + " UUID: " + p.getUniqueId());

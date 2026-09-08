@@ -12,11 +12,15 @@ import org.bukkit.event.player.PlayerLevelChangeEvent;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
 import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 
 public class LevelManager implements Listener {
+
+    static final ConcurrentHashMap<UUID, Integer> moneyCache = new ConcurrentHashMap<>();
 
     public static void giveExperience(Player p, int exp){
         p.giveExp(exp);
@@ -40,10 +44,10 @@ public class LevelManager implements Listener {
     }
 
     public static void updateLevel(Player p){
-        HashMap<String, Object> map = LobbyDatabase.fetchPlayerData(p);
-        if(map == null) return;
-        p.setLevel((Integer)map.get("level"));
-        p.setExp(getDouble((map.get("exp_to_next_lvl"))).floatValue());
+        HashMap<String, Object> playerData = LobbyDatabase.fetchPlayerData(p);
+        if(playerData == null) return;
+        p.setLevel((Integer)playerData.get("level"));
+        p.setExp(getDouble((playerData.get("exp_to_next_lvl"))).floatValue());
     }
 
     public static Double getDouble(Object o){
@@ -77,9 +81,13 @@ public class LevelManager implements Listener {
     }
 
     public static int getMoney(Player p){
-        HashMap<String, Object> map = LobbyDatabase.fetchPlayerData(p);
-        if(map.get("money") == null) return 0;
-        return (Integer) map.get("money");
+        Integer cached = moneyCache.get(p.getUniqueId());
+        if(cached != null) return cached;
+        HashMap<String, Object> playerData = LobbyDatabase.fetchPlayerData(p);
+        if(playerData.get("money") == null) return 0;
+        int money = (Integer) playerData.get("money");
+        moneyCache.put(p.getUniqueId(), money);
+        return money;
     }
 
     public static void giveMoney(Player p, int amount){
@@ -90,11 +98,13 @@ public class LevelManager implements Listener {
             conn.setAutoCommit(false);
             String insertData = "UPDATE LobbyPlayers SET money = ? WHERE player_uuid = ?";
             PreparedStatement prep = conn.prepareStatement(insertData);
-            prep.setInt(1, getMoney(p) + amount);
+            int newMoney = getMoney(p) + amount;
+            prep.setInt(1, newMoney);
             prep.setBytes(2, LobbyDatabase.uuid_to_bytes(p));
             prep.executeUpdate();
             conn.commit();
             conn.close();
+            moneyCache.put(p.getUniqueId(), newMoney);
             Nametag.reloadNametag(p);
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
