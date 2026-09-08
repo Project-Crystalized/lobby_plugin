@@ -688,7 +688,7 @@ public class LobbyDatabase {
                 String number = set.getString("quest");
                 int done = set.getInt("done");
                 int claimed = set.getInt("claimed");
-                Quest.allQuests.add(new Quest(p, number, claimed == 1, done == 1));
+                Quest.allQuests.computeIfAbsent(p.getUniqueId(), k -> new ArrayList<>()).add(new Quest(p, number, claimed == 1, done == 1));
             }
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());

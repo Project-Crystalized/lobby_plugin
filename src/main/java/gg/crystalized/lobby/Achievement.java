@@ -26,7 +26,7 @@ import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 public class Achievement{
     static ArrayList<AchieveTemplate> templates = new ArrayList<>();
-    static ArrayList<Achievement> achievements = new ArrayList<>();
+    static Map<UUID, List<Achievement>> achievements = new HashMap<>();
     OfflinePlayer player;
     boolean done;
     boolean claimed;
@@ -89,14 +89,8 @@ public class Achievement{
     //can confuse devs for other plugins, making this a private method
     private static ArrayList<Achievement> getAchievements(OfflinePlayer p){
         getFromDatabase(p);
-        ArrayList<Achievement> achieve = new ArrayList<>();
-        for(Achievement a : achievements){
-            if (a.player.equals(p)) {
-                achieve.add(a);
-            }
-        }
-
-        return achieve;
+        List<Achievement> achieve = achievements.get(p.getUniqueId());
+        return achieve == null ? new ArrayList<>() : new ArrayList<>(achieve);
     }
 
     //for plugins to use
@@ -117,7 +111,7 @@ public class Achievement{
             return;
         }
         if(achieve.size() == templates.size()){
-            achievements.addAll(achieve);
+            achievements.put(p.getUniqueId(), achieve);
             return;
         }
 
@@ -133,16 +127,15 @@ public class Achievement{
         for(AchieveTemplate t : a){
             LobbyDatabase.addAchievement(p, new Achievement(p, t, 0, 1, false, false));
         }
-        achievements.addAll(LobbyDatabase.getAchievements(p));
+        achievements.put(p.getUniqueId(), LobbyDatabase.getAchievements(p));
+    }
+
+    public static void removeAchievements(Player p){
+        achievements.remove(p.getUniqueId());
     }
 
     public static boolean dontGetAchieve(OfflinePlayer p){
-        for(Achievement a : achievements){
-            if(a.player.getUniqueId().equals(p.getUniqueId())){
-                return true;
-            }
-        }
-        return false;
+        return achievements.containsKey(p.getUniqueId());
     }
 
     public static Achievement identifyAchievement(Player p, ItemStack i){
@@ -156,27 +149,27 @@ public class Achievement{
     }
 
     public static void resyncInfo(OfflinePlayer p) {
-        for (Achievement a : achievements) {
-            if (a.player.equals(p)) {
-                try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
-                    PreparedStatement prep = conn.prepareStatement("SELECT * FROM Achievements WHERE player_uuid = ?;");
-                    prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
-                    ResultSet set = prep.executeQuery();
-                    while (set.next()) {
-                        if (set.getString("internal_name").equals(a.temp.internalName)) {
-                            int done = set.getInt("done");
-                            a.done = done == 1;
+        List<Achievement> list = achievements.get(p.getUniqueId());
+        if (list == null) return;
+        for (Achievement a : list) {
+            try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
+                PreparedStatement prep = conn.prepareStatement("SELECT * FROM Achievements WHERE player_uuid = ?;");
+                prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
+                ResultSet set = prep.executeQuery();
+                while (set.next()) {
+                    if (set.getString("internal_name").equals(a.temp.internalName)) {
+                        int done = set.getInt("done");
+                        a.done = done == 1;
 
-                            int claimed = set.getInt("claimed");
-                            a.claimed = claimed == 1;
+                        int claimed = set.getInt("claimed");
+                        a.claimed = claimed == 1;
 
-                            a.stage = set.getInt("stage");
-                            makeIconsBlink(p, a);
-                        }
+                        a.stage = set.getInt("stage");
+                        makeIconsBlink(p, a);
                     }
-                } catch (SQLException ex) {
-                    Lobby_plugin.getInstance().getLogger().warning(ex.toString());
                 }
+            } catch (SQLException ex) {
+                Lobby_plugin.getInstance().getLogger().warning(ex.toString());
             }
         }
     }
