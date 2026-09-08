@@ -37,7 +37,7 @@ public class Nametag {
     public static int EntityId = 1000000;
     public Nametag(Player holder) {
         this.holder = holder;
-        components[0] = Component.text("lvl: " + holder.getLevel()).color(GREEN).decoration(ITALIC, false).append(Component.text("   " + "[m]: " + LevelManager.getMoney(holder)).color(LIGHT_PURPLE).decoration(ITALIC, false));
+        components[0] = Component.text("lvl: " + holder.getLevel()).color(GREEN).decoration(ITALIC, false).append(Component.text("   " + "\ue15c: " + LevelManager.getMoney(holder)).color(LIGHT_PURPLE).decoration(ITALIC, false));
         components[1] = Ranks.getColoredName(holder);
         components[2] = Ranks.getRankWithName(holder);
 

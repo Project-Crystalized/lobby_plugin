@@ -9,6 +9,11 @@
   "MASTER_BANDANA": {"id": 15, "model": "cosmetic/head/master_bandana", "level": 50, "price": null, "slot": "HEAD", "name": "crystalized.cosmetic/head/master_bandana"},
   "SHARDCOREVR": {"id": 16, "model": "cosmetic/head/shardcorevr", "level": null, "price": 200, "slot": "HEAD", "name": "crystalized.cosmetic/head/shardcorevr"},
   "SUNGLASSES": {"id": 17, "model": "cosmetic/head/sunglasses", "level": null, "price": 500, "slot": "HEAD", "name": "crystalized.cosmetic/head/sunglasses"},
+  "AXOLOTL_HAT": {"id": 23, "model": "cosmetic/head/axolotl_hat", "level": null, "price": 500, "slot": "HEAD", "name": "crystalized.cosmetic/head/axolotl_hat"},
+  "BLACK_CAT_BEANIE": {"id": 24, "model": "cosmetic/head/black_cat_beanie", "level": null, "price": 500, "slot": "HEAD", "name": "crystalized.cosmetic/head/black_cat_beanie"},
+  "CRAFTMASTER_HAT": {"id": 25, "model": "cosmetic/head/craftmaster_hat", "level": null, "price": 500, "slot": "HEAD", "name": "crystalized.cosmetic/head/craftmaster_hat"},
+  "DRAGON": {"id": 26, "model": "cosmetic/head/dragon", "level": null, "price": 500, "slot": "HEAD", "name": "crystalized.cosmetic/head/dragon"},
+  "LEMON_CAP": {"id": 27, "model": "cosmetic/head/lemon_cap", "level": null, "price": 500, "slot": "HEAD", "name": "crystalized.cosmetic/head/lemon_cap"},
 
   "HANDBAG": {"id": 5, "model": "cosmetic/handheld/handbag", "level": null, "price": 200, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/handbag"},
   "US_FLAG": {"id": 23, "model": "cosmetic/handheld/merica_flag", "level": null, "price": 300, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/merica_flag"},
@@ -16,6 +21,15 @@
   "LAPTOP": {"id": 19, "model": "cosmetic/handheld/laptop", "level": null, "price": 150, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/laptop"},
   "PRIDE_FLAG": {"id": 20, "model": "cosmetic/handheld/pride_flag", "level": null, "price": 500, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/pride_flag"},
   "STAR_BUBBLE_WAND": {"id": 21, "model": "cosmetic/handheld/star_bubble_wand", "level": null, "price": 400, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/star_bubble_wand"},
+  "DISABILITY_FLAG": {"id": 28, "model": "cosmetic/handheld/disability_flag", "level": null, "price": 400, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/disability_flag"},
+  "PAN_FLAG": {"id": 29, "model": "cosmetic/handheld/frying_pan_flag", "level": null, "price": 400, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/frying_pan_flag"},
+  "KRIS_FLAG": {"id": 30, "model": "cosmetic/handheld/kris_flag", "level": null, "price": 400, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/kris_flag"},
+  "GAY_FLAG": {"id": 31, "model": "cosmetic/handheld/miteda_flag", "level": null, "price": 400, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/miteda_flag"},
+  "NONBINARY_FLAG": {"id": 32, "model": "cosmetic/handheld/nonbinary_flag", "level": null, "price": 400, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/nonbinary_flag"},
+  "POW": {"id": 33, "model": "cosmetic/handheld/pow", "level": null, "price": 400, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/pow"},
+  "SHOPPING_BAG": {"id": 34, "model": "cosmetic/handheld/shopping_bag", "level": null, "price": 400, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/shopping_bag"},
+  "PHONE": {"id": 35, "model": "cosmetic/handheld/thatladygagasong", "level": null, "price": 400, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/thatladygagasong"},
+  "TRANS_FLAG": {"id": 36, "model": "cosmetic/handheld/trans_flag", "level": null, "price": 400, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/trans_flag"},
 
   "BLUE_SHARDCORE": {"id": 6, "model": "shardcorenexus3/blue", "level": null, "price": 500, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/blue"},
   "GRAY_SHARDCORE": {"id": 7, "model": "shardcorenexus3/gray", "level": null, "price": 500, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/gray"},
@@ -23,5 +37,6 @@
   "AUGUST_SHARDCORE": {"id": 9, "model": "shardcorenexus3/augustify", "level": null, "price": 500, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/augustify"},
   "ABBY1_SHARDCORE": {"id": 10, "model": "shardcorenexus3/abby1", "level": null, "price": 500, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/abby1"},
   "SHADOW1_SHARDCORE": {"id": 11, "model": "shardcorenexus3/shadow1", "level": null, "price": 500, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/shadow1"},
-  "LADYCAT1_SHARDCORE": {"id": 22, "model": "shardcorenexus3/ladycat1", "level": null, "price": 500, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/ladycat1"}
+  "LADYCAT1_SHARDCORE": {"id": 22, "model": "shardcorenexus3/ladycat1", "level": null, "price": 500, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/ladycat1"},
+  "MITEDA_SHARDCORE": {"id": 37, "model": "shardcorenexus3/mite", "level": null, "price": 500, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/mite"}
 }

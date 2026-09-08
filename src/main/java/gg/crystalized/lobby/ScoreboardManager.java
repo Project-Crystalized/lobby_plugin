@@ -31,7 +31,7 @@ public class ScoreboardManager {
         obj.getScore("6").customName(text("Rank: ").color(NamedTextColor.AQUA));
 
         obj.getScore("5").setScore(5);
-        obj.getScore("5").customName(text("Currency: "));
+        obj.getScore("5").customName(text("\ue15c: "));
 
         obj.getScore("4").setScore(4);
         obj.getScore("4").customName(text("  "));
@@ -95,7 +95,7 @@ public class ScoreboardManager {
                             .append(text("" + Bukkit.getOnlinePlayers().size()).color(NamedTextColor.WHITE))
                     );
 
-                    obj.getScore("5").customName(text("Currency: ")
+                    obj.getScore("5").customName(text("\ue15c: ")
                             .append(text("" + LevelManager.getMoney(p)))
                     );
 

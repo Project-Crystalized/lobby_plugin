@@ -89,7 +89,7 @@ public enum App {
     ProfileKoStats("ui/scn3/profile/info/ko", useCases.Demand, new useCases[]{useCases.Stats}, Component.translatable("crystalized.shardcore.profile.info.ko").color(WHITE).decoration(ITALIC, false), 0, "ko"),
     ProfileCbStats("ui/scn3/profile/info/cb", useCases.Demand, new useCases[]{useCases.Stats}, Component.translatable("crystalized.shardcore.profile.info.cb").color(WHITE).decoration(ITALIC, false), 0, "cb"),
     LeaveWardrobe("ui/leave", useCases.Wardrobe, Component.translatable("crystalized.generic.leave").color(WHITE).decoration(ITALIC, false), 9),
-    EquipBuy("", useCases.Wardrobe, Component.translatable("crystalized.shardcore.wardrobe.buy").color(WHITE).decoration(ITALIC, false), 8), //TODO model
+    EquipBuy("ui/scn3/add", useCases.Wardrobe, Component.translatable("crystalized.shardcore.wardrobe.buy").color(WHITE).decoration(ITALIC, false), 8), //TODO model
     HatsButtonW("ui/invisible", useCases.WardrobePage, useCases.Wardrobe, Component.translatable("crystalized.shardcore.shop.hats").color(WHITE).decoration(ITALIC, false), new int[]{28, 7, 1},
     EquipmentSlot.HEAD),
     HandButtonW("ui/invisible", useCases.WardrobePage, useCases.Wardrobe, Component.translatable("crystalized.shardcore.shop.handheld").color(WHITE).decoration(ITALIC, false), new int[]{37, 7, 1},

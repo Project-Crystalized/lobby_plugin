@@ -191,7 +191,7 @@ public class Quest {
         if(LobbyDatabase.canRerollQuest(this)){
             lore.add(Component.translatable("crystalized.shardcore.quests.reroll").color(WHITE).decoration(ITALIC, false));
         }
-        lore.add(Component.translatable("crystalized.shardcore.quests.reward").append(Component.text(difficulty.money + "[m]   " + difficulty.exp + "xp")).color(WHITE).decoration(ITALIC, false));
+        lore.add(Component.translatable("crystalized.shardcore.quests.reward").append(Component.text(difficulty.money + "\ue15c   " + difficulty.exp + "xp")).color(WHITE).decoration(ITALIC, false));
         lore.add(Component.translatable("crystalized.shardcore.quests.difficulty").color(GRAY).decoration(ITALIC, false).append(Component.translatable(difficulty.name.toLowerCase()).color(GRAY).decoration(ITALIC, false)));
         meta.lore(lore);
         meta.setItemModel(new NamespacedKey("crystalized", difficulty.model));

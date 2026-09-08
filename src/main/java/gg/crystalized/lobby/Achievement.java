@@ -203,7 +203,7 @@ public class Achievement extends Quest{
             lore.add(Component.empty());
         }
         lore.add(Component.translatable("crystalized.shardcore.quests.progress").append(Component.text(getProgress() + "/" + amount + "%")).color(WHITE).decoration(ITALIC, false));
-        lore.add(Component.translatable("crystalized.shardcore.quests.reward").append(Component.text(getMoney() + "[m]   " + getXp() + "xp")).color(WHITE).decoration(ITALIC, false));
+        lore.add(Component.translatable("crystalized.shardcore.quests.reward").append(Component.text(getMoney() + "\ue15c   " + getXp() + "xp")).color(WHITE).decoration(ITALIC, false));
         lore.add(Component.translatable("crystalized.shardcore.quests.stage").append(Component.text((stage + 1) + "/" + (temp.stages + 1))).color(WHITE).decoration(ITALIC, false));
 
         meta.lore(lore);
