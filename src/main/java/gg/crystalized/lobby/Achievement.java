@@ -186,7 +186,6 @@ public class Achievement{
             LobbyDatabase.setAchievementDone(this);
             //TODO placeholder sound
             player.getPlayer().playSound(player.getPlayer(), "minecraft:entity.experience_orb.pickup", 1, 1);
-            amount = 100; //dumb shit
             setProgress(0);
         } else {
             //TODO placeholder sound, different than the other one
