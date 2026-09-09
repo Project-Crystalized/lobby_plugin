@@ -31,15 +31,16 @@ public class InventoryManager implements Listener {
         }
         if(event.getItem() == null) return;
         Player p = event.getPlayer();
-        if(!Lobby_plugin.getInstance().passive_mode && event.getItem().equals(Cosmetic.getShardcore(p).build(p, true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))))){
+        Cosmetic shardcore = Cosmetic.getShardcore(p);
+        if(!Lobby_plugin.getInstance().passive_mode && event.getItem().equals(shardcore.build(p, true, false, CosmeticView.isViewing(p, shardcore)))){
             p.openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu, event.getPlayer()));
             ScrollableView.setView(p, App.useCases.Menu);
             for(int i = 0; i <= 54; i++){
                 if(p.getInventory().getItem(i) == null){
                     continue;
                 }
-                if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(p, true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))))){
-                    p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(p, true, true, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))));
+                if(Objects.equals(p.getInventory().getItem(i), shardcore.build(p, true, false, CosmeticView.isViewing(p, shardcore)))){
+                    p.getInventory().setItem(i, shardcore.build(p, true, true, CosmeticView.isViewing(p, shardcore)));
                 }
             }
             return;
@@ -83,15 +84,16 @@ public class InventoryManager implements Listener {
                 return;
             }
 
-            if(event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(p,true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p)))) || event.getCurrentItem().equals(Cosmetic.getShardcore(p).build(p, true, true, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))))){
+            Cosmetic shardcore = Cosmetic.getShardcore(p);
+            if(event.getCurrentItem().equals(shardcore.build(p,true, false, CosmeticView.isViewing(p, shardcore))) || event.getCurrentItem().equals(shardcore.build(p, true, true, CosmeticView.isViewing(p, shardcore)))){
                 event.getWhoClicked().openInventory(App.prepareInv("\uA000\uA002", 54, App.useCases.Menu, (Player)event.getWhoClicked()));
                 ScrollableView.setView(p, App.useCases.Menu);
                 for(int i = 0; i <= 54; i++){
                     if(p.getInventory().getItem(i) == null){
                         continue;
                     }
-                    if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(p, true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))))){
-                        p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(p, true, true, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))));
+                    if(Objects.equals(p.getInventory().getItem(i), shardcore.build(p, true, false, CosmeticView.isViewing(p, shardcore)))){
+                        p.getInventory().setItem(i, shardcore.build(p, true, true, CosmeticView.isViewing(p, shardcore)));
                     }
                 }
                 return;
@@ -177,12 +179,13 @@ public class InventoryManager implements Listener {
         if(Lobby_plugin.getInstance().passive_mode && ScrollableView.getView(p).view == null){
             return;
         }
+        Cosmetic shardcore = Cosmetic.getShardcore(p);
         for(int i = 0; i <= 54; i++){
             if(p.getInventory().getItem(i) == null){
                 continue;
             }
-            if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(p, true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))))){
-                p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(p, true, true, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))));
+            if(Objects.equals(p.getInventory().getItem(i), shardcore.build(p, true, false, CosmeticView.isViewing(p, shardcore)))){
+                p.getInventory().setItem(i, shardcore.build(p, true, true, CosmeticView.isViewing(p, shardcore)));
             }
         }
         App.useCases use = ScrollableView.getView(p).view;
@@ -204,12 +207,13 @@ public class InventoryManager implements Listener {
         if(Lobby_plugin.getInstance().passive_mode && ScrollableView.getView(p).view == null){
             return;
         }
+        Cosmetic shardcore = Cosmetic.getShardcore(p);
         for(int i = 0; i <= 54; i++){
             if(p.getInventory().getItem(i) == null){
                 continue;
             }
-            if(Objects.equals(p.getInventory().getItem(i), Cosmetic.getShardcore(p).build(p, true, true, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))))){
-                p.getInventory().setItem(i, Cosmetic.getShardcore(p).build(p, true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))));
+            if(Objects.equals(p.getInventory().getItem(i), shardcore.build(p, true, true, CosmeticView.isViewing(p, shardcore)))){
+                p.getInventory().setItem(i, shardcore.build(p, true, false, CosmeticView.isViewing(p, shardcore)));
             }
         }
         StatView view = StatView.getView((Player) event.getPlayer());
@@ -247,6 +251,7 @@ public class InventoryManager implements Listener {
             // if this method activates when you get an achievement (which will happen because of the flashing shardcore), you will be given
             // the lobby items during gameplay, returning here to fix that bug. - Callum
         }
+        Cosmetic shardcore = Cosmetic.getShardcore(p);
         Inventory i = p.getInventory();
         int in = 0;
         for(App a : App.values()){
@@ -258,7 +263,7 @@ public class InventoryManager implements Listener {
                 in++;
             }
         }
-        p.getInventory().setItem(4, Cosmetic.getShardcore(p).build(p, true, false, CosmeticView.isViewing(p, Cosmetic.getShardcore(p))));
+        p.getInventory().setItem(4, shardcore.build(p, true, false, CosmeticView.isViewing(p, shardcore)));
         if(Ranks.getPayRank(p) == Ranks.sun_sub.ordinal()){
             p.getInventory().setItem(8, App.ToggleFlight_true.build());
             p.getInventory().setItem(7, App.ToggleAbility_true.build());
