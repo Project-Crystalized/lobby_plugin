@@ -522,6 +522,23 @@ public class LobbyDatabase {
         }
     }
 
+    public static HashSet<UUID> getFriends(OfflinePlayer p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT friend_uuid FROM Friends WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            ResultSet set = prep.executeQuery();
+            HashSet<UUID> friends = new HashSet<>();
+            while(set.next()){
+                friends.add(bytes_to_uuid(set.getBytes("friend_uuid")));
+            }
+            return friends;
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't get friends of " + p.getName());
+            return new HashSet<>();
+        }
+    }
+
     public static boolean ownsCosmetic(OfflinePlayer p, Cosmetic c){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT COUNT(*) AS count FROM Cosmetics WHERE player_uuid = ? AND cosmetic_id = ?;");
@@ -951,6 +968,13 @@ public class LobbyDatabase {
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());
         return bb.array();
+    }
+
+    public static UUID bytes_to_uuid(byte[] bytes){
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+        long high = byteBuffer.getLong();
+        long low = byteBuffer.getLong();
+        return new UUID(high, low);
     }
 
     public static byte[] shortToBytes(short[] s){

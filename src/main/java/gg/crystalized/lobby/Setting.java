@@ -12,7 +12,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
@@ -157,14 +159,15 @@ public class Setting {
 
     public static void updatePlayerVisibility(Player p){
         double value = toDouble(LobbyDatabase.fetchSettings(p).get("show_players"));
+        HashSet<UUID> friends = value == 0.5 ? LobbyDatabase.getFriends(p) : null;
         for(Player player : Bukkit.getOnlinePlayers()){
             if (CitizensAPI.getNPCRegistry().isNPC(player)) {
                 continue;
             }
-
-            if((value == 0.5 && LobbyDatabase.areFriends(p, player)) || value == 1){
+            boolean isFriend = friends != null && friends.contains(player.getUniqueId());
+            if((value == 0.5 && isFriend) || value == 1){
                 p.showPlayer(Lobby_plugin.getInstance(), player);
-            }else if((value == 0.5 && !LobbyDatabase.areFriends(p, player)) || value == 0){
+            }else if((value == 0.5 && !isFriend) || value == 0){
                 p.hidePlayer(Lobby_plugin.getInstance(), player);
             }
         }
