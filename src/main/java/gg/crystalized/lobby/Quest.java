@@ -158,7 +158,7 @@ public class Quest {
         App.Quest.deactivateApps(player);
     }
 
-    public ItemStack build(){
+    public ItemStack build(int progress, boolean canReroll){
         if(claimed){
             return null;
         }
@@ -170,9 +170,9 @@ public class Quest {
             lore.add(Component.translatable("crystalized.shardcore.quests.completed").color(GREEN).decoration(ITALIC, false));
             lore.add(Component.translatable("crystalized.shardcore.quests.claim").color(GREEN).decoration(ITALIC, false));
         }else {
-            lore.add(Component.text(getProgress() + "/" + amount).color(WHITE).decoration(ITALIC, false));
+            lore.add(Component.text(progress + "/" + amount).color(WHITE).decoration(ITALIC, false));
         }
-        if(LobbyDatabase.canRerollQuest(this)){
+        if(canReroll){
             lore.add(Component.translatable("crystalized.shardcore.quests.reroll").color(WHITE).decoration(ITALIC, false));
         }
         lore.add(Component.translatable("crystalized.shardcore.quests.reward").append(Component.text(difficulty.money + "\ue15c   " + difficulty.exp + "xp")).color(WHITE).decoration(ITALIC, false));
@@ -204,51 +204,29 @@ public class Quest {
         return c;
     }
 
-    public int getProgress(){
-        if(Objects.equals(questNumber, "-1")){
-            int num = 0;
-            for(Quest q : getQuests(player)){
-                if(q.done) num++;
-            }
-            return num;
-        }
-        try(Connection conn = DriverManager.getConnection(game.URL)){
-            PreparedStatement prep = conn.prepareStatement("SELECT SUM(" + category.columnName + ") AS " + category.columnName + " FROM " + game.playerTableName + " INNER JOIN " + game.tableName + " ON " + game.playerTableName + ".game=" + game.tableName + ".game_id WHERE timestamp > ? AND player_uuid = ?;");
-            if(!forSeveral){
-                prep = conn.prepareStatement("SELECT MAX(" + category.columnName + ") AS " + category.columnName + " FROM " + game.playerTableName + " INNER JOIN " + game.tableName + " ON " + game.playerTableName + ".game=" + game.tableName + ".game_id WHERE timestamp > ? AND player_uuid = ?;");
-            }
-            prep.setInt(1, LobbyDatabase.getLastQuestRoll(player));
-            prep.setBytes(2, uuid_to_bytes(player));
-            ResultSet set = prep.executeQuery();
-            set.next();
-            return set.getInt(category.columnName);
-        }catch(SQLException e){
-            //Bukkit.getLogger().warning(e.getMessage());
-            //Bukkit.getLogger().warning("couldn't get progress");
-        }
-        return 0;
-    }
-
-    public static void checkAndComplete(Player p){
+    public static HashMap<Quest, Integer> getProgresses(Player p){
+        HashMap<Quest, Integer> progress = new HashMap<>();
         ArrayList<Quest> quests = getQuests(p);
         ArrayList<Quest> real = new ArrayList<>();
-        Quest completeAll = null;
         for(Quest q : quests){
-            if(q.done) continue;
             if(Objects.equals(q.questNumber, "-1")){
-                completeAll = q;
+                int num = 0;
+                for(Quest x : quests){
+                    if(x.done) num++;
+                }
+                progress.put(q, num);
             }else{
                 real.add(q);
             }
         }
-
+        if(real.isEmpty()){
+            return progress;
+        }
         int lastRoll = LobbyDatabase.getLastQuestRoll(p);
-        HashMap<Quest, Integer> progress = new HashMap<>();
         HashMap<Game, ArrayList<Quest>> byGame = new HashMap<>();
         for(Quest q : real){
             byGame.computeIfAbsent(q.game, k -> new ArrayList<>()).add(q);
         }
-
         for(Map.Entry<Game, ArrayList<Quest>> e : byGame.entrySet()){
             Game g = e.getKey();
             ArrayList<Quest> group = e.getValue();
@@ -272,6 +250,23 @@ public class Quest {
                 for(Quest q : group) progress.put(q, 0);
             }
         }
+        return progress;
+    }
+
+    public static void checkAndComplete(Player p){
+        ArrayList<Quest> quests = getQuests(p);
+        ArrayList<Quest> real = new ArrayList<>();
+        Quest completeAll = null;
+        for(Quest q : quests){
+            if(q.done) continue;
+            if(Objects.equals(q.questNumber, "-1")){
+                completeAll = q;
+            }else{
+                real.add(q);
+            }
+        }
+
+        HashMap<Quest, Integer> progress = getProgresses(p);
 
         for(Quest q : real){
             if(progress.get(q) >= q.amount){
@@ -283,7 +278,7 @@ public class Quest {
 
         if(completeAll != null){
             int num = 0;
-            for(Quest q : getQuests(p)){
+            for(Quest q : quests){
                 if(q.done) num++;
             }
             if(num >= completeAll.amount){
@@ -295,9 +290,11 @@ public class Quest {
     }
 
     public static Quest identifyQuest(Player p, ItemStack i){
+        HashMap<Quest, Integer> progress = getProgresses(p);
+        boolean canReroll = LobbyDatabase.canRerollQuest(p);
         for(Quest q : getQuests(p)){
             if(q.claimed) continue;
-            if(q.build().equals(i)){
+            if(q.build(progress.get(q), canReroll && !Objects.equals(q.questNumber, "-1")).equals(i)){
                 return q;
             }
         }
@@ -309,20 +306,22 @@ public class Quest {
         int[] nextLine = {2, 11, 20, 29, 38, 47};
         int slot = 29;
         int line = 3;
+        HashMap<Quest, Integer> progress = getProgresses(p);
+        boolean canReroll = LobbyDatabase.canRerollQuest(p);
         for(Quest q : getQuests(p)){
             if(Objects.equals(q.questNumber, "-1")){
-                inv.setItem(4, q.build());
+                inv.setItem(4, q.build(progress.get(q), false));
                 continue;
             }
             if(slot >= border[line]){
                 line++;
                 slot = nextLine[line];
             }
-            if(q.claimed || q.build() == null){
+            if(q.claimed || q.build(progress.get(q), canReroll) == null){
                 slot = slot + 2;
                 continue;
             }
-            inv.setItem(slot, q.build());
+            inv.setItem(slot, q.build(progress.get(q), canReroll));
             slot = slot + 2;
         }
     }

@@ -136,13 +136,14 @@ public class InventoryManager implements Listener {
             Cosmetic c = Cosmetic.identifyCosmetic(item);
             c.clicked(event.getClick(), p, event.getSlotType(), event.getSlot(), event.getInventory());
         }else if(Quest.identifyQuest(p, item) != null){
-            if(Quest.identifyQuest(p, item).done){
-                Quest.identifyQuest(p, item).claim();
+            Quest quest = Quest.identifyQuest(p, item);
+            if(quest.done){
+                quest.claim();
                 event.getInventory().remove(item);
             }
 
-            if(LobbyDatabase.canRerollQuest(Quest.identifyQuest(p, item))){
-                Quest.identifyQuest(p, item).rerollQuest();
+            if(LobbyDatabase.canRerollQuest(quest)){
+                quest.rerollQuest();
                 Quest.setQuests(event.getInventory(), p);
             }
         }else if(Achievement.identifyAchievement(p, item) != null) {

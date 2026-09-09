@@ -739,9 +739,13 @@ public class LobbyDatabase {
 
     public static boolean canRerollQuest(Quest q){
         if(Objects.equals(q.questNumber, "-1")) return false;
+        return canRerollQuest(q.player);
+    }
+
+    public static boolean canRerollQuest(OfflinePlayer p){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT quest_rerolls FROM LobbyPlayers WHERE player_uuid = ?;");
-            prep.setBytes(1, uuid_to_bytes(q.player));
+            prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
             set.next();
             if (set.getInt("quest_rerolls") > 0){
