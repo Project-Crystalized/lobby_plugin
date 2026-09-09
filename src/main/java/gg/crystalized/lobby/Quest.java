@@ -266,13 +266,15 @@ public class Quest {
             }
         }
 
-        HashMap<Quest, Integer> progress = getProgresses(p);
+        if(!real.isEmpty()){
+            HashMap<Quest, Integer> progress = getProgresses(p);
 
-        for(Quest q : real){
-            if(progress.get(q) >= q.amount){
-                LobbyDatabase.questCompleted(q.player, q.questNumber);
-                q.done = true;
-                App.Quest.activateApps(p);
+            for(Quest q : real){
+                if(progress.get(q) >= q.amount){
+                    LobbyDatabase.questCompleted(q.player, q.questNumber);
+                    q.done = true;
+                    App.Quest.activateApps(p);
+                }
             }
         }
 
