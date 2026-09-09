@@ -91,20 +91,35 @@ public class Leaderboards {
 
 class WinLeaderboard {
 	static HashMap<Player, HashMap<String, Integer>> leaderboards = new HashMap<>();
+	boolean lastErrorLogged = false;
+
+	static class LeaderboardSnapshot {
+		Component base;
+		HashMap<UUID, int[]> stats;
+		int total;
+
+		LeaderboardSnapshot(Component base, HashMap<UUID, int[]> stats, int total){
+			this.base = base;
+			this.stats = stats;
+			this.total = total;
+		}
+	}
 
 	public WinLeaderboard(String type, Location loc) {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
+				LeaderboardSnapshot snap = computeSnapshot(type);
 				for(Player p : Bukkit.getOnlinePlayers()) {
-                    leaderboards.computeIfAbsent(p, k -> new HashMap<>());
+					leaderboards.computeIfAbsent(p, k -> new HashMap<>());
 					if(!leaderboards.get(p).containsKey(type)){
-						createDisplay(p, loc, type);
+						createDisplay(p, loc, type, snap);
 						continue;
 					}
+					Component text = buildText(p, snap);
 					Integer num = 3;
 					Integer one = 1;
-					List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, generateText(p, type)), new EntityData(25, EntityDataTypes.INT, 1345466930), new EntityData(27, EntityDataTypes.BYTE, one.byteValue()));
+					List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, text), new EntityData(25, EntityDataTypes.INT, 1345466930), new EntityData(27, EntityDataTypes.BYTE, one.byteValue()));
 					WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(leaderboards.get(p).get(type), data);
 					User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
 					if(user != null) {
@@ -115,7 +130,7 @@ class WinLeaderboard {
 		}.runTaskTimer(Lobby_plugin.getInstance(), 1, (20 * 10));
 	}
 
-	static void createDisplay(Player p, Location loc, String type){
+	static void createDisplay(Player p, Location loc, String type, LeaderboardSnapshot snap){
 		int id = Nametag.EntityId;
 		leaderboards.get(p).put(type, id);
 		Nametag.EntityId++;
@@ -125,7 +140,7 @@ class WinLeaderboard {
 
 		Integer num = 3;
 		Integer one = 1;
-		List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, generateText(p, type)), new EntityData(25, EntityDataTypes.INT, 1345466930), new EntityData(27, EntityDataTypes.BYTE, one.byteValue()));
+		List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, buildText(p, snap)), new EntityData(25, EntityDataTypes.INT, 1345466930), new EntityData(27, EntityDataTypes.BYTE, one.byteValue()));
 		WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(id, data);
 		User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
 		if(user != null) {
@@ -133,21 +148,19 @@ class WinLeaderboard {
 		}
 	}
 
-	public static Component generateText(Player p, String type){
+	LeaderboardSnapshot computeSnapshot(String type){
 		GameType t = GameType.findType(type);
-
 		if(t == null){
-			return text("null");
+			return new LeaderboardSnapshot(text("null"), new HashMap<>(), 0);
 		}
 		try (Connection conn = DriverManager.getConnection(t.url)) {
 			String query = "SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + " GROUP BY player_uuid ORDER BY SUM(" + t.dbColumn + ") DESC;";
 			ResultSet res = conn.createStatement().executeQuery(query);
 
-			Component leaderboard_rows = text("Game Leaderboard\n").color(GOLD).append(t.title);
+			Component base = text("Game Leaderboard\n").color(GOLD).append(t.title);
 			ArrayList<TextComponent> topKey = new ArrayList<>();
 			HashMap<TextComponent, Integer> top = new HashMap<>();
-			Integer rank = null;
-			Integer win = null;
+			HashMap<UUID, int[]> stats = new HashMap<>();
 
 			int h = 0;
 			String longest = "";
@@ -164,14 +177,7 @@ class WinLeaderboard {
 				if(balance(name_str) > balance(longest)){
 					longest = name_str;
 				}
-
-				if(Bukkit.getOfflinePlayer(uuid).equals(p)){
-					win = wins;
-					rank = h;
-					if(balance(((TextComponent)Ranks.getName(p)).content()) > balance(longest)){
-						longest = PlainTextComponentSerializer.plainText().serialize(Ranks.getName(p));
-					}
-				}
+				stats.put(uuid, new int[]{h, wins});
 
 				if(h <= 10){
 					topKey.add(name);
@@ -179,6 +185,7 @@ class WinLeaderboard {
 				}
 			}
 
+			lastErrorLogged = false;
 			int total = balance(longest + "......" + "1000000");
 			for(int j = 0; j <= topKey.size()-1; j++){
 				String top_str = PlainTextComponentSerializer.plainText().serialize(topKey.get(j));
@@ -187,29 +194,43 @@ class WinLeaderboard {
 				int padding = total - (balance(num_str) + balance(top_str) + balance("" + top.get(topKey.get(j))));
 				//Bukkit.getLogger().warning(type + ": " + top.get(topKey.get(j)).content());
 				String dots = ".".repeat(padding);
-				leaderboard_rows = leaderboard_rows.append(text("\n")).append(num);
-				leaderboard_rows = leaderboard_rows.append(topKey.get(j)).append(text(dots).color(GRAY));
-				leaderboard_rows = leaderboard_rows.append(text("" + top.get(topKey.get(j)))).color(GREEN);
+				base = base.append(text("\n")).append(num);
+				base = base.append(topKey.get(j)).append(text(dots).color(GRAY));
+				base = base.append(text("" + top.get(topKey.get(j)))).color(GREEN);
 			}
 
-			if(rank == null){
-				return leaderboard_rows;
-			}
-
-			leaderboard_rows = leaderboard_rows.append(text("\n")).append(text("-----------------").color(GRAY));
-			Component num = Leaderboards.get_styles(rank);
-			String num_str = PlainTextComponentSerializer.plainText().serialize(num);
-			int padding = total - (balance(num_str) + balance((PlainTextComponentSerializer.plainText().serialize(Ranks.getName(p)))) + balance("" + win));
-			String dots = ".".repeat(padding);
-			leaderboard_rows = leaderboard_rows.append(text("\n")).append(num);
-			leaderboard_rows = leaderboard_rows.append(Ranks.getName(p)).append(text(dots).color(GRAY));
-			leaderboard_rows = leaderboard_rows.append(text("" + win)).color(GREEN);
-
-			return leaderboard_rows;
+			return new LeaderboardSnapshot(base, stats, total);
 		} catch (SQLException e) {
-			//Bukkit.getLogger().warning("error opening database: " + e);
-			return null;
+			Component fallbackBase = text("Game Leaderboard\n").color(GOLD).append(t.title);
+			try (Connection conn = DriverManager.getConnection(t.url)) {
+				ResultSet count = conn.createStatement().executeQuery("SELECT COUNT(*) AS c FROM " + t.dbName);
+				if(count.next() && count.getInt("c") > 0){
+					if(!lastErrorLogged){
+						Bukkit.getLogger().warning("Leaderboard error (" + type + "): " + e);
+						lastErrorLogged = true;
+					}
+					fallbackBase = fallbackBase.append(text("\n").append(text("Leaderboard Error").color(RED)));
+				}
+			} catch (SQLException ignored) {
+			}
+			return new LeaderboardSnapshot(fallbackBase, new HashMap<>(), 0);
 		}
+	}
+
+	static Component buildText(Player p, LeaderboardSnapshot snap){
+		int[] own = snap.stats.get(p.getUniqueId());
+		if(own == null){
+			return snap.base;
+		}
+		Component rows = snap.base.append(text("\n")).append(text("-----------------").color(GRAY));
+		Component num = Leaderboards.get_styles(own[0]);
+		String num_str = PlainTextComponentSerializer.plainText().serialize(num);
+		int padding = snap.total - (balance(num_str) + balance(PlainTextComponentSerializer.plainText().serialize(Ranks.getName(p))) + balance("" + own[1]));
+		String dots = ".".repeat(padding);
+		rows = rows.append(text("\n")).append(num);
+		rows = rows.append(Ranks.getName(p)).append(text(dots).color(GRAY));
+		rows = rows.append(text("" + own[1])).color(GREEN);
+		return rows;
 	}
 
 	String get_small_cap_num(int i) {
