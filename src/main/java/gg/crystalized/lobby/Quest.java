@@ -231,12 +231,64 @@ public class Quest {
 
     public static void checkAndComplete(Player p){
         ArrayList<Quest> quests = getQuests(p);
+        ArrayList<Quest> real = new ArrayList<>();
+        Quest completeAll = null;
         for(Quest q : quests){
             if(q.done) continue;
-            int progress = q.getProgress();
-            if(progress >= q.amount){
-        				LobbyDatabase.questCompleted(q.player, q.questNumber);
-        				q.done = true;
+            if(Objects.equals(q.questNumber, "-1")){
+                completeAll = q;
+            }else{
+                real.add(q);
+            }
+        }
+
+        int lastRoll = LobbyDatabase.getLastQuestRoll(p);
+        HashMap<Quest, Integer> progress = new HashMap<>();
+        HashMap<Game, ArrayList<Quest>> byGame = new HashMap<>();
+        for(Quest q : real){
+            byGame.computeIfAbsent(q.game, k -> new ArrayList<>()).add(q);
+        }
+
+        for(Map.Entry<Game, ArrayList<Quest>> e : byGame.entrySet()){
+            Game g = e.getKey();
+            ArrayList<Quest> group = e.getValue();
+            try(Connection conn = DriverManager.getConnection(g.URL)){
+                StringBuilder cols = new StringBuilder();
+                for(int i = 0; i < group.size(); i++){
+                    Quest q = group.get(i);
+                    if(i > 0) cols.append(", ");
+                    cols.append(q.forSeveral ? "SUM(" : "MAX(").append(q.category.columnName).append(") AS q").append(i);
+                }
+                String sql = "SELECT " + cols + " FROM " + g.playerTableName + " INNER JOIN " + g.tableName + " ON " + g.playerTableName + ".game=" + g.tableName + ".game_id WHERE timestamp > ? AND player_uuid = ?;";
+                PreparedStatement prep = conn.prepareStatement(sql);
+                prep.setInt(1, lastRoll);
+                prep.setBytes(2, uuid_to_bytes(p));
+                ResultSet set = prep.executeQuery();
+                set.next();
+                for(int i = 0; i < group.size(); i++){
+                    progress.put(group.get(i), set.getInt("q" + i));
+                }
+            }catch(SQLException e2){
+                for(Quest q : group) progress.put(q, 0);
+            }
+        }
+
+        for(Quest q : real){
+            if(progress.get(q) >= q.amount){
+                LobbyDatabase.questCompleted(q.player, q.questNumber);
+                q.done = true;
+                App.Quest.activateApps(p);
+            }
+        }
+
+        if(completeAll != null){
+            int num = 0;
+            for(Quest q : getQuests(p)){
+                if(q.done) num++;
+            }
+            if(num >= completeAll.amount){
+                LobbyDatabase.questCompleted(completeAll.player, completeAll.questNumber);
+                completeAll.done = true;
                 App.Quest.activateApps(p);
             }
         }
