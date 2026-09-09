@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
@@ -158,7 +159,11 @@ public class Setting {
     }
 
     public static void updatePlayerVisibility(Player p){
-        double value = toDouble(LobbyDatabase.fetchSettings(p).get("show_players"));
+        updatePlayerVisibility(p, LobbyDatabase.fetchSettings(p));
+    }
+
+    public static void updatePlayerVisibility(Player p, HashMap<String, Object> settings){
+        double value = toDouble(settings.get("show_players"));
         HashSet<UUID> friends = value == 0.5 ? LobbyDatabase.getFriends(p) : null;
         for(Player player : Bukkit.getOnlinePlayers()){
             if (CitizensAPI.getNPCRegistry().isNPC(player)) {
@@ -174,11 +179,15 @@ public class Setting {
     }
 
     public static void updatePlayerHeight(Player p){
+        updatePlayerHeight(p, LobbyDatabase.fetchSettings(p));
+    }
+
+    public static void updatePlayerHeight(Player p, HashMap<String, Object> settings){
         AttributeInstance instance = p.getAttribute(SCALE);
         if(instance.getModifier(key) != null) {
             instance.removeModifier(key);
         }
-        double value = toDouble(LobbyDatabase.fetchSettings(p).get("height"));
+        double value = toDouble(settings.get("height"));
         double amount = 0;
         if(value == 1){
             amount = 1;

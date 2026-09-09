@@ -186,26 +186,13 @@ public class LobbyDatabase {
         }
     }
 
-    public static void updateLastLogin(Player player){
+    public static void updateLoginStats(Player player){
         try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET last_login = unixepoch() WHERE player_uuid = ?;");
+            PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET last_login = unixepoch(), times_logged_in = times_logged_in + 1 WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(player));
             prep.executeUpdate();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
-            //Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
-        }
-    }
-
-    public static void updateLoginTimes(Player player){
-        try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET times_logged_in = ? WHERE player_uuid = ?;");
-            prep.setInt(1, getTimesLoggedIn(player) + 1);
-            prep.setBytes(2, uuid_to_bytes(player));
-            prep.executeUpdate();
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            //Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
         }
     }
 

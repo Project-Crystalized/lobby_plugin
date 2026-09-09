@@ -29,6 +29,7 @@ import static net.kyori.adventure.text.Component.text;
 import static org.bukkit.entity.EntityType.TEXT_DISPLAY;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public final class PlayerListener implements Listener {
 	private LobbyChatRenderer chat_renderer = new LobbyChatRenderer();
@@ -75,13 +76,13 @@ public final class PlayerListener implements Listener {
 
 		Ranks.renderTabList(p);
 
-		Setting.updatePlayerVisibility(p);
-		Setting.updatePlayerHeight(p);
+		HashMap<String, Object> settings = LobbyDatabase.fetchSettings(p);
+		Setting.updatePlayerVisibility(p, settings);
+		Setting.updatePlayerHeight(p, settings);
 
 		LevelManager.updateLevel(p);
 		LevelManager.rewardForLogin(p);
-		LobbyDatabase.updateLastLogin(p);
-		LobbyDatabase.updateLoginTimes(p);
+		LobbyDatabase.updateLoginStats(p);
 		if(inDatabase)LobbyDatabase.rollOrFetchQuests(p);
 		Quest.checkAndComplete(p);
 		Achievement.checkAndComplete(p);
