@@ -558,25 +558,12 @@ public class LobbyDatabase {
     }
 
     public static Cosmetic getShardcore(OfflinePlayer p){
-        try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("SELECT cosmetic_id FROM Cosmetics WHERE player_uuid = ? AND currently_wearing = 1;");
-            prep.setBytes(1, uuid_to_bytes(p));
-            ResultSet set = prep.executeQuery();
-            while(set.next()){
-                if(Cosmetic.getCosmeticById(set.getInt("cosmetic_id")) == null){
-                    continue;
-                }
-
-                if(Cosmetic.getCosmeticById(set.getInt("cosmetic_id")).slot == EquipmentSlot.HAND){
-                    return Cosmetic.getCosmeticById(set.getInt("cosmetic_id"));
-                }
+        for(Cosmetic c : getWornCosmetics(p)){
+            if(c.slot == EquipmentSlot.HAND){
+                return c;
             }
-            return null;
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't couldn't get shardcore");
-            return null;
         }
+        return null;
     }
 
     public static ArrayList<Cosmetic> getWornCosmetics(OfflinePlayer p){
