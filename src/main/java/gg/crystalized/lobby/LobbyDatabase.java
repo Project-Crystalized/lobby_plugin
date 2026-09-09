@@ -579,6 +579,26 @@ public class LobbyDatabase {
         }
     }
 
+    public static ArrayList<Cosmetic> getWornCosmetics(OfflinePlayer p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT cosmetic_id FROM Cosmetics WHERE player_uuid = ? AND currently_wearing = 1;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            ResultSet set = prep.executeQuery();
+            ArrayList<Cosmetic> list = new ArrayList<>();
+            while(set.next()){
+                Cosmetic c = Cosmetic.getCosmeticById(set.getInt("cosmetic_id"));
+                if(c != null){
+                    list.add(c);
+                }
+            }
+            return list;
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't get worn cosmetics");
+            return new ArrayList<>();
+        }
+    }
+
     public static void rollOrFetchQuests(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT last_quest_roll FROM LobbyPlayers WHERE player_uuid = ?;");

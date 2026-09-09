@@ -258,16 +258,16 @@ public class Cosmetic{
     }
 
     public static void giveCosmetics(Player p){
-        for(Cosmetic c : Cosmetic.cosmetics){
-            if(c.isWearing(p) && c.slot != EquipmentSlot.HAND){
+        for(Cosmetic c : LobbyDatabase.getWornCosmetics(p)){
+            if(c.slot != EquipmentSlot.HAND){
                 p.sendEquipmentChange(p, c.slot, c.build(p, true, false, CosmeticView.isViewing(p, c)));
             }
         }
     }
 
     public static void giveCosmeticsInGame(Player p){
-        for(Cosmetic c : Cosmetic.cosmetics){
-            if(c.isWearing(p) && c.slot == EquipmentSlot.HEAD){
+        for(Cosmetic c : LobbyDatabase.getWornCosmetics(p)){
+            if(c.slot == EquipmentSlot.HEAD){
                 p.sendEquipmentChange(p, c.slot, c.build(p, true, false, CosmeticView.isViewing(p, c)));
             }
         }
