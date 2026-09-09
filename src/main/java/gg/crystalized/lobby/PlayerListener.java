@@ -65,8 +65,7 @@ public final class PlayerListener implements Listener {
 				new PotionEffect(PotionEffectType.HUNGER, PotionEffect.INFINITE_DURATION, 1, false, false, true));
 		p.setGameMode(GameMode.ADVENTURE);
 		p.getInventory().clear();
-		LobbyDatabase.updatePlayerNames(p);
-		LobbyDatabase.updateSkin(p);
+		LobbyDatabase.updatePlayerData(p);
 
 		new BukkitRunnable(){
 			public void run(){

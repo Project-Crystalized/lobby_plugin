@@ -414,43 +414,25 @@ public class LobbyDatabase {
         }
     }
 
-    public static void updatePlayerNames(Player p){
+    public static void updatePlayerData(Player p){
         try{
             Properties sqlprop = new Properties();
             sqlprop.put("transaction_mode", "IMMEDIATE");
             Connection conn = DriverManager.getConnection(URL, sqlprop);
             conn.setAutoCommit(false);
-            String makeNewEntry = "UPDATE LobbyPlayers SET player_name = ? WHERE player_uuid = ?";
+            String makeNewEntry = "UPDATE LobbyPlayers SET player_name = ?, skin_url = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setString(1, p.getName());
-            prepared.setBytes(2, uuid_to_bytes(p));
-            prepared.executeUpdate();
-            conn.commit();
-            conn.close();
-        }catch(SQLException e) {
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("update name entry for " + p.getName() + " UUID: " + p.getUniqueId());
-        }
-    }
-
-    public static void updateSkin(Player p){
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
-            conn.setAutoCommit(false);
-            String makeNewEntry = "UPDATE LobbyPlayers SET skin_url = ? WHERE player_uuid = ?";
-            PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             //Skin can be null in offline mode (no textures) - store empty string instead of NPEing
             java.net.URL skin = p.getPlayerProfile().getTextures().getSkin();
-            prepared.setString(1, skin == null ? "" : skin.toString());
-            prepared.setBytes(2, uuid_to_bytes(p));
+            prepared.setString(2, skin == null ? "" : skin.toString());
+            prepared.setBytes(3, uuid_to_bytes(p));
             prepared.executeUpdate();
             conn.commit();
             conn.close();
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("update skin entry for " + p.getName() + " UUID: " + p.getUniqueId());
+            Bukkit.getLogger().warning("update player data entry for " + p.getName() + " UUID: " + p.getUniqueId());
         }
     }
 
