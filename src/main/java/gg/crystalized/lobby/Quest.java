@@ -347,21 +347,21 @@ public class Quest {
     public enum Category{
         //IMPORTANT: the order of the categories mustn't change
         empty("empty", null, 0, 0, false, Difficulty.EXPERT, ""),
-        ls_was_winner("was_winner", Game.ls, 1, 10, false, Difficulty.MEDIUM, "crystalized.shardcore.quests.category.wins"),
-        bombs_placed("placed_bombs", Game.ls, 1,3 , true, Difficulty.EASY , "crystalized.shardcore.quests.catagory.bombs_placed"),
-        bombs_broken("broken_bombs", Game.ls, 1, 3, true, Difficulty.EASY, "crystalized.shardcore.quests.category.bombs_broken"),
-        ls_kills("kills", Game.ls, 1, 7, true, Difficulty.EASY, "crystalized.shardcore.quests.category.kills"),
-        ls_assists("assists", Game.ls, 1, 5, true, Difficulty.EASY, "crystalized.shardcore.quests.category.assists"),
-        ls_hits_dealt("hits_dealt", Game.ls, 20, 45, true, Difficulty.EASY, "crystalized.shardcore.quests.category.hits_dealt"),
-        ls_damage_dealt("damage_dealt", Game.ls, 30, 100, true, Difficulty.EASY, "crystalized.shardcore.quests.category.damage_dealt"),
-        ko_games_won("games_won", Game.ko, 1, 10, false, Difficulty.MEDIUM, "crystalized.shardcore.quests.category.wins"),
-        ko_kills("kills", Game.ko, 5, 10, true, Difficulty.EASY, "crystalized.shardcore.quests.category.kills"),
-        ko_items_used("items_used", Game.ko, 1, 5, true, Difficulty.EASY, "crystalized.shardcore.quests.category.items_used"),
-        ko_blocks_placed("blocks_placed", Game.ko, 50, 150, true, Difficulty.EASY, "crystalized.shardcore.quests.category.blocks_placed"),
-        ko_blocks_broken("blocks_broken", Game.ko, 20, 50, true, Difficulty.EASY, "crystalized.shardcore.quests.category.blocks_broken"),
+        ls_was_winner("was_winner", Game.ls, 1, 15, false, Difficulty.MEDIUM, "crystalized.shardcore.quests.category.wins"),
+        bombs_placed("placed_bombs", Game.ls, 3,16, false, Difficulty.EASY , "crystalized.shardcore.quests.catagory.bombs_placed"),
+        bombs_broken("broken_bombs", Game.ls, 2, 12, false, Difficulty.EASY, "crystalized.shardcore.quests.category.bombs_broken"),
+        ls_kills("kills", Game.ls, 3, 40, false, Difficulty.EASY, "crystalized.shardcore.quests.category.kills"),
+        ls_assists("assists", Game.ls, 3, 20, false, Difficulty.EASY, "crystalized.shardcore.quests.category.assists"),
+        //ls_hits_dealt("hits_dealt", Game.ls, 20, 45, false, Difficulty.EASY, "crystalized.shardcore.quests.category.hits_dealt"),
+        ls_damage_dealt("damage_dealt", Game.ls, 80, 1000, false, Difficulty.EASY, "crystalized.shardcore.quests.category.damage_dealt"),
+        ko_games_won("games_won", Game.ko, 3, 10, false, Difficulty.EASY, "crystalized.shardcore.quests.category.wins"),
+        ko_kills("kills", Game.ko, 6, 40, false, Difficulty.EASY, "crystalized.shardcore.quests.category.kills"),
+        ko_items_used("items_used", Game.ko, 4, 20, false, Difficulty.EASY, "crystalized.shardcore.quests.category.items_used"),
+        ko_blocks_placed("blocks_placed", Game.ko, 50, 800, false, Difficulty.EASY, "crystalized.shardcore.quests.category.blocks_placed"),
+        ko_blocks_broken("blocks_broken", Game.ko, 20, 200, false, Difficulty.EASY, "crystalized.shardcore.quests.category.blocks_broken"),
         cb_games_won("games_won", Game.cb, 1, 10, false, Difficulty.MEDIUM, "crystalized.shardcore.quests.category.wins"),
-        cb_kills("kills", Game.cb, 1, 10, true, Difficulty.EASY, "crystalized.shardcore.quests.category.kills"),
-        nexus_kills("nexus_kills", Game.cb, 1, 5, true, Difficulty.MEDIUM, "crystalized.shardcore.quests.category.nexus_kills");
+        cb_kills("kills", Game.cb, 6, 60, false, Difficulty.EASY, "crystalized.shardcore.quests.category.kills"),
+        nexus_kills("nexus_kills", Game.cb, 2, 20, false, Difficulty.MEDIUM, "crystalized.shardcore.quests.category.nexus_kills");
 
         final String columnName;
         final Game game;
@@ -391,10 +391,10 @@ public class Quest {
         }
     }
     enum Difficulty{
-        EASY(10, 5, "ui/scn3/quests/quest_easy", "ui/scn3/achivements/locked_easy" ,"crystalized.shardcore.quests.difficulty.easy", DARK_GREEN),
-        MEDIUM(30, 10, "ui/scn3/quests/quest_medium", "ui/scn3/achivements/locked_medium" ,"crystalized.shardcore.quests.difficulty.medium", YELLOW),
-        HARD(50, 20, "ui/scn3/quests/quest_hard", "ui/scn3/achivements/locked_hard" ,"crystalized.shardcore.quests.difficulty.hard", RED),
-        EXPERT(80, 30, "ui/scn3/quests/quest_expert", "ui/scn3/achivements/locked_expert" ,"crystalized.shardcore.quests.difficulty.expert", LIGHT_PURPLE);
+        EASY(30, 5, "ui/scn3/quests/quest_easy", "ui/scn3/achivements/locked_easy" ,"crystalized.shardcore.quests.difficulty.easy", DARK_GREEN),
+        MEDIUM(50, 10, "ui/scn3/quests/quest_medium", "ui/scn3/achivements/locked_medium" ,"crystalized.shardcore.quests.difficulty.medium", YELLOW),
+        HARD(80, 20, "ui/scn3/quests/quest_hard", "ui/scn3/achivements/locked_hard" ,"crystalized.shardcore.quests.difficulty.hard", RED),
+        EXPERT(100, 30, "ui/scn3/quests/quest_expert", "ui/scn3/achivements/locked_expert" ,"crystalized.shardcore.quests.difficulty.expert", LIGHT_PURPLE);
         final int money;
         final int exp;
         final String model;
