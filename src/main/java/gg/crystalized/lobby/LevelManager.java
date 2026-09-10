@@ -2,6 +2,7 @@ package gg.crystalized.lobby;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
@@ -42,7 +43,8 @@ public class LevelManager implements Listener {
     public static void updateLevel(Player p){
         HashMap<String, Object> map = LobbyDatabase.fetchPlayerData(p);
         if(map == null) return;
-        p.setLevel((Integer)map.get("level"));
+        Integer level = (Integer)map.get("level");
+        p.setLevel(level);
         p.setExp(getDouble((map.get("exp_to_next_lvl"))).floatValue());
     }
 
