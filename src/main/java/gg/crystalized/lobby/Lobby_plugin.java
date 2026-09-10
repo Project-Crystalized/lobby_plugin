@@ -179,9 +179,9 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 				return;
 			}
 			if(i == 1){
-				FriendsMenu.areOnline.put(p, true);
+				FriendsMenu.areOnline.put(p, System.currentTimeMillis());
 			}else{
-				FriendsMenu.areOnline.put(p, false);
+				FriendsMenu.areOnline.remove(p);
 			}
 		}
 	}

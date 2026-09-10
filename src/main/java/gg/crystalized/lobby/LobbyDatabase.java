@@ -186,26 +186,13 @@ public class LobbyDatabase {
         }
     }
 
-    public static void updateLastLogin(Player player){
+    public static void updateLoginStats(Player player){
         try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET last_login = unixepoch() WHERE player_uuid = ?;");
+            PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET last_login = unixepoch(), times_logged_in = COALESCE(times_logged_in, 0) + 1 WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(player));
             prep.executeUpdate();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
-            //Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
-        }
-    }
-
-    public static void updateLoginTimes(Player player){
-        try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET times_logged_in = ? WHERE player_uuid = ?;");
-            prep.setInt(1, getTimesLoggedIn(player) + 1);
-            prep.setBytes(2, uuid_to_bytes(player));
-            prep.executeUpdate();
-        }catch(SQLException e){
-            Bukkit.getLogger().warning(e.getMessage());
-            //Bukkit.getLogger().warning("couldn't get data for " + p.getName() + "UUID: " + p.getUniqueId());
         }
     }
 
@@ -334,6 +321,38 @@ public class LobbyDatabase {
         }
     }
 
+    public static void unEquipCosmetics(Player p, Cosmetic exclude){
+        StringBuilder in = new StringBuilder();
+        int count = 0;
+        for(Cosmetic c : Cosmetic.getCosmeticsBySlot(exclude.slot)){
+            if(c.id != exclude.id){
+                if(count > 0){
+                    in.append(",");
+                }
+                in.append("?");
+                count++;
+            }
+        }
+        if(count == 0){
+            return;
+        }
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("UPDATE Cosmetics SET currently_wearing = 0 WHERE player_uuid = ? AND cosmetic_id IN (" + in + ");");
+            prep.setBytes(1, uuid_to_bytes(p));
+            int param = 2;
+            for(Cosmetic c : Cosmetic.getCosmeticsBySlot(exclude.slot)){
+                if(c.id != exclude.id){
+                    prep.setInt(param, c.id);
+                    param++;
+                }
+            }
+            prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("failed to unequip cosmetics in database");
+        }
+    }
+
     public static boolean isPlayerInDatabase(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT COUNT(*) AS count FROM LobbyPlayers WHERE player_uuid = ?;");
@@ -414,43 +433,25 @@ public class LobbyDatabase {
         }
     }
 
-    public static void updatePlayerNames(Player p){
+    public static void updatePlayerData(Player p){
         try{
             Properties sqlprop = new Properties();
             sqlprop.put("transaction_mode", "IMMEDIATE");
             Connection conn = DriverManager.getConnection(URL, sqlprop);
             conn.setAutoCommit(false);
-            String makeNewEntry = "UPDATE LobbyPlayers SET player_name = ? WHERE player_uuid = ?";
+            String makeNewEntry = "UPDATE LobbyPlayers SET player_name = ?, skin_url = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setString(1, p.getName());
-            prepared.setBytes(2, uuid_to_bytes(p));
-            prepared.executeUpdate();
-            conn.commit();
-            conn.close();
-        }catch(SQLException e) {
-            Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("update name entry for " + p.getName() + " UUID: " + p.getUniqueId());
-        }
-    }
-
-    public static void updateSkin(Player p){
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
-            conn.setAutoCommit(false);
-            String makeNewEntry = "UPDATE LobbyPlayers SET skin_url = ? WHERE player_uuid = ?";
-            PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             //Skin can be null in offline mode (no textures) - store empty string instead of NPEing
             java.net.URL skin = p.getPlayerProfile().getTextures().getSkin();
-            prepared.setString(1, skin == null ? "" : skin.toString());
-            prepared.setBytes(2, uuid_to_bytes(p));
+            prepared.setString(2, skin == null ? "" : skin.toString());
+            prepared.setBytes(3, uuid_to_bytes(p));
             prepared.executeUpdate();
             conn.commit();
             conn.close();
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("update skin entry for " + p.getName() + " UUID: " + p.getUniqueId());
+            Bukkit.getLogger().warning("update player data entry for " + p.getName() + " UUID: " + p.getUniqueId());
         }
     }
 
@@ -482,6 +483,7 @@ public class LobbyDatabase {
             prepared.executeUpdate();
             conn.commit();
             conn.close();
+            Ranks.rankCache.remove(p.getUniqueId());
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("set rank for " + p.getName() + " UUID: " + p.getUniqueId());
@@ -502,6 +504,7 @@ public class LobbyDatabase {
             prepared.executeUpdate();
             conn.commit();
             conn.close();
+            Ranks.rankCache.remove(p.getUniqueId());
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("set payed rank for " + p.getName() + " UUID: " + p.getUniqueId());
@@ -535,6 +538,23 @@ public class LobbyDatabase {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't check excistence in database for " + p.getName() + " UUID: " + p.getUniqueId());
             return false;
+        }
+    }
+
+    public static HashSet<UUID> getFriends(OfflinePlayer p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT friend_uuid FROM Friends WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            ResultSet set = prep.executeQuery();
+            HashSet<UUID> friends = new HashSet<>();
+            while(set.next()){
+                friends.add(bytes_to_uuid(set.getBytes("friend_uuid")));
+            }
+            return friends;
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't get friends of " + p.getName());
+            return new HashSet<>();
         }
     }
 
@@ -574,24 +594,51 @@ public class LobbyDatabase {
     }
 
     public static Cosmetic getShardcore(OfflinePlayer p){
+        for(Cosmetic c : getWornCosmetics(p)){
+            if(c.slot == EquipmentSlot.HAND){
+                return c;
+            }
+        }
+        return null;
+    }
+
+    public static ArrayList<Cosmetic> getWornCosmetics(OfflinePlayer p){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT cosmetic_id FROM Cosmetics WHERE player_uuid = ? AND currently_wearing = 1;");
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
+            ArrayList<Cosmetic> list = new ArrayList<>();
             while(set.next()){
-                if(Cosmetic.getCosmeticById(set.getInt("cosmetic_id")) == null){
-                    continue;
-                }
-
-                if(Cosmetic.getCosmeticById(set.getInt("cosmetic_id")).slot == EquipmentSlot.HAND){
-                    return Cosmetic.getCosmeticById(set.getInt("cosmetic_id"));
+                Cosmetic c = Cosmetic.getCosmeticById(set.getInt("cosmetic_id"));
+                if(c != null){
+                    list.add(c);
                 }
             }
-            return null;
+            return list;
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("couldn't couldn't get shardcore");
-            return null;
+            Bukkit.getLogger().warning("couldn't get worn cosmetics");
+            return new ArrayList<>();
+        }
+    }
+
+    public static HashMap<Cosmetic, Boolean> getOwnedCosmetics(OfflinePlayer p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT cosmetic_id, currently_wearing FROM Cosmetics WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            ResultSet set = prep.executeQuery();
+            HashMap<Cosmetic, Boolean> map = new HashMap<>();
+            while(set.next()){
+                Cosmetic c = Cosmetic.getCosmeticById(set.getInt("cosmetic_id"));
+                if(c != null){
+                    map.put(c, set.getInt("currently_wearing") == 1);
+                }
+            }
+            return map;
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't get owned cosmetics");
+            return new HashMap<>();
         }
     }
 
@@ -731,9 +778,13 @@ public class LobbyDatabase {
 
     public static boolean canRerollQuest(Quest q){
         if(Objects.equals(q.questNumber, "-1")) return false;
+        return canRerollQuest(q.player);
+    }
+
+    public static boolean canRerollQuest(OfflinePlayer p){
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT quest_rerolls FROM LobbyPlayers WHERE player_uuid = ?;");
-            prep.setBytes(1, uuid_to_bytes(q.player));
+            prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
             set.next();
             if (set.getInt("quest_rerolls") > 0){
@@ -861,7 +912,7 @@ public class LobbyDatabase {
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
             while(set.next()){
-                Achievement a = new Achievement(p, AchieveTemplate.getAchieveTemplate(set.getString("internal_name")), set.getInt("stage"), set.getInt("progress"), set.getInt("done") == 1, set.getInt("claimed") == 1);
+                Achievement a = new Achievement(p, AchieveTemplate.getAchieveTemplate(set.getString("internal_name")), set.getInt("progress"), set.getInt("stage"), set.getInt("done") == 1, set.getInt("claimed") == 1);
                 list.add(a);
             }
             return list;
@@ -923,6 +974,29 @@ public class LobbyDatabase {
         }
     }
 
+    public static void syncAchievements(OfflinePlayer p, List<Achievement> list){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT internal_name, progress, done, claimed, stage FROM Achievements WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            ResultSet set = prep.executeQuery();
+            while(set.next()){
+                String internalName = set.getString("internal_name");
+                for(Achievement a : list){
+                    if(a.temp.internalName.equals(internalName)){
+                        a.progress = set.getInt("progress");
+                        a.done = set.getInt("done") == 1;
+                        a.claimed = set.getInt("claimed") == 1;
+                        a.stage = set.getInt("stage");
+                        break;
+                    }
+                }
+            }
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't sync achievements");
+        }
+    }
+
     public static byte[] uuid_to_bytes(Player p) {
         ByteBuffer bb = ByteBuffer.allocate(16);
         UUID uuid = p.getUniqueId();
@@ -937,6 +1011,13 @@ public class LobbyDatabase {
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());
         return bb.array();
+    }
+
+    public static UUID bytes_to_uuid(byte[] bytes){
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+        long high = byteBuffer.getLong();
+        long low = byteBuffer.getLong();
+        return new UUID(high, low);
     }
 
     public static byte[] shortToBytes(short[] s){

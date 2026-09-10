@@ -140,32 +140,6 @@ public class Achievement{
         return null;
     }
 
-    public static void resyncInfo(OfflinePlayer p) {
-        List<Achievement> list = achievements.get(p.getUniqueId());
-        if (list == null) return;
-        for (Achievement a : list) {
-            try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
-                PreparedStatement prep = conn.prepareStatement("SELECT * FROM Achievements WHERE player_uuid = ?;");
-                prep.setBytes(1, LobbyDatabase.uuid_to_bytes(p));
-                ResultSet set = prep.executeQuery();
-                while (set.next()) {
-                    if (set.getString("internal_name").equals(a.temp.internalName)) {
-                        int done = set.getInt("done");
-                        a.done = done == 1;
-
-                        int claimed = set.getInt("claimed");
-                        a.claimed = claimed == 1;
-
-                        a.stage = set.getInt("stage");
-                        makeIconsBlink(p, a);
-                    }
-                }
-            } catch (SQLException ex) {
-                Lobby_plugin.getInstance().getLogger().warning(ex.toString());
-            }
-        }
-    }
-
     public ItemStack build(){
         boolean showIcon = stage > 0 && !claimed;
         ItemStack item = new ItemStack(Material.COAL);
@@ -192,7 +166,7 @@ public class Achievement{
             lore.add(Component.translatable("crystalized.shardcore.quests.claim").color(GREEN).decoration(ITALIC, false));
             lore.add(Component.empty());
         }
-        lore.add(Component.translatable("crystalized.shardcore.quests.progress").append(Component.text(getProgress() + "/" + amount + "%")).color(WHITE).decoration(ITALIC, false));
+        lore.add(Component.translatable("crystalized.shardcore.quests.progress").append(Component.text(progress + "/" + amount + "%")).color(WHITE).decoration(ITALIC, false));
         lore.add(Component.translatable("crystalized.shardcore.quests.reward").append(Component.text(getMoney() + "\ue15c   " + getXp() + "xp")).color(WHITE).decoration(ITALIC, false));
         lore.add(Component.translatable("crystalized.shardcore.quests.stage").append(Component.text((stage + 1) + "/" + (temp.stages + 1))).color(WHITE).decoration(ITALIC, false));
 
@@ -212,7 +186,6 @@ public class Achievement{
             LobbyDatabase.setAchievementDone(this);
             //TODO placeholder sound
             player.getPlayer().playSound(player.getPlayer(), "minecraft:entity.experience_orb.pickup", 1, 1);
-            amount = 100; //dumb shit
             setProgress(0);
         } else {
             //TODO placeholder sound, different than the other one
@@ -311,37 +284,15 @@ public class Achievement{
 
     //for plugins to use
     public void addProgress(int percentageToAdd) {
-        setProgress(getProgress() + percentageToAdd);
-    }
-
-    public int getProgress(){
-        try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
-            PreparedStatement prep = conn.prepareStatement("SELECT * FROM Achievements WHERE player_uuid = ?;");
-            prep.setBytes(1, LobbyDatabase.uuid_to_bytes(player));
-            ResultSet set = prep.executeQuery();
-            while (set.next()) {
-                if (set.getString("internal_name").equals(temp.internalName)) {
-                    progress = set.getInt("progress");
-                    done = set.getInt("done") == 1;
-                    claimed = set.getInt("claimed") == 1;
-                    stage = set.getInt("stage");
-                    break;
-                }
-            }
-        } catch (SQLException ex) {
-            Lobby_plugin.getInstance().getLogger().warning(ex.toString());
-            progress = 0;
-        }
-        return progress;
+        setProgress(progress + percentageToAdd);
     }
 
     public static void checkAndComplete(Player p){
         ArrayList<Achievement> a = getAchievements(p);
+        LobbyDatabase.syncAchievements(p, a);
         for(Achievement ach : a){
             if(ach.done) continue;
-            int progress = ach.getProgress();
-            //int progress = ach.progress;
-            if(progress >= ach.amount){
+            if(ach.progress >= ach.amount){
         				ach.done = true;
         				if(LobbyDatabase.tryComplete(ach)) {
         					ach.showNotif();
@@ -410,6 +361,7 @@ public class Achievement{
         int slot = 29;
         int line = 3;
         List<Achievement> temp = getAchievements(p);
+        LobbyDatabase.syncAchievements(p, temp);
         List<Achievement> list = new ArrayList<>();
 
         //filter out unrelated achievements to the category

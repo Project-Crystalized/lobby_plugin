@@ -43,8 +43,7 @@ public class LevelManager implements Listener {
     public static void updateLevel(Player p){
         HashMap<String, Object> map = LobbyDatabase.fetchPlayerData(p);
         if(map == null) return;
-        Integer level = (Integer)map.get("level");
-        p.setLevel(level);
+        p.setLevel((Integer)map.get("level"));
         p.setExp(getDouble((map.get("exp_to_next_lvl"))).floatValue());
     }
 

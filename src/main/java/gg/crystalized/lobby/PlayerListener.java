@@ -29,6 +29,7 @@ import static net.kyori.adventure.text.Component.text;
 import static org.bukkit.entity.EntityType.TEXT_DISPLAY;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public final class PlayerListener implements Listener {
 	private LobbyChatRenderer chat_renderer = new LobbyChatRenderer();
@@ -36,6 +37,9 @@ public final class PlayerListener implements Listener {
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
+
+		LevelManager.moneyCache.remove(p.getUniqueId());
+		Ranks.rankCache.remove(p.getUniqueId());
 
 		e.joinMessage(Ranks.getJoinMessage(p));
 		App.active.put(p, new ArrayList<>());
@@ -49,8 +53,7 @@ public final class PlayerListener implements Listener {
 			Achievement.createNewAchievements(p);
 		}
 
-		if (!Lobby_plugin.getInstance().passive_mode) Achievement.getFromDatabase(p); //needs to run before resyncInfo
-		Achievement.resyncInfo(p);
+		if (!Lobby_plugin.getInstance().passive_mode) Achievement.getFromDatabase(p);
 
 		if(Lobby_plugin.getInstance().passive_mode){
 			return;
@@ -63,8 +66,7 @@ public final class PlayerListener implements Listener {
 				new PotionEffect(PotionEffectType.HUNGER, PotionEffect.INFINITE_DURATION, 1, false, false, true));
 		p.setGameMode(GameMode.ADVENTURE);
 		p.getInventory().clear();
-		LobbyDatabase.updatePlayerNames(p);
-		LobbyDatabase.updateSkin(p);
+		LobbyDatabase.updatePlayerData(p);
 
 		new BukkitRunnable(){
 			public void run(){
@@ -74,13 +76,13 @@ public final class PlayerListener implements Listener {
 
 		Ranks.renderTabList(p);
 
-		Setting.updatePlayerVisibility(p);
-		Setting.updatePlayerHeight(p);
+		HashMap<String, Object> settings = LobbyDatabase.fetchSettings(p);
+		Setting.updatePlayerVisibility(p, settings);
+		Setting.updatePlayerHeight(p, settings);
 
 		LevelManager.updateLevel(p);
 		LevelManager.rewardForLogin(p);
-		LobbyDatabase.updateLastLogin(p);
-		LobbyDatabase.updateLoginTimes(p);
+		LobbyDatabase.updateLoginStats(p);
 		if(inDatabase)LobbyDatabase.rollOrFetchQuests(p);
 		Quest.checkAndComplete(p);
 		Achievement.checkAndComplete(p);
@@ -122,6 +124,8 @@ public final class PlayerListener implements Listener {
 		Nametag.disconnect(e.getPlayer());
 		Quest.allQuests.remove(e.getPlayer().getUniqueId());
 		Achievement.achievements.remove(e.getPlayer().getUniqueId());
+		LevelManager.moneyCache.remove(e.getPlayer().getUniqueId());
+		Ranks.rankCache.remove(e.getPlayer().getUniqueId());
 		WinLeaderboard.leaderboards.remove(e.getPlayer());
 		App.active.remove(e.getPlayer());
 		ScrollableView.removeView(e.getPlayer());

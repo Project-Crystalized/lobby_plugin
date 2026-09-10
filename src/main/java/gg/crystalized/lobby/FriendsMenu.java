@@ -33,37 +33,37 @@ import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 public class FriendsMenu {
     public static HashMap<Player, Inventory> waitingForPartyMembers = new HashMap<>();
     public static NamespacedKey key = new NamespacedKey("crystalized", "friends_menu");
-    public static HashMap<String, Boolean> areOnline = new HashMap<>();
-    public static ItemStack buildFriend(Object[] o){
+    public static HashMap<String, Long> areOnline = new HashMap<>();
+    private static final long ONLINE_TTL_MS = 60_000;
+    public static ItemStack buildFriend(Object[] o, HashMap<String, Object> playerData){
         try {
-            HashMap<String, Object> data = LobbyDatabase.fetchPlayerData((byte[]) o[1]);
-            URL skinURL = new URL((String)data.get("skin_url"));
+            URL skinURL = new URL((String)playerData.get("skin_url"));
             ItemStack friend = new ItemStack(Material.PLAYER_HEAD, 1);
             SkullMeta skull = (SkullMeta) friend.getItemMeta();
             PlayerProfile profile = (PlayerProfile) Bukkit.createPlayerProfile(UUID.randomUUID());
             PlayerTextures texture = profile.getTextures();
             //skin_url may be empty for offline-mode players - skip to avoid MalformedURLException
-            if(!((String) data.get("skin_url")).isEmpty()){
+            if(!((String) playerData.get("skin_url")).isEmpty()){
                 texture.setSkin(skinURL);
             }
             profile.setTextures(texture);
             skull.setPlayerProfile(profile);
             friend.setItemMeta(skull);
             ItemMeta meta = friend.getItemMeta();
-            meta.displayName(Ranks.getName(Bukkit.getOfflinePlayer((String) data.get("player_name"))).decoration(ITALIC, false));
+            meta.displayName(Ranks.getName(Bukkit.getOfflinePlayer((String) playerData.get("player_name"))).decoration(ITALIC, false));
             ArrayList<Component> lore = new ArrayList<>();
             lore.add(Component.translatable("crystalized.shardcore.party.friends_since").append(Component.text(o[2].toString())).color(GRAY).decoration(ITALIC, false));
             lore.add(Component.translatable("crystalized.generic.left_click").append( Component.translatable("crystalized.shardcore.profile.view")).color(YELLOW).decoration(ITALIC, false));
             lore.add(Component.translatable("crystalized.generic.right_click").append(Component.translatable("crystalized.shardcore.party.add2party")).color(YELLOW).decoration(ITALIC, false));
             lore.add(Component.translatable("crystalized.generic.shift_click").append(Component.translatable("crystalized.shardcore.party.removefriend")).color(YELLOW).decoration(ITALIC, false));
-            if(isOnline((String) data.get("player_name"))) {
+            if(isOnline((String) playerData.get("player_name"))) {
                 lore.add(Component.translatable("crystalized.generic.online").color(GREEN));
             }else{
                 lore.add(Component.translatable("crystalized.generic.offline").color(RED));
             }
             meta.lore(lore);
             friend.setItemMeta(meta);
-            Consumer<PersistentDataContainer> c = pdc -> pdc.set(key, PersistentDataType.STRING, (String) data.get("player_name"));
+            Consumer<PersistentDataContainer> c = pdc -> pdc.set(key, PersistentDataType.STRING, (String) playerData.get("player_name"));
             friend.editPersistentDataContainer(c);
             return friend;
         }catch(MalformedURLException e){
@@ -87,8 +87,10 @@ public class FriendsMenu {
         }
         friends = friends.subList(i, friends.size());
         for(Object[] o : friends){
-            checkOnline(p, Bukkit.getOfflinePlayer((String)LobbyDatabase.fetchPlayerData((byte[]) o[1]).get("player_name")));
-            ItemStack stack = buildFriend(o);
+            HashMap<String, Object> playerData = LobbyDatabase.fetchPlayerData((byte[]) o[1]);
+            if(playerData == null) continue;
+            checkOnline(p, Bukkit.getOfflinePlayer((String) playerData.get("player_name")));
+            ItemStack stack = buildFriend(o, playerData);
             if(slot >= border[line]){
                 if(line +1 >= nextLine.length) break;
                 line++;
@@ -138,12 +140,15 @@ public class FriendsMenu {
     }
 
     public static boolean isOnline(String name){
-        for(String s : areOnline.keySet()){
-            if(s.equals(name)){
-                return areOnline.get(s);
-            }
+        Long t = areOnline.get(name);
+        if(t == null){
+            return false;
         }
-        return false;
+        if(System.currentTimeMillis() - t > ONLINE_TTL_MS){
+            areOnline.remove(name);
+            return false;
+        }
+        return true;
     }
 
     public static void placePartyMembers(ArrayList<String> members, Player p, Inventory inv){
@@ -171,14 +176,14 @@ public class FriendsMenu {
             p = viewer;
         }
         try {
-            HashMap<String, Object> data = LobbyDatabase.fetchPlayerData((p));
-            URL skinURL = new URL((String)data.get("skin_url"));
+            HashMap<String, Object> playerData = LobbyDatabase.fetchPlayerData((p));
+            URL skinURL = new URL((String)playerData.get("skin_url"));
             ItemStack member = new ItemStack(Material.PLAYER_HEAD, 1);
             SkullMeta skull = (SkullMeta) member.getItemMeta();
             PlayerProfile profile = (PlayerProfile) Bukkit.createPlayerProfile(UUID.randomUUID());
             PlayerTextures texture = profile.getTextures();
             //skin_url may be empty for offline-mode players - skip to avoid MalformedURLException
-            if(!((String) data.get("skin_url")).isEmpty()){
+            if(!((String) playerData.get("skin_url")).isEmpty()){
                 texture.setSkin(skinURL);
             }
             profile.setTextures(texture);

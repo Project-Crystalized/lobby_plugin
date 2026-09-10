@@ -11,6 +11,7 @@ import org.bukkit.scoreboard.*;
 
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
@@ -52,6 +53,8 @@ public enum Ranks {
     final String teamName;
     final String model;
     final boolean payed;
+
+    static final ConcurrentHashMap<UUID, Ranks> rankCache = new ConcurrentHashMap<>();
 
     Ranks(String color, String icon, String iconWithName, int priority, String teamName, String model, boolean payed) {
         this.color = color;
@@ -177,16 +180,19 @@ public enum Ranks {
     }
 
     public static Ranks getRank(OfflinePlayer p){
-        HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
-        if(data.get("rank_id") == null){
-            return rankless;
+        Ranks cached = rankCache.get(p.getUniqueId());
+        if(cached != null) return cached;
+        HashMap<String, Object> playerData = LobbyDatabase.fetchPlayerData(p);
+        Ranks rank;
+        if(playerData.get("rank_id") == null){
+            rank = rankless;
+        }else if((Integer)playerData.get("rank_id") != 0){
+            rank = values()[(Integer)playerData.get("rank_id")];
+        }else{
+            rank = values()[getPayRank(p)];
         }
-
-        if((Integer)data.get("rank_id") != 0){
-            return values()[(Integer)data.get("rank_id")];
-        }
-
-        return values()[getPayRank(p)];
+        rankCache.put(p.getUniqueId(), rank);
+        return rank;
     }
 
     public static int getPayRank(OfflinePlayer p){

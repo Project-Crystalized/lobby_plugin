@@ -29,21 +29,21 @@ import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 public class Profile {
     public static void prepareProfile(OfflinePlayer p, Inventory inv, Player viewer){
         try {
-            HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
+            HashMap<String, Object> playerData = LobbyDatabase.fetchPlayerData(p);
             ItemStack head = new ItemStack(Material.PLAYER_HEAD);
             SkullMeta meta = (SkullMeta) head.getItemMeta();
             PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID());
             PlayerTextures textures = profile.getTextures();
             //skin_url may be empty for offline-mode players (no textures) - skip to avoid MalformedURLException
-            if(!((String) data.get("skin_url")).isEmpty()){
-                textures.setSkin(new URL((String)data.get("skin_url")));
+            if(!((String) playerData.get("skin_url")).isEmpty()){
+                textures.setSkin(new URL((String)playerData.get("skin_url")));
             }
             profile.setTextures(textures);
             meta.setPlayerProfile(profile);
             meta.displayName(Ranks.getName(p));
             ArrayList<Component> lore = new ArrayList<>();
-            lore.add(Component.translatable("crystalized.shardcore.profile.level").append(Component.text(data.get("level").toString())).color(GREEN).decoration(ITALIC, false));
-            lore.add(Component.translatable("crystalized.shardcore.profile.money").append(Component.text(data.get("money").toString())).color(WHITE).decoration(ITALIC, false));
+            lore.add(Component.translatable("crystalized.shardcore.profile.level").append(Component.text(playerData.get("level").toString())).color(GREEN).decoration(ITALIC, false));
+            lore.add(Component.translatable("crystalized.shardcore.profile.money").append(Component.text(playerData.get("money").toString())).color(WHITE).decoration(ITALIC, false));
             meta.lore(lore);
             head.setItemMeta(meta);
             head.editPersistentDataContainer(pdc -> pdc.set(new NamespacedKey("crystalized", "profile_holder"), PersistentDataType.STRING, p.getName()));
@@ -53,11 +53,15 @@ public class Profile {
             Bukkit.getLogger().warning("couldn't set head in player profile");
         }
 
+        HashMap<Cosmetic, Boolean> ownerCosmetics = LobbyDatabase.getOwnedCosmetics(p);
+        HashMap<Cosmetic, Boolean> viewerCosmetics = LobbyDatabase.getOwnedCosmetics(viewer);
         for(Cosmetic c : cosmetics){
-            if(c.isWearing(p) && c.ownsCosmetic(viewer)){
-                inv.setItem(getCosmeticSlot(c), c.build(viewer, c.isWearing(viewer), false, CosmeticView.isViewing(p.getPlayer(), c)));
-            }else if(c.isWearing(p)){
-                inv.setItem(getCosmeticSlot(c), c.build(viewer, null, false, CosmeticView.isViewing(p.getPlayer(), c)));
+            if(ownerCosmetics.containsKey(c) && ownerCosmetics.get(c)){
+                if(viewerCosmetics.containsKey(c)){
+                    inv.setItem(getCosmeticSlot(c), c.build(viewer, viewerCosmetics.get(c), false, CosmeticView.isViewing(p.getPlayer(), c)));
+                }else{
+                    inv.setItem(getCosmeticSlot(c), c.build(viewer, null, false, CosmeticView.isViewing(p.getPlayer(), c)));
+                }
             }
         }
         if(!p.equals(viewer)) {
@@ -80,9 +84,9 @@ public class Profile {
     }
 
     public static ItemStack[] getExpItems(Player p){
-        HashMap<String, Object> data = LobbyDatabase.fetchPlayerData(p);
-        int level = (Integer)data.get("level");
-        double expToNext = Setting.toDouble(data.get("exp_to_next_lvl")); //this gets the percentage of xp p needs to level up
+        HashMap<String, Object> playerData = LobbyDatabase.fetchPlayerData(p);
+        int level = (Integer)playerData.get("level");
+        double expToNext = Setting.toDouble(playerData.get("exp_to_next_lvl")); //this gets the percentage of xp p needs to level up
         double amount = 48 * expToNext;
         ItemStack[] items = new ItemStack[3];
         for(int i = 0; i < 3; i++){

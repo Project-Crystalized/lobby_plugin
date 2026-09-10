@@ -30,6 +30,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -173,9 +174,10 @@ public class Cosmetic{
         int[] nextLine = {2, 11, 20, 29, 38, 47};
         int slot = 29;
         int line = 3;
+        HashMap<Cosmetic, Boolean> owned = LobbyDatabase.getOwnedCosmetics(p);
         List<Cosmetic> cos = new ArrayList<>();
         for(Cosmetic c : Cosmetic.getCosmeticsBySlot((EquipmentSlot)a.extra)){
-            if (c.ownsCosmetic(p) || (c.price == null && c.obtainableLevel == null)) {
+            if (owned.containsKey(c) || (c.price == null && c.obtainableLevel == null)) {
                 continue;
             }
             cos.add(c);
@@ -258,22 +260,23 @@ public class Cosmetic{
     }
 
     public static void giveCosmetics(Player p){
-        for(Cosmetic c : Cosmetic.cosmetics){
-            if(c.isWearing(p) && c.slot != EquipmentSlot.HAND){
+        for(Cosmetic c : LobbyDatabase.getWornCosmetics(p)){
+            if(c.slot != EquipmentSlot.HAND){
                 p.sendEquipmentChange(p, c.slot, c.build(p, true, false, CosmeticView.isViewing(p, c)));
             }
         }
     }
 
     public static void giveCosmeticsInGame(Player p){
-        for(Cosmetic c : Cosmetic.cosmetics){
-            if(c.isWearing(p) && c.slot == EquipmentSlot.HEAD){
+        for(Cosmetic c : LobbyDatabase.getWornCosmetics(p)){
+            if(c.slot == EquipmentSlot.HEAD){
                 p.sendEquipmentChange(p, c.slot, c.build(p, true, false, CosmeticView.isViewing(p, c)));
             }
         }
     }
 
     public void clicked(ClickType click, Player p, InventoryType.SlotType type, int slotNumber, Inventory inv) {
+        Boolean wearing = null;
         if (click.isRightClick()) {
             if(!ownsCosmetic(p)) {
                 if (price == null) {
@@ -290,7 +293,8 @@ public class Cosmetic{
                 App.Shop.action(p, p);
                 p.sendMessage(Component.translatable("crystalized.shardcore.shop.message.bought").color(WHITE).append(name));
             }else {
-                if (isWearing(p)) {
+                boolean worn = isWearing(p);
+                if (worn) {
                     p.sendMessage(Component.translatable("crystalized.shardcore.shop.message.unequipped").color(WHITE).append(name));
                     if (slot != EquipmentSlot.HAND) {
                         p.sendEquipmentChange(p, slot, null);
@@ -306,7 +310,8 @@ public class Cosmetic{
                         p.getInventory().setItem(4, build(p, true, true, CosmeticView.isViewing(p, this)));
                     }
                 }
-                LobbyDatabase.cosmeticSetWearing(p, this, !isWearing(p));
+                LobbyDatabase.cosmeticSetWearing(p, this, !worn);
+                wearing = !worn;
                 unEquipAllApartFrom(p);
                 if(CosmeticView.findView(p) != null) inv.setItem(4, App.EquipBuy.build(p));
             }
@@ -327,23 +332,16 @@ public class Cosmetic{
         }
 
         if(type != ARMOR){
-            rebuild(inv, slotNumber, p);
+            rebuild(inv, slotNumber, p, wearing != null ? wearing : isWearing(p));
         }
     }
 
     public void unEquipAllApartFrom(Player p){
-        for(Cosmetic c : cosmetics){
-            if(equals(c)){
-                continue;
-            }
-            if(slot == c.slot){
-                LobbyDatabase.cosmeticSetWearing(p, c, false);
-            }
-        }
+        LobbyDatabase.unEquipCosmetics(p, this);
     }
 
-    public void rebuild(Inventory inv, int slot, Player p){
-        inv.setItem(slot, build(p, isWearing(p), false, CosmeticView.isViewing(p, this)));
+    public void rebuild(Inventory inv, int slot, Player p, boolean wearing){
+        inv.setItem(slot, build(p, wearing, false, CosmeticView.isViewing(p, this)));
     }
 }
 
@@ -437,9 +435,10 @@ class CosmeticView{
         int[] nextLine = {2, 11, 20, 29, 38, 47};
         int slot = 29;
         int line = 3;
+        HashMap<Cosmetic, Boolean> owned = LobbyDatabase.getOwnedCosmetics(p);
         List<Cosmetic> cos = new ArrayList<>();
         for(Cosmetic c : Cosmetic.getCosmeticsBySlot((EquipmentSlot)a.extra)){
-            if (!c.ownsCosmetic(p)) {
+            if (!owned.containsKey(c)) {
                 continue;
             }
             cos.add(c);
@@ -455,7 +454,7 @@ class CosmeticView{
                 line++;
                 slot = nextLine[line];
             }
-            inv.setItem(slot, c.build(p, c.isWearing(p), false, CosmeticView.isViewing(p, c)));
+            inv.setItem(slot, c.build(p, owned.get(c), false, CosmeticView.isViewing(p, c)));
             slot++;
         }
         p.openInventory(inv);
@@ -527,7 +526,8 @@ class CosmeticView{
             App.Shop.action(p, p);
         }
 
-        if (currentCosmetic.isWearing(p)) {
+        boolean wearing = currentCosmetic.isWearing(p);
+        if (wearing) {
             p.sendMessage(Component.translatable("crystalized.shardcore.shop.message.unequipped").color(WHITE).append(currentCosmetic.name));
             if (currentCosmetic.slot != EquipmentSlot.HAND) {
                 p.sendEquipmentChange(p, currentCosmetic.slot, null);
@@ -542,7 +542,7 @@ class CosmeticView{
                 p.getInventory().setItem(4, currentCosmetic.build(p, true, true, CosmeticView.isViewing(p, currentCosmetic)));
             }
         }
-        LobbyDatabase.cosmeticSetWearing(p, currentCosmetic, !currentCosmetic.isWearing(p));
+        LobbyDatabase.cosmeticSetWearing(p, currentCosmetic, !wearing);
         currentCosmetic.unEquipAllApartFrom(p);
         if(CosmeticView.findView(p) != null) p.getInventory().setItem(4, App.EquipBuy.build(p));
     }
