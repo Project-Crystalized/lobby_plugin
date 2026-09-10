@@ -102,10 +102,8 @@ public class RankDisplay {
 					text = Component.text(p.getName()).append(get_rank(prd.rank)).append(Component.translatable("crystalized.game.litestrike.ranked.with_rp", List.of(Component.text(prd.rp))));
 					text = text.append(Component.translatable("crystalized.game.litestrike.ranked.number", List.of(Component.text(prd.row_nr))));
 				}
+				display.setVisibleByDefault(false);
 				display.text(text);
-				for (Player player : Bukkit.getOnlinePlayers()) {
-					player.hideEntity(Lobby_plugin.getInstance(), display);
-				}
 				p.showEntity(Lobby_plugin.getInstance(), display);
 			}
 		} catch (SQLException e) {
@@ -179,12 +177,5 @@ class PlayerRankedData {
 		this.rank = rank;
 		this.rp = rp;
 		this.row_nr = row_nr;
-	}
-
-	public PlayerRankedData(ResultSet rs) throws SQLException {
-		rs.next();
-		this.uuid = Leaderboards.convertBytesToUUID(rs.getBytes("player_uuid"));
-		this.rank = rs.getInt("rank");
-		this.rp = rs.getInt("rp");
 	}
 }
