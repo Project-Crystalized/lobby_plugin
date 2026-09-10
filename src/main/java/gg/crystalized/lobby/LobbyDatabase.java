@@ -188,7 +188,7 @@ public class LobbyDatabase {
 
     public static void updateLoginStats(Player player){
         try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET last_login = unixepoch(), times_logged_in = times_logged_in + 1 WHERE player_uuid = ?;");
+            PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET last_login = unixepoch(), times_logged_in = COALESCE(times_logged_in, 0) + 1 WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(player));
             prep.executeUpdate();
         }catch(SQLException e){
@@ -318,6 +318,38 @@ public class LobbyDatabase {
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("failed set wearing of cosmetic in database");
+        }
+    }
+
+    public static void unEquipCosmetics(Player p, Cosmetic exclude){
+        StringBuilder in = new StringBuilder();
+        int count = 0;
+        for(Cosmetic c : Cosmetic.getCosmeticsBySlot(exclude.slot)){
+            if(c.id != exclude.id){
+                if(count > 0){
+                    in.append(",");
+                }
+                in.append("?");
+                count++;
+            }
+        }
+        if(count == 0){
+            return;
+        }
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("UPDATE Cosmetics SET currently_wearing = 0 WHERE player_uuid = ? AND cosmetic_id IN (" + in + ");");
+            prep.setBytes(1, uuid_to_bytes(p));
+            int param = 2;
+            for(Cosmetic c : Cosmetic.getCosmeticsBySlot(exclude.slot)){
+                if(c.id != exclude.id){
+                    prep.setInt(param, c.id);
+                    param++;
+                }
+            }
+            prep.executeUpdate();
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("failed to unequip cosmetics in database");
         }
     }
 
@@ -587,6 +619,26 @@ public class LobbyDatabase {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't get worn cosmetics");
             return new ArrayList<>();
+        }
+    }
+
+    public static HashMap<Cosmetic, Boolean> getOwnedCosmetics(OfflinePlayer p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("SELECT cosmetic_id, currently_wearing FROM Cosmetics WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            ResultSet set = prep.executeQuery();
+            HashMap<Cosmetic, Boolean> map = new HashMap<>();
+            while(set.next()){
+                Cosmetic c = Cosmetic.getCosmeticById(set.getInt("cosmetic_id"));
+                if(c != null){
+                    map.put(c, set.getInt("currently_wearing") == 1);
+                }
+            }
+            return map;
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't get owned cosmetics");
+            return new HashMap<>();
         }
     }
 

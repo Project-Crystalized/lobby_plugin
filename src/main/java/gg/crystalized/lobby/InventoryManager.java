@@ -101,6 +101,7 @@ public class InventoryManager implements Listener {
         }
 
         App app = App.identifyApp(item, p);
+        Quest quest = null;
         if(app != null) {
             if(event.getClick().isShiftClick() && app.extra instanceof Location){
                 String name = item.getItemMeta().getPersistentDataContainer().get(new NamespacedKey("crystalized", "app"), PersistentDataType.STRING);
@@ -135,8 +136,7 @@ public class InventoryManager implements Listener {
         }else if(Cosmetic.identifyCosmetic(item) != null){
             Cosmetic c = Cosmetic.identifyCosmetic(item);
             c.clicked(event.getClick(), p, event.getSlotType(), event.getSlot(), event.getInventory());
-        }else if(Quest.identifyQuest(p, item) != null){
-            Quest quest = Quest.identifyQuest(p, item);
+        }else if((quest = Quest.identifyQuest(p, item)) != null){
             if(quest.done){
                 quest.claim();
                 event.getInventory().remove(item);

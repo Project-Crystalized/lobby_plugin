@@ -53,11 +53,15 @@ public class Profile {
             Bukkit.getLogger().warning("couldn't set head in player profile");
         }
 
+        HashMap<Cosmetic, Boolean> ownerCosmetics = LobbyDatabase.getOwnedCosmetics(p);
+        HashMap<Cosmetic, Boolean> viewerCosmetics = LobbyDatabase.getOwnedCosmetics(viewer);
         for(Cosmetic c : cosmetics){
-            if(c.isWearing(p) && c.ownsCosmetic(viewer)){
-                inv.setItem(getCosmeticSlot(c), c.build(viewer, c.isWearing(viewer), false, CosmeticView.isViewing(p.getPlayer(), c)));
-            }else if(c.isWearing(p)){
-                inv.setItem(getCosmeticSlot(c), c.build(viewer, null, false, CosmeticView.isViewing(p.getPlayer(), c)));
+            if(ownerCosmetics.containsKey(c) && ownerCosmetics.get(c)){
+                if(viewerCosmetics.containsKey(c)){
+                    inv.setItem(getCosmeticSlot(c), c.build(viewer, viewerCosmetics.get(c), false, CosmeticView.isViewing(p.getPlayer(), c)));
+                }else{
+                    inv.setItem(getCosmeticSlot(c), c.build(viewer, null, false, CosmeticView.isViewing(p.getPlayer(), c)));
+                }
             }
         }
         if(!p.equals(viewer)) {
