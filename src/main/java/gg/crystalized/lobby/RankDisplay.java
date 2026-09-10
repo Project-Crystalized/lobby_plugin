@@ -1,11 +1,11 @@
 package gg.crystalized.lobby;
 
-import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -77,25 +77,31 @@ public class RankDisplay {
 	public static void update_display() {
 		World w = Bukkit.getWorld("world");
 		try (Connection conn = DriverManager.getConnection(Leaderboards.LS_URL)) {
-			String query = "SELECT * FROM LsRanks WHERE player_uuid = ?;";
-			String query2 = "SELECT row_nr FROM (SELECT ROW_NUMBER() OVER (ORDER BY rp DESC) AS row_nr, player_uuid FROM LsRanks) sub WHERE sub.player_uuid = ?;";
+			String query = "SELECT player_uuid, rank, rp FROM LsRanks ORDER BY rp DESC;";
 			PreparedStatement ps = conn.prepareStatement(query);
-			PreparedStatement ps2 = conn.prepareStatement(query2);
 			display_loc.getNearbyEntitiesByType(TextDisplay.class, 2.0).forEach(entity -> entity.remove());
+			HashMap<UUID, PlayerRankedData> ranked = new HashMap<>();
+			ResultSet rs = ps.executeQuery();
+			int row = 1;
+			while (rs.next()) {
+				UUID uuid = Leaderboards.convertBytesToUUID(rs.getBytes("player_uuid"));
+				ranked.put(uuid, new PlayerRankedData(uuid, rs.getInt("rank"), rs.getInt("rp"), row));
+				row++;
+			}
 			for (Player p : Bukkit.getOnlinePlayers()) {
 				TextDisplay display = (TextDisplay) w.spawnEntity(display_loc, EntityType.TEXT_DISPLAY);
 				display.setShadowed(true);
 				display.setBillboard(Billboard.VERTICAL);
 				display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
 
-				ps.setBytes(1, uuid_to_bytes(p.getUniqueId()));
-				ps2.setBytes(1, uuid_to_bytes(p.getUniqueId()));
-				ResultSet rs = ps.executeQuery();
-				ResultSet rs2 = ps2.executeQuery();
-				PlayerRankedData prd = new PlayerRankedData(rs, p.getUniqueId());
-
-				Component text = Component.text(p.getName()).append(Component.translatable("crystalized.game.litestrike.ranked.is").append(get_rank(prd.rank)).append(Component.translatable("crystalized.game.litestrike.ranked.with_rp", List.of(Component.text(prd.rp)))));
-				text = text.append(Component.translatable("crystalized.game.litestrike.ranked.number", List.of(Component.text(rs2.getInt("row_nr")))));
+				PlayerRankedData prd = ranked.get(p.getUniqueId());
+				Component text;
+				if(prd == null){
+					text = Component.text(p.getName()).append(Component.translatable("crystalized.game.litestrike.ranked.unranked"));
+				}else{
+					text = Component.text(p.getName()).append(get_rank(prd.rank)).append(Component.translatable("crystalized.game.litestrike.ranked.with_rp", List.of(Component.text(prd.rp))));
+					text = text.append(Component.translatable("crystalized.game.litestrike.ranked.number", List.of(Component.text(prd.row_nr))));
+				}
 				display.text(text);
 				for (Player player : Bukkit.getOnlinePlayers()) {
 					player.hideEntity(Lobby_plugin.getInstance(), display);
@@ -105,13 +111,6 @@ public class RankDisplay {
 		} catch (SQLException e) {
 			//Bukkit.getLogger().severe("sqlerror in Rank Display: "+e);
 		}
-	}
-
-	private static byte[] uuid_to_bytes(UUID uuid) {
-		ByteBuffer bb = ByteBuffer.allocate(16);
-		bb.putLong(uuid.getMostSignificantBits());
-		bb.putLong(uuid.getLeastSignificantBits());
-		return bb.array();
 	}
 
 	private static Component get_rank(int rank) {
@@ -173,12 +172,13 @@ class PlayerRankedData {
 	public int rank;
 	public int rp;
 	public UUID uuid;
+	public int row_nr;
 
-	public PlayerRankedData(ResultSet rs, UUID uuid) throws SQLException {
+	public PlayerRankedData(UUID uuid, int rank, int rp, int row_nr) {
 		this.uuid = uuid;
-		rs.next();
-		this.rank = rs.getInt("rank");
-		this.rp = rs.getInt("rp");
+		this.rank = rank;
+		this.rp = rp;
+		this.row_nr = row_nr;
 	}
 
 	public PlayerRankedData(ResultSet rs) throws SQLException {
