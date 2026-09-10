@@ -33,7 +33,8 @@ import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 public class FriendsMenu {
     public static HashMap<Player, Inventory> waitingForPartyMembers = new HashMap<>();
     public static NamespacedKey key = new NamespacedKey("crystalized", "friends_menu");
-    public static HashMap<String, Boolean> areOnline = new HashMap<>();
+    public static HashMap<String, Long> areOnline = new HashMap<>();
+    private static final long ONLINE_TTL_MS = 60_000;
     public static ItemStack buildFriend(Object[] o, HashMap<String, Object> playerData){
         try {
             URL skinURL = new URL((String)playerData.get("skin_url"));
@@ -139,12 +140,15 @@ public class FriendsMenu {
     }
 
     public static boolean isOnline(String name){
-        for(String s : areOnline.keySet()){
-            if(s.equals(name)){
-                return areOnline.get(s);
-            }
+        Long t = areOnline.get(name);
+        if(t == null){
+            return false;
         }
-        return false;
+        if(System.currentTimeMillis() - t > ONLINE_TTL_MS){
+            areOnline.remove(name);
+            return false;
+        }
+        return true;
     }
 
     public static void placePartyMembers(ArrayList<String> members, Player p, Inventory inv){
