@@ -34,9 +34,8 @@ public class FriendsMenu {
     public static HashMap<Player, Inventory> waitingForPartyMembers = new HashMap<>();
     public static NamespacedKey key = new NamespacedKey("crystalized", "friends_menu");
     public static HashMap<String, Boolean> areOnline = new HashMap<>();
-    public static ItemStack buildFriend(Object[] o){
+    public static ItemStack buildFriend(Object[] o, HashMap<String, Object> playerData){
         try {
-            HashMap<String, Object> playerData = LobbyDatabase.fetchPlayerData((byte[]) o[1]);
             URL skinURL = new URL((String)playerData.get("skin_url"));
             ItemStack friend = new ItemStack(Material.PLAYER_HEAD, 1);
             SkullMeta skull = (SkullMeta) friend.getItemMeta();
@@ -87,8 +86,10 @@ public class FriendsMenu {
         }
         friends = friends.subList(i, friends.size());
         for(Object[] o : friends){
-            checkOnline(p, Bukkit.getOfflinePlayer((String)LobbyDatabase.fetchPlayerData((byte[]) o[1]).get("player_name")));
-            ItemStack stack = buildFriend(o);
+            HashMap<String, Object> playerData = LobbyDatabase.fetchPlayerData((byte[]) o[1]);
+            if(playerData == null) continue;
+            checkOnline(p, Bukkit.getOfflinePlayer((String) playerData.get("player_name")));
+            ItemStack stack = buildFriend(o, playerData);
             if(slot >= border[line]){
                 if(line +1 >= nextLine.length) break;
                 line++;
