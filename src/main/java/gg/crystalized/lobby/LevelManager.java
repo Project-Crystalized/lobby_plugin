@@ -2,12 +2,15 @@ package gg.crystalized.lobby;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.FireworkEffect;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
+import org.bukkit.inventory.meta.FireworkMeta;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -16,7 +19,11 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
+import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 import static net.kyori.adventure.text.format.TextDecoration.BOLD;
+import static org.bukkit.Color.*;
+import static org.bukkit.DyeColor.PINK;
+import static org.bukkit.entity.EntityType.FIREWORK_ROCKET;
 
 public class LevelManager implements Listener {
 
@@ -67,9 +74,18 @@ public class LevelManager implements Listener {
         if(!(event.getOldLevel() < event.getNewLevel())){
             return;
         }
-        p.playSound(p.getLocation(), "crystalized:effect.level_up", SoundCategory.AMBIENT, 4, 1); //TODO add better soundeffect
-        p.sendActionBar(Component.text("LEVEL UP!").color(AQUA).decoration(BOLD, true)); //TODO make a better like thing for this idk how to call it
-
+        p.playSound(p.getLocation(), "crystalized:effect.level_up", SoundCategory.AMBIENT, 4, 1);
+        p.sendActionBar(Component.text("\uE321").color(WHITE));
+        if(event.getNewLevel() % 10 == 0){
+            Firework firework = (Firework)p.getWorld().spawnEntity(p.getLocation(), FIREWORK_ROCKET);
+            FireworkEffect.Builder effect = FireworkEffect.builder();
+            effect.with(FireworkEffect.Type.STAR);
+            effect.withColor(TEAL, GREEN);
+            FireworkMeta meta = firework.getFireworkMeta();
+            meta.addEffect(effect.build());
+            firework.setFireworkMeta(meta);
+            firework.detonate();
+        }
         for(Cosmetic c : Cosmetic.cosmetics){
             if(c.obtainableLevel == null){
                 continue;
