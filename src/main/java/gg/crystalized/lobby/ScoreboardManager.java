@@ -28,19 +28,19 @@ public class ScoreboardManager {
         obj.getScore("7").customName(text("   "));
 
         obj.getScore("6").setScore(6);
-        obj.getScore("6").customName(text("Rank: ").color(NamedTextColor.AQUA));
+        obj.getScore("6").customName(translatable("crystalized.generic.rank").color(NamedTextColor.AQUA));
 
         obj.getScore("5").setScore(5);
-        obj.getScore("5").customName(text("\ue15c: "));
+        obj.getScore("5").customName(text("\ue15c: ")); //this is money
 
         obj.getScore("4").setScore(4);
         obj.getScore("4").customName(text("  "));
 
         obj.getScore("3").setScore(3);
-        obj.getScore("3").customName(text("Lobby: "));
+        obj.getScore("3").customName(translatable("crystalized.generic.lobby"));
 
         obj.getScore("2").setScore(2);
-        obj.getScore("2").customName(text("Players: ").color(NamedTextColor.GREEN));
+        obj.getScore("2").customName(translatable("crystalized.generic.players").color(NamedTextColor.GREEN));
 
         obj.getScore("1").setScore(1);
         obj.getScore("1").customName(text(" "));
