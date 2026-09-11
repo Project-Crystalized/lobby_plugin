@@ -38,5 +38,7 @@
   "ABBY1_SHARDCORE": {"id": 10, "model": "shardcorenexus3/abby1", "level": null, "price": 5000, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/abby1"},
   "SHADOW1_SHARDCORE": {"id": 11, "model": "shardcorenexus3/shadow1", "level": null, "price": 5000, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/shadow1"},
   "LADYCAT1_SHARDCORE": {"id": 22, "model": "shardcorenexus3/ladycat1", "level": null, "price": 5000, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/ladycat1"},
-  "MITEDA_SHARDCORE": {"id": 37, "model": "shardcorenexus3/mite", "level": null, "price": 5000, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/mite"}
+  "MITEDA_SHARDCORE": {"id": 37, "model": "shardcorenexus3/mite", "level": null, "price": 5000, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/mite"},
+  "LITESTRIKE_SHARDCORE": {"id": 38, "model": "shardcorenexus3/ls", "level": null, "price": 5000, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/ls"}
+
 }
