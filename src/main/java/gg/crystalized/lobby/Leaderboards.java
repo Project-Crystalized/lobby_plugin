@@ -28,6 +28,7 @@ public class Leaderboards {
 	public static final String LS_URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/litestrike_db.sql";
 	public static final String KO_URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/knockoff_db.sql";
 	public static final String CB_URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/crystalblitz_db.sql";
+	public static final String LOBBY_URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/lobby_db.sql";
 
 	public Leaderboards() {
 		//new WinLeaderboard("ko");

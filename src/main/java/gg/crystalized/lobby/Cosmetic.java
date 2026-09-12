@@ -182,7 +182,7 @@ public class Cosmetic{
             }
             cos.add(c);
         }
-        if(i > cos.size()){
+        if(i >= cos.size()){
             i = (ScrollableView.getView(p).page -1) * 15;
             ScrollableView.getView(p).page--;
         }
