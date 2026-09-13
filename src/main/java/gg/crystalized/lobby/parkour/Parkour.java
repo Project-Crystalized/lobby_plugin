@@ -20,6 +20,7 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,14 +36,15 @@ public class Parkour {
     public String name;
     Location[] checkpoints;
     public Location leaderboard;
-    Entity checkpointEntity;
+    int checkpointEntity;
 
     public Parkour(TextColor color, String name, Location[] checkpoints, Location leaderboard) {
         this.color = color;
         this.name = name;
         this.checkpoints = checkpoints;
         this.leaderboard = leaderboard;
-        checkpointEntity = spawnParkourStart();
+        checkpointEntity = Nametag.EntityId;
+        Nametag.EntityId++;
         parkours.add(this);
 
     }
@@ -61,22 +63,18 @@ public class Parkour {
         return null;
     }
 
-    public Entity spawnParkourStart(){
-        ArmorStand e = (ArmorStand)checkpoints[0].getWorld().spawnEntity(checkpoints[0], EntityType.ARMOR_STAND);
-        e.setMarker(true);
-        return e;
-    }
-
-    public static void hideParkourStarts(Player p){
-        for(Parkour parkour : parkours){
-            p.hideEntity(Lobby_plugin.getInstance(), parkour.checkpointEntity);
-        }
-    }
-
-    public static void showParkourStarts(Player p){
-        for(Parkour parkour : parkours){
-            p.showEntity(Lobby_plugin.getInstance(), parkour.checkpointEntity);
-        }
+    public void spawnParkourStart(){
+        new BukkitRunnable(){
+            public void run(){
+                for(Player p: Bukkit.getOnlinePlayers()) {
+                    if(ParkourRun.getRun(p) != null) continue;
+                    Location loc = checkpoints[0];
+                    WrapperPlayServerSpawnEntity entity = new WrapperPlayServerSpawnEntity(checkpointEntity, UUID.randomUUID(), EntityTypes.SULFUR_CUBE, new com.github.retrooper.packetevents.protocol.world.Location
+                            (loc.getX(), loc.getY(), loc.getZ(), 0, 0), 0, 0, new Vector3d());
+                    PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(entity);
+                }
+            }
+        }.runTaskTimerAsynchronously(Lobby_plugin.getInstance(), 3, 3);
     }
 }
 
@@ -86,18 +84,14 @@ class ParkourRun{
     Parkour course;
     Timer timer;
     int lastCheckpoint;
-    int entityIdNextCheckpoint;
 
     public ParkourRun(Player p, Parkour course) {
         this.p = p;
         this.course = course;
         this.lastCheckpoint = 0;
         timer = new Timer();
-        entityIdNextCheckpoint = Nametag.EntityId;
-        Nametag.EntityId++;
         giveItemsAndRemoveAbilities();
         showOrHideCheckpoint();
-        Parkour.hideParkourStarts(p);
         running.add(this);
     }
 
@@ -157,24 +151,23 @@ class ParkourRun{
         p.getInventory().clear();
         InventoryManager.giveLobbyItems(p);
         timer.task.cancel();
-        Parkour.showParkourStarts(p);
         running.remove(this);
         if(finished) ParkourDatabase.saveRun(this);
     }
 
     public void showOrHideCheckpoint(){
         if(lastCheckpoint + 1 > course.checkpoints.length -1){
-            WrapperPlayServerDestroyEntities wrapper = new WrapperPlayServerDestroyEntities(entityIdNextCheckpoint);
+            WrapperPlayServerDestroyEntities wrapper = new WrapperPlayServerDestroyEntities(course.checkpointEntity);
             PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(wrapper);
             return;
         }
         Location loc = course.checkpoints[lastCheckpoint+1];
-        WrapperPlayServerSpawnEntity entity = new WrapperPlayServerSpawnEntity(entityIdNextCheckpoint, UUID.randomUUID(), EntityTypes.SULFUR_CUBE, new com.github.retrooper.packetevents.protocol.world.Location
+        WrapperPlayServerSpawnEntity entity = new WrapperPlayServerSpawnEntity(course.checkpointEntity, UUID.randomUUID(), EntityTypes.SULFUR_CUBE, new com.github.retrooper.packetevents.protocol.world.Location
                 (loc.getX(), loc.getY(), loc.getZ(), 0, 0), 0, 0, new Vector3d());
         PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(entity);
 
         List<EntityData<?>> data = List.of(new EntityData(0, EntityDataTypes.BYTE, ((Integer)0x40).byteValue()));
-        WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(entityIdNextCheckpoint, data);
+        WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(course.checkpointEntity, data);
         PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(metadata);
     }
 }
