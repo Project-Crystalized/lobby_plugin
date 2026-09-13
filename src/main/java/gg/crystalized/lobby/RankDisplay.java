@@ -12,7 +12,6 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
@@ -26,10 +25,11 @@ import static net.kyori.adventure.text.Component.text;
 
 public class RankDisplay {
 
-	public static Location display_loc = LobbyConfig.Locations.get("ls-ranked-display");
-	public static Location lb_loc = LobbyConfig.Locations.get("ls-ranked-leaderboard");
+	private static Location display_loc = LobbyConfig.Locations.get("ls-ranked-display");
+	private static Location lb_loc = LobbyConfig.Locations.get("ls-ranked-leaderboard");
 
 	public RankDisplay() {
+		Bukkit.getLogger().info("creating a Rank Display!");
 		spawn_leaderboard();
 	}
 
@@ -37,9 +37,8 @@ public class RankDisplay {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				World w = Bukkit.getWorld("world");
 				lb_loc.getNearbyEntitiesByType(TextDisplay.class, 2.0).forEach(entity -> entity.remove());
-				TextDisplay display = (TextDisplay) w.spawnEntity(lb_loc, EntityType.TEXT_DISPLAY);
+				TextDisplay display = (TextDisplay) lb_loc.getWorld().spawnEntity(lb_loc, EntityType.TEXT_DISPLAY);
 				display.setShadowed(true);
 				display.setBillboard(Billboard.VERTICAL);
 				display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
@@ -69,13 +68,12 @@ public class RankDisplay {
 			}
 			return leaderbaord_rows;
 		} catch (SQLException e) {
-			//Bukkit.getLogger().severe("sqlerror in Rank Leaderboard: "+e);
+			Bukkit.getLogger().severe("sqlerror in Rank Leaderboard: "+e);
 			return Component.text("sqlerror: "+e);
 		}
 	}
 
 	public static void update_display() {
-		World w = Bukkit.getWorld("world");
 		try (Connection conn = DriverManager.getConnection(Leaderboards.LS_URL)) {
 			String query = "SELECT player_uuid, rank, rp FROM LsRanks ORDER BY rp DESC;";
 			PreparedStatement ps = conn.prepareStatement(query);
@@ -89,7 +87,7 @@ public class RankDisplay {
 				row++;
 			}
 			for (Player p : Bukkit.getOnlinePlayers()) {
-				TextDisplay display = (TextDisplay) w.spawnEntity(display_loc, EntityType.TEXT_DISPLAY);
+				TextDisplay display = (TextDisplay) display_loc.getWorld().spawnEntity(display_loc, EntityType.TEXT_DISPLAY);
 				display.setShadowed(true);
 				display.setBillboard(Billboard.VERTICAL);
 				display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
@@ -107,7 +105,7 @@ public class RankDisplay {
 				p.showEntity(Lobby_plugin.getInstance(), display);
 			}
 		} catch (SQLException e) {
-			//Bukkit.getLogger().severe("sqlerror in Rank Display: "+e);
+			Bukkit.getLogger().severe("sqlerror in Rank Display: "+e);
 		}
 	}
 

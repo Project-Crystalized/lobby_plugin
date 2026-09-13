@@ -32,11 +32,6 @@ public class Leaderboards {
 	public static final String CB_URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/crystalblitz_db.sql";
 	public static final String LOBBY_URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/lobby_db.sql";
 
-	public Leaderboards() {
-		//new WinLeaderboard("ko");
-		//new WinLeaderboard("ls");
-	}
-
 	public static UUID convertBytesToUUID(byte[] bytes) {
 		ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
 		long high = byteBuffer.getLong();
@@ -122,7 +117,7 @@ class WinLeaderboard {
 					Component text = buildText(p, snap, loc, type);
 					Integer num = 3;
 					Integer one = 1;
-					List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, text), new EntityData(25, EntityDataTypes.INT, 1345466930), new EntityData(27, EntityDataTypes.BYTE, one.byteValue()));
+					List<EntityData<?>> data = List.of(new EntityData<Byte>(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData<Component>(23, EntityDataTypes.ADV_COMPONENT, text), new EntityData<Integer>(25, EntityDataTypes.INT, 1345466930), new EntityData<Byte>(27, EntityDataTypes.BYTE, one.byteValue()));
 					WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(leaderboards.get(p).get(type), data);
 					User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
 					if(user != null) {
@@ -143,7 +138,7 @@ class WinLeaderboard {
 
 		Integer num = 3;
 		Integer one = 1;
-		List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, buildText(p, snap, loc, type)), new EntityData(25, EntityDataTypes.INT, 1345466930), new EntityData(27, EntityDataTypes.BYTE, one.byteValue()));
+		List<EntityData<?>> data = List.of(new EntityData<Byte>(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData<Component>(23, EntityDataTypes.ADV_COMPONENT, buildText(p, snap, loc, type)), new EntityData<Integer>(25, EntityDataTypes.INT, 1345466930), new EntityData<Byte>(27, EntityDataTypes.BYTE, one.byteValue()));
 		WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(id, data);
 		User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
 		if(user != null) {
