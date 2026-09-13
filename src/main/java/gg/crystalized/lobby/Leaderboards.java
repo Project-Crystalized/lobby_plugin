@@ -12,6 +12,7 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
+import gg.crystalized.lobby.parkour.Parkour;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.*;
@@ -20,6 +21,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import net.kyori.adventure.text.Component;
 
+import static gg.crystalized.lobby.parkour.Parkour.findParkourByLeaderboard;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.TextDecoration.BOLD;
@@ -110,7 +112,7 @@ class WinLeaderboard {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				LeaderboardSnapshot snap = computeSnapshot(type);
+				LeaderboardSnapshot snap = computeSnapshot(type, loc);
 				for(Player p : Bukkit.getOnlinePlayers()) {
 					leaderboards.computeIfAbsent(p, k -> new HashMap<>());
 					if(!leaderboards.get(p).containsKey(type)){
@@ -149,16 +151,22 @@ class WinLeaderboard {
 		}
 	}
 
-	LeaderboardSnapshot computeSnapshot(String type){
+	LeaderboardSnapshot computeSnapshot(String type, Location loc){
 		GameType t = GameType.findType(type);
 		if(t == null){
 			return new LeaderboardSnapshot(text("null"), new HashMap<>(), 0);
 		}
 		try (Connection conn = DriverManager.getConnection(t.url)) {
 			String query = "SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + " GROUP BY player_uuid ORDER BY SUM(" + t.dbColumn + ") DESC;";
+			if(type.equals("pk")) query = "SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + " GROUP BY player_uuid ORDER BY SUM(" + t.dbColumn + ") ASC;";
 			ResultSet res = conn.createStatement().executeQuery(query);
 
 			Component base = text("Game Leaderboard\n").color(GOLD).append(t.title);
+			Parkour parkour = null;
+			if(type.equals("pk")){
+				parkour = findParkourByLeaderboard(loc);
+				base = base.append(text(parkour.name).color(parkour.color).decoration(BOLD, true));
+			}
 			ArrayList<TextComponent> topKey = new ArrayList<>();
 			HashMap<TextComponent, Integer> top = new HashMap<>();
 			HashMap<UUID, int[]> stats = new HashMap<>();
@@ -197,7 +205,16 @@ class WinLeaderboard {
 				String dots = ".".repeat(padding);
 				base = base.append(text("\n")).append(num);
 				base = base.append(topKey.get(j)).append(text(dots).color(GRAY));
-				base = base.append(text("" + top.get(topKey.get(j)))).color(GREEN);
+				int wins = top.get(topKey.get(j));
+				if(parkour == null) {
+					base = base.append(text("" + wins)).color(GREEN);
+				}else{
+					int hours = wins / 36000;
+					int minutes = (wins % 36000) / 600;
+					int seconds = (wins % 36000 % 600) / 10;
+					int tenth = wins % 36000 % 600 % 10;
+					base = base.append(text(gg.crystalized.lobby.parkour.Timer.buildTimer(hours, minutes, seconds, tenth))).color(GREEN);
+				}
 			}
 
 			return new LeaderboardSnapshot(base, stats, total);
@@ -274,7 +291,8 @@ class WinLeaderboard {
 	enum GameType{
 		LS("ls", Leaderboards.LS_URL, "LsGamesPlayers", "was_winner", text("LITESTRIKE\n").color(GREEN).decoration(BOLD, true)),
 		KO("ko", Leaderboards.KO_URL, "KoGamesPlayers", "games_won", text("KNOCKOFF\n").color(GOLD).decoration(BOLD, true)),
-		CB("cb", Leaderboards.CB_URL, "CbGamesPlayers", "games_won", text("CRYSTAL BLITZ\n").color(LIGHT_PURPLE).decoration(BOLD, true));
+		CB("cb", Leaderboards.CB_URL, "CbGamesPlayers", "games_won", text("CRYSTAL BLITZ\n").color(LIGHT_PURPLE).decoration(BOLD, true)),
+		PARKOUR("pk", Leaderboards.LOBBY_URL, "ParkourTimes", "best_time", text("").color(WHITE).decoration(BOLD, true));
 
 		final String key;
 		final String url;

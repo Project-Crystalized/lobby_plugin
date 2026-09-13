@@ -43,14 +43,13 @@ public class LobbyDatabase {
     String createCosmeticsTable = "CREATE TABLE IF NOT EXISTS Cosmetics ("
             + "player_uuid        BLOB,"
             + "cosmetic_id        INTEGER,"
-            + "currently_wearing   INTEGER,"
-            + "UNIQUE(player_uuid, cosmetic_id)"
+            + "currently_wearing   INTEGER"
             +");";
 
     String createSettingsTable = "CREATE TABLE IF NOT EXISTS Settings ("
             + "player_uuid        BLOB UNIQUE,"
             + "dms   INTEGER,"
-            + "pig_game   INTEGER,"
+            + "textures   INTEGER,"
             + "show_players   INTEGER,"
             + "height   INTEGER,"
             + "friends_requests   INTEGER,"
@@ -70,8 +69,7 @@ public class LobbyDatabase {
             + "progress INTEGER,"
             + "stage      INTEGER,"
             + "done     INTEGER,"
-            + "claimed    INTEGER,"
-            + "UNIQUE(player_uuid, internal_name)"
+            + "claimed    INTEGER"
             +");";
 
         try (Connection conn = DriverManager.getConnection(URL)) {
@@ -431,6 +429,21 @@ public class LobbyDatabase {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("update settings for " + p.getName() + " UUID: " + p.getUniqueId());
         }
+    }
+
+    public static boolean canSeeConfusingTextures(Player p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            String makeNewEntry = "SELECT textures FROM Settings WHERE player_uuid = ?";
+            PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
+            prepared.setBytes(1, uuid_to_bytes(p));
+            ResultSet set = prepared.executeQuery();
+            set.next();
+            return set.getInt("textures") == 1;
+        }catch(SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("update settings for " + p.getName() + " UUID: " + p.getUniqueId());
+        }
+        return false;
     }
 
     public static void updatePlayerData(Player p){

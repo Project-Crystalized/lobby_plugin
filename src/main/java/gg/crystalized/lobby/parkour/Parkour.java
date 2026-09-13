@@ -23,22 +23,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.SulfurCube;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
 import static org.bukkit.Material.COAL;
 import static org.bukkit.attribute.Attribute.*;
 import static org.bukkit.potion.PotionEffectType.JUMP_BOOST;
 
 public class Parkour {
     public static ArrayList<Parkour> parkours = new ArrayList<>();
-    TextColor color;
-    String name;
+    public TextColor color;
+    public String name;
     Location[] checkpoints;
     Location leaderboard;
     Entity checkpointEntity;
@@ -56,6 +53,13 @@ public class Parkour {
     public static Parkour findParkour(Location start){
         for(Parkour p : parkours){
             if(p.checkpoints[0].equals(start)) return p;
+        }
+        return null;
+    }
+
+    public static Parkour findParkourByLeaderboard(Location leaderboard){
+        for(Parkour p : parkours){
+            if(p.leaderboard.equals(leaderboard)) return p;
         }
         return null;
     }
@@ -174,65 +178,6 @@ class ParkourRun{
         List<EntityData<?>> data = List.of(new EntityData(0, EntityDataTypes.BYTE, 0x40));
         WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(entityIdNextCheckpoint, data);
         PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(metadata);
-    }
-}
-
-class Timer{
-    BukkitTask task;
-    int i = 0;
-    int tenth = 0;
-    int seconds = 0;
-    int minutes = 0;
-    int hours = 0;
-    public Timer(){
-        task = new BukkitRunnable(){
-
-            public void run(){
-                if(i == 2){
-                    tenth++;
-                    i = 0;
-                }
-                if(tenth == 10){
-                    seconds++;
-                    tenth = 0;
-                }
-                if(seconds == 60){
-                    minutes++;
-                    seconds = 0;
-                }
-                if(minutes == 60){
-                    hours++;
-                    minutes = 0;
-                }
-                i++;
-
-                for(Player p : Bukkit.getOnlinePlayers()){
-                    p.sendActionBar(Component.text(buildTimer(tenth, seconds, minutes, hours)).color(YELLOW));
-                }
-            }
-        }.runTaskTimer(Lobby_plugin.getInstance(), 0, 1);
-    }
-
-    public static String buildTimer(int tenth, int seconds, int minutes, int hours){
-        String ten = "" + tenth;
-        if(ten.length() < 2){
-            ten = "0" + ten;
-        }
-        String sec = "" + seconds;
-        if(sec.length() < 2){
-            sec = "0" + sec;
-        }
-        String min = "" + minutes;
-        if(min.length() < 2){
-            min = "0" + min;
-        }
-
-        String h = "" + hours;
-        if(h.length() < 2){
-            h = "0" + h;
-        }
-
-        return h + ":" + min + ":" + sec + ":" + ten;
     }
 }
 

@@ -5,6 +5,8 @@ import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 import gg.crystalized.lobby.minigames.CrystalizedChess;
 import gg.crystalized.lobby.minigames.CrystalizedChessListener;
+import gg.crystalized.lobby.parkour.ParkourConfig;
+import gg.crystalized.lobby.parkour.ParkourDatabase;
 import gg.crystalized.lobby.parkour.ParkourListener;
 import gg.crystalized.lobby.statistics.StatView;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
@@ -45,6 +47,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		new BukkitRunnable(){
 			public void run() {
 				LobbyDatabase.setup_databases();
+				ParkourDatabase.setup_parkour_table();
 			}
 		}.runTaskAsynchronously(this);
 		new LobbyConfig();
@@ -71,6 +74,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		}
 
 		EntityRefresh.setupEntityRefresh();
+		new ParkourConfig();
 		createStatistics();
 
 		this.getCommand("chess").setExecutor(dc);

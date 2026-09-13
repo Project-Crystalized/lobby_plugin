@@ -22,7 +22,7 @@ public class ParkourConfig {
 
             JsonElement v = json.get("version");
             if(v.getAsInt() != 1){
-                throw new Exception("incorrect lobby_config.json file version, please update your lobby_config.json");
+                throw new Exception("incorrect parkour_config.json file version, please update your parkour_config.json");
             }
 
             Map<String, JsonElement> map = json.asMap();
@@ -31,7 +31,7 @@ public class ParkourConfig {
             for(String s : objects){
                 JsonObject course = json.getAsJsonObject(s);
                 JsonArray leaderboard = course.get("leaderboard").getAsJsonArray();
-                new Parkour(TextColor.fromHexString(course.get("color").getAsString()), course.get("name").getAsString(), getCheckpoints(course.get("checkpoints")), new Location(Bukkit.getWorld("world"), leaderboard.get(0).getAsInt(), leaderboard.get(1).getAsInt(), leaderboard.get(2).getAsInt()));
+                new Parkour(TextColor.fromHexString(course.get("color").getAsString()), course.get("name").getAsString(), getCheckpoints(course.get("checkpoints")), new Location(Bukkit.getWorld("world"), leaderboard.get(0).getAsInt(), leaderboard.get(1).getAsInt(), leaderboard.get(2).getAsInt())).spawnParkourStart();
             }
         }catch(Exception e){
             Bukkit.getLogger().info("[Lobby_plugin] Couldn't find parkour_config.json. Continuing without.");
