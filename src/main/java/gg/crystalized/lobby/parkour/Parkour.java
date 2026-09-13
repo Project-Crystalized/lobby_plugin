@@ -17,10 +17,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.AttributeInstance;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.SulfurCube;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -37,7 +34,7 @@ public class Parkour {
     public TextColor color;
     public String name;
     Location[] checkpoints;
-    Location leaderboard;
+    public Location leaderboard;
     Entity checkpointEntity;
 
     public Parkour(TextColor color, String name, Location[] checkpoints, Location leaderboard) {
@@ -52,21 +49,21 @@ public class Parkour {
 
     public static Parkour findParkour(Location start){
         for(Parkour p : parkours){
-            if(p.checkpoints[0].equals(start)) return p;
+            if(p.checkpoints[0].getBlockX() == start.getBlockX() && p.checkpoints[0].getBlockY() == start.getBlockY() && p.checkpoints[0].getBlockZ() == start.getBlockZ()) return p;
         }
         return null;
     }
 
     public static Parkour findParkourByLeaderboard(Location leaderboard){
         for(Parkour p : parkours){
-            if(p.leaderboard.equals(leaderboard)) return p;
+            if(p.leaderboard.getBlockX() == leaderboard.getBlockX() && p.leaderboard.getBlockY() == leaderboard.getBlockY() && p.leaderboard.getBlockZ() == leaderboard.getBlockZ()) return p;
         }
         return null;
     }
 
     public Entity spawnParkourStart(){
-        SulfurCube e = (SulfurCube)checkpoints[0].getWorld().spawnEntity(checkpoints[0], EntityType.SULFUR_CUBE);
-        e.setWander(false);
+        ArmorStand e = (ArmorStand)checkpoints[0].getWorld().spawnEntity(checkpoints[0], EntityType.ARMOR_STAND);
+        e.setMarker(true);
         return e;
     }
 
@@ -99,6 +96,7 @@ class ParkourRun{
         entityIdNextCheckpoint = Nametag.EntityId;
         Nametag.EntityId++;
         giveItemsAndRemoveAbilities();
+        showOrHideCheckpoint();
         Parkour.hideParkourStarts(p);
         running.add(this);
     }
@@ -111,7 +109,7 @@ class ParkourRun{
     }
 
     public boolean isNextCheckpoint(Location loc){
-        return course.checkpoints[lastCheckpoint+1].equals(loc.toBlockLocation());
+        return course.checkpoints[lastCheckpoint+1].getBlockX() == loc.toBlockLocation().getBlockX() && course.checkpoints[lastCheckpoint+1].getBlockY() == loc.toBlockLocation().getBlockY() && course.checkpoints[lastCheckpoint+1].getBlockZ() == loc.toBlockLocation().getBlockZ();
     }
 
     private void giveItemsAndRemoveAbilities(){
@@ -127,7 +125,7 @@ class ParkourRun{
 
         ItemStack restart = new ItemStack(COAL);
         ItemMeta restartData = restart.getItemMeta();
-        restartData.displayName(Component.text("Return to Checkpoint"));
+        restartData.displayName(Component.text("Restart parkour"));
         restart.setItemMeta(restartData);
 
         p.getInventory().setItem(8, end);
@@ -175,7 +173,7 @@ class ParkourRun{
                 (loc.getX(), loc.getY(), loc.getZ(), 0, 0), 0, 0, new Vector3d());
         PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(entity);
 
-        List<EntityData<?>> data = List.of(new EntityData(0, EntityDataTypes.BYTE, 0x40));
+        List<EntityData<?>> data = List.of(new EntityData(0, EntityDataTypes.BYTE, ((Integer)0x40).byteValue()));
         WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(entityIdNextCheckpoint, data);
         PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(metadata);
     }

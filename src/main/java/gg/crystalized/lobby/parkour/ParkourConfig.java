@@ -29,12 +29,14 @@ public class ParkourConfig {
             ArrayList<String> objects = new ArrayList<>(map.keySet());
 
             for(String s : objects){
+                if(s.equals("version")) continue;
                 JsonObject course = json.getAsJsonObject(s);
                 JsonArray leaderboard = course.get("leaderboard").getAsJsonArray();
                 new Parkour(TextColor.fromHexString(course.get("color").getAsString()), course.get("name").getAsString(), getCheckpoints(course.get("checkpoints")), new Location(Bukkit.getWorld("world"), leaderboard.get(0).getAsInt(), leaderboard.get(1).getAsInt(), leaderboard.get(2).getAsInt())).spawnParkourStart();
             }
         }catch(Exception e){
-            Bukkit.getLogger().info("[Lobby_plugin] Couldn't find parkour_config.json. Continuing without.");
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("[Lobby_plugin] Couldn't load parkour_config.json. Continuing without.");
         }
     }
 

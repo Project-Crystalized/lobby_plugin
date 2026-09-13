@@ -1,5 +1,6 @@
 package gg.crystalized.lobby.parkour;
 
+import io.papermc.paper.entity.LookAnchor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,11 +14,11 @@ public class ParkourListener implements Listener {
     @EventHandler
     public void onMove(PlayerMoveEvent e){
         ParkourRun run = ParkourRun.getRun(e.getPlayer());
-        if(run != null && run.isNextCheckpoint(e.getPlayer().getLocation())){
+        if(run != null && run.isNextCheckpoint(e.getTo())){
             run.onCheckpoint();
         }
-        if(run == null && Parkour.findParkour(e.getPlayer().getLocation().toBlockLocation()) != null){
-            new ParkourRun(e.getPlayer(), Parkour.findParkour(e.getPlayer().getLocation().toBlockLocation()));
+        if(run == null && Parkour.findParkour(e.getTo().toBlockLocation()) != null){
+            new ParkourRun(e.getPlayer(), Parkour.findParkour(e.getTo().toBlockLocation()));
         }
     }
 
@@ -31,11 +32,13 @@ public class ParkourListener implements Listener {
         if(p.getInventory().getItem(6).equals(item)){
             //return to checkpoint
             p.teleport(run.course.checkpoints[run.lastCheckpoint]);
+            p.lookAt(run.course.checkpoints[run.lastCheckpoint+1].getX(), run.course.checkpoints[run.lastCheckpoint].getY(), run.course.checkpoints[run.lastCheckpoint].getZ(), LookAnchor.EYES);
         }
 
         if(p.getInventory().getItem(7).equals(item)){
             //restart
             p.teleport(run.course.checkpoints[0]);
+            p.lookAt(run.course.checkpoints[run.lastCheckpoint+1].getX(), run.course.checkpoints[run.lastCheckpoint].getY(), run.course.checkpoints[run.lastCheckpoint].getZ(), LookAnchor.EYES);
             run.stop(false);
             new ParkourRun(p, run.course);
         }

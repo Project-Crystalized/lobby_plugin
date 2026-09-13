@@ -119,7 +119,7 @@ class WinLeaderboard {
 						createDisplay(p, loc, type, snap);
 						continue;
 					}
-					Component text = buildText(p, snap);
+					Component text = buildText(p, snap, loc, type);
 					Integer num = 3;
 					Integer one = 1;
 					List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, text), new EntityData(25, EntityDataTypes.INT, 1345466930), new EntityData(27, EntityDataTypes.BYTE, one.byteValue()));
@@ -143,7 +143,7 @@ class WinLeaderboard {
 
 		Integer num = 3;
 		Integer one = 1;
-		List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, buildText(p, snap)), new EntityData(25, EntityDataTypes.INT, 1345466930), new EntityData(27, EntityDataTypes.BYTE, one.byteValue()));
+		List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, buildText(p, snap, loc, type)), new EntityData(25, EntityDataTypes.INT, 1345466930), new EntityData(27, EntityDataTypes.BYTE, one.byteValue()));
 		WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(id, data);
 		User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
 		if(user != null) {
@@ -213,7 +213,7 @@ class WinLeaderboard {
 					int minutes = (wins % 36000) / 600;
 					int seconds = (wins % 36000 % 600) / 10;
 					int tenth = wins % 36000 % 600 % 10;
-					base = base.append(text(gg.crystalized.lobby.parkour.Timer.buildTimer(hours, minutes, seconds, tenth))).color(GREEN);
+					base = base.append(text(gg.crystalized.lobby.parkour.Timer.buildTimer(tenth, seconds, minutes, hours))).color(GREEN);
 				}
 			}
 
@@ -235,10 +235,14 @@ class WinLeaderboard {
 		}
 	}
 
-	static Component buildText(Player p, LeaderboardSnapshot snap){
+	static Component buildText(Player p, LeaderboardSnapshot snap, Location loc, String type){
 		int[] own = snap.stats.get(p.getUniqueId());
 		if(own == null){
 			return snap.base;
+		}
+		Parkour parkour = null;
+		if(type.equals("pk")) {
+			parkour = findParkourByLeaderboard(loc);
 		}
 		Component rows = snap.base.append(text("\n")).append(text("-----------------").color(GRAY));
 		Component num = Leaderboards.get_styles(own[0]);
@@ -247,7 +251,16 @@ class WinLeaderboard {
 		String dots = ".".repeat(padding);
 		rows = rows.append(text("\n")).append(num);
 		rows = rows.append(Ranks.getName(p)).append(text(dots).color(GRAY));
-		rows = rows.append(text("" + own[1])).color(GREEN);
+		int wins = own[1];
+		if(parkour == null) {
+			rows = rows.append(text("" + wins)).color(GREEN);
+		}else{
+			int hours = wins / 36000;
+			int minutes = (wins % 36000) / 600;
+			int seconds = (wins % 36000 % 600) / 10;
+			int tenth = wins % 36000 % 600 % 10;
+			rows = rows.append(text(gg.crystalized.lobby.parkour.Timer.buildTimer(tenth, seconds, minutes, hours))).color(GREEN);
+		}
 		return rows;
 	}
 

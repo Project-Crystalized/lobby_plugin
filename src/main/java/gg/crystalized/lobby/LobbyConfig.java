@@ -6,6 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import gg.crystalized.lobby.parkour.Parkour;
 import gg.crystalized.lobby.statistics.StatView;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.citizensnpcs.api.CitizensAPI;
@@ -32,6 +33,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.logging.Level;
 
+import static gg.crystalized.lobby.parkour.Parkour.parkours;
 import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 import static org.bukkit.entity.EntityType.MANNEQUIN;
 import static org.bukkit.profile.PlayerTextures.SkinModel.SLIM;
@@ -162,6 +164,10 @@ class EntityRefresh implements Listener{
                 }
                 return;
             }
+        }
+
+        for(Parkour p : parkours){
+            new WinLeaderboard("pk", p.leaderboard);
         }
 
         for(NPCData data : LobbyConfig.NPCs.values()){
