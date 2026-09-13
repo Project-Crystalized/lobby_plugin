@@ -14,11 +14,11 @@ public class ParkourListener implements Listener {
     @EventHandler
     public void onMove(PlayerMoveEvent e){
         ParkourRun run = ParkourRun.getRun(e.getPlayer());
-        if(run != null && run.isNextCheckpoint(e.getTo())){
+        if(run != null && run.isNextCheckpoint(e.getPlayer().getLocation())){
             run.onCheckpoint();
         }
-        if(run == null && Parkour.findParkour(e.getTo().toBlockLocation()) != null){
-            new ParkourRun(e.getPlayer(), Parkour.findParkour(e.getTo().toBlockLocation()));
+        if(run == null && Parkour.findParkour(e.getPlayer().getLocation().toBlockLocation()) != null){
+            new ParkourRun(e.getPlayer(), Parkour.findParkour(e.getPlayer().getLocation().toBlockLocation()));
         }
     }
 
