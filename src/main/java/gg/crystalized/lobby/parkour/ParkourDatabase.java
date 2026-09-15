@@ -8,8 +8,10 @@ import java.sql.*;
 import java.util.HashMap;
 import java.util.UUID;
 
+import gg.crystalized.lobby.LobbyDatabase;
+
 public class ParkourDatabase {
-    public static final String URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/lobby_db.sql";
+    public static final String URL = "jdbc:sqlite:" + LobbyDatabase.dbDir() + "/lobby_db.sql";
     //IMPORTANT the best_time is being stored as tenth of a second
     public static void setup_parkour_table() {
         String createTable = "CREATE TABLE IF NOT EXISTS ParkourTimes ("

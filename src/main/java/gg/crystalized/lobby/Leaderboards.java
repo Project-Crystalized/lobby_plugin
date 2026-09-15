@@ -27,10 +27,10 @@ import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 
 public class Leaderboards {
-	public static final String LS_URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/litestrike_db.sql";
-	public static final String KO_URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/knockoff_db.sql";
-	public static final String CB_URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/crystalblitz_db.sql";
-	public static final String LOBBY_URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/lobby_db.sql";
+	public static final String LS_URL = "jdbc:sqlite:" + LobbyDatabase.dbDir() + "/litestrike_db.sql";
+	public static final String KO_URL = "jdbc:sqlite:" + LobbyDatabase.dbDir() + "/knockoff_db.sql";
+	public static final String CB_URL = "jdbc:sqlite:" + LobbyDatabase.dbDir() + "/crystalblitz_db.sql";
+	public static final String LOBBY_URL = "jdbc:sqlite:" + LobbyDatabase.dbDir() + "/lobby_db.sql";
 
 	public static UUID convertBytesToUUID(byte[] bytes) {
 		ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);

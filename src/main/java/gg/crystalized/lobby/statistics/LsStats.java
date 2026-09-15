@@ -1,6 +1,7 @@
 package gg.crystalized.lobby.statistics;
 
 import net.kyori.adventure.text.Component;
+import gg.crystalized.lobby.LobbyDatabase;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
@@ -16,7 +17,7 @@ import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 import static org.bukkit.Material.*;
 
 public class LsStats extends Statistics{
-    static String URL = "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/litestrike_db.sql";
+    static String URL = "jdbc:sqlite:" + LobbyDatabase.dbDir() + "/litestrike_db.sql";
     static String[] LsItem = new String[]{
         null,
         "item.minecraft.diamond_chestplate",

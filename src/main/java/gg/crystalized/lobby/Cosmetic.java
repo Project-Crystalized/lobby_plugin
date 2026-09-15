@@ -62,7 +62,7 @@ public class Cosmetic{
 
     public static void createCosmetics(boolean triedAlready){
         try {
-            final String directory = Files.readString(Paths.get(System.getProperty("user.home") + "/databases/cosmetics.json"));
+            final String directory = Files.readString(Paths.get(LobbyDatabase.dbDir() + "/cosmetics.json"));
             JsonObject json = JsonParser.parseString(directory).getAsJsonObject();
             Map<String, JsonElement> map = json.asMap();
             for (String s : map.keySet()) {
@@ -72,13 +72,13 @@ public class Cosmetic{
             }
         }catch(IOException e){
             try{
-                if(triedAlready || (!(e instanceof FileNotFoundException || e instanceof NoSuchFileException) && !Objects.equals(e.getMessage(), Files.readString(Paths.get(System.getProperty("user.home") + "/databases/cosmetics.json"))))){
+                if(triedAlready || (!(e instanceof FileNotFoundException || e instanceof NoSuchFileException) && !Objects.equals(e.getMessage(), Files.readString(Paths.get(LobbyDatabase.dbDir() + "/cosmetics.json"))))){
                     Bukkit.getLogger().severe("[Lobby_plugin] Couldn't get cosmetics from json continuing without.");
                     Bukkit.getLogger().severe(e.getMessage());
                     return;
                 }
                 InputStream in = Lobby_plugin.getInstance().getResource("cosmetics.json");
-                OutputStream out = Files.newOutputStream(Paths.get(System.getProperty("user.home") + "/databases/cosmetics.json"));
+                OutputStream out = Files.newOutputStream(Paths.get(LobbyDatabase.dbDir() + "/cosmetics.json"));
                 try {
                     byte[] buffer = new byte[1024];
                     int length;
