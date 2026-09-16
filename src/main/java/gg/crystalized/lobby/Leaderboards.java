@@ -153,12 +153,12 @@ class WinLeaderboard {
 		}
 		try (Connection conn = DriverManager.getConnection(t.url)) {
 			String query = "SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + " GROUP BY player_uuid ORDER BY SUM(" + t.dbColumn + ") DESC;";
-			if(type.equals("pk")) query = "SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + " GROUP BY player_uuid ORDER BY SUM(" + t.dbColumn + ") ASC;";
+			if(type.contains("pk")) query = "SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + " GROUP BY player_uuid ORDER BY SUM(" + t.dbColumn + ") ASC;";
 			ResultSet res = conn.createStatement().executeQuery(query);
 
 			Component base = text("Game Leaderboard\n").color(GOLD).append(t.title);
 			Parkour parkour = null;
-			if(type.equals("pk")){
+			if(type.contains("pk")){
 				parkour = findParkourByLeaderboard(loc);
 				base = base.append(text(parkour.name).color(parkour.color).decoration(BOLD, true));
 			}
@@ -236,7 +236,7 @@ class WinLeaderboard {
 			return snap.base;
 		}
 		Parkour parkour = null;
-		if(type.equals("pk")) {
+		if(type.contains("pk")) {
 			parkour = findParkourByLeaderboard(loc);
 		}
 		Component rows = snap.base.append(text("\n")).append(text("-----------------").color(GRAY));
@@ -318,7 +318,7 @@ class WinLeaderboard {
 
 		public static GameType findType(String type){
 			for(GameType t : GameType.values()){
-				if(t.key.equals(type)){
+				if(t.key.equals(type) || (Objects.equals(t.key, "pk") && t.key.contains("pk"))){
 					return t;
 				}
 			}
