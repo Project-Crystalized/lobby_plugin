@@ -40,6 +40,8 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 import static org.bukkit.event.inventory.InventoryType.SlotType.ARMOR;
+import static org.bukkit.inventory.EquipmentSlot.HEAD;
+import static org.bukkit.inventory.EquipmentSlot.OFF_HAND;
 
 public class Cosmetic{
     public static final int DEFAULT_SHARDCORE = 6;
@@ -110,9 +112,9 @@ public class Cosmetic{
     public static EquipmentSlot getSlot(JsonElement json) {
         String s = json.getAsString();
         return switch (s) {
-            case "HEAD" -> EquipmentSlot.HEAD;
+            case "HEAD" -> HEAD;
             case "HAND" -> EquipmentSlot.HAND;
-            case "OFF_HAND" -> EquipmentSlot.OFF_HAND;
+            case "OFF_HAND" -> OFF_HAND;
             default -> null;
         };
     }
@@ -262,15 +264,15 @@ public class Cosmetic{
     public static void giveCosmetics(Player p){
         for(Cosmetic c : LobbyDatabase.getWornCosmetics(p)){
             if(c.slot != EquipmentSlot.HAND){
-                p.sendEquipmentChange(p, c.slot, c.build(p, true, false, CosmeticView.isViewing(p, c)));
+                Cosmetic.equip(c.slot, p, c.build(p, true, false, CosmeticView.isViewing(p, c)));
             }
         }
     }
 
     public static void giveCosmeticsInGame(Player p){
         for(Cosmetic c : LobbyDatabase.getWornCosmetics(p)){
-            if(c.slot == EquipmentSlot.HEAD){
-                p.sendEquipmentChange(p, c.slot, c.build(p, true, false, CosmeticView.isViewing(p, c)));
+            if(c.slot == HEAD){
+                Cosmetic.equip(c.slot, p, c.build(p, true, false, CosmeticView.isViewing(p, c)));
             }
         }
     }
@@ -297,18 +299,14 @@ public class Cosmetic{
                 if (worn) {
                     p.sendMessage(Component.translatable("crystalized.shardcore.shop.message.unequipped").color(WHITE).append(name));
                     if (slot != EquipmentSlot.HAND) {
-                        p.sendEquipmentChange(p, slot, null);
+                        equip(slot, p, null);
                     } else {
                         p.getInventory().setItem(4, getCosmeticById(DEFAULT_SHARDCORE).build(p, false, true, CosmeticView.isViewing(p, this)));
                     }
 
                 } else {
                     p.sendMessage(Component.translatable("crystalized.shardcore.shop.message.equipped").color(WHITE).append(name));
-                    if (slot != EquipmentSlot.HAND) {
-                        p.sendEquipmentChange(p, slot, build(p, true, false, CosmeticView.isViewing(p, this)));
-                    } else {
-                        p.getInventory().setItem(4, build(p, true, true, CosmeticView.isViewing(p, this)));
-                    }
+                    equip(slot, p, build(p, true, false, CosmeticView.isViewing(p, this)));
                 }
                 LobbyDatabase.cosmeticSetWearing(p, this, !worn);
                 wearing = !worn;
@@ -342,6 +340,16 @@ public class Cosmetic{
 
     public void rebuild(Inventory inv, int slot, Player p, boolean wearing){
         inv.setItem(slot, build(p, wearing, false, CosmeticView.isViewing(p, this)));
+    }
+
+    public static void equip(EquipmentSlot slot, Player p, ItemStack item){
+        if(slot == HEAD){
+            p.getInventory().setHelmet(item);
+        }else if(slot == OFF_HAND){
+            p.getInventory().setItemInOffHand(item);
+        }else if (slot == EquipmentSlot.HAND){
+            p.getInventory().setItem(4, item);
+        }
     }
 }
 
@@ -530,14 +538,14 @@ class CosmeticView{
         if (wearing) {
             p.sendMessage(Component.translatable("crystalized.shardcore.shop.message.unequipped").color(WHITE).append(currentCosmetic.name));
             if (currentCosmetic.slot != EquipmentSlot.HAND) {
-                p.sendEquipmentChange(p, currentCosmetic.slot, null);
+                Cosmetic.equip(currentCosmetic.slot, p, null);
             } else {
                 p.getInventory().setItem(4, Cosmetic.getCosmeticById(Cosmetic.DEFAULT_SHARDCORE).build(p, false, true, CosmeticView.isViewing(p, currentCosmetic)));
             }
         } else {
             p.sendMessage(Component.translatable("crystalized.shardcore.shop.message.equipped").color(WHITE).append(currentCosmetic.name));
             if (currentCosmetic.slot != EquipmentSlot.HAND) {
-                p.sendEquipmentChange(p, currentCosmetic.slot, currentCosmetic.build(p, true, false, CosmeticView.isViewing(p, currentCosmetic)));
+                Cosmetic.equip(currentCosmetic.slot, p, currentCosmetic.build(p, true, false, CosmeticView.isViewing(p, currentCosmetic)));
             } else {
                 p.getInventory().setItem(4, currentCosmetic.build(p, true, true, CosmeticView.isViewing(p, currentCosmetic)));
             }
