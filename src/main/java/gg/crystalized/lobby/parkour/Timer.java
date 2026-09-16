@@ -16,7 +16,7 @@ public class Timer{
     int seconds = 0;
     int minutes = 0;
     int hours = 0;
-    public Timer(){
+    public Timer(Player p){
         task = new BukkitRunnable(){
             public void run(){
                 if(i == 2){
@@ -36,9 +36,9 @@ public class Timer{
                     minutes = 0;
                 }
                 i++;
-                for(Player p : Bukkit.getOnlinePlayers()){
-                    p.sendActionBar(Component.text(buildTimer(tenth, seconds, minutes, hours)).color(YELLOW));
-                }
+
+                p.sendActionBar(Component.text(buildTimer(tenth, seconds, minutes, hours)).color(YELLOW));
+
         }}.runTaskTimer(Lobby_plugin.getInstance(), 0, 1);
     }
 

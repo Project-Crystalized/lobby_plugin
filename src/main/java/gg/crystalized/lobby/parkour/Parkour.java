@@ -89,7 +89,7 @@ class ParkourRun{
         this.p = p;
         this.course = course;
         this.lastCheckpoint = 0;
-        timer = new Timer();
+        timer = new Timer(p);
         giveItemsAndRemoveAbilities();
         showOrHideCheckpoint();
         running.add(this);
