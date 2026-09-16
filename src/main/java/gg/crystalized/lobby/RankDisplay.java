@@ -37,7 +37,7 @@ public class RankDisplay {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				lb_loc.getNearbyEntitiesByType(TextDisplay.class, 2.0).forEach(entity -> entity.remove());
+				lb_loc.getNearbyEntitiesByType(TextDisplay.class, 0.5).forEach(entity -> entity.remove());
 				TextDisplay display = (TextDisplay) lb_loc.getWorld().spawnEntity(lb_loc, EntityType.TEXT_DISPLAY);
 				display.setShadowed(true);
 				display.setBillboard(Billboard.VERTICAL);

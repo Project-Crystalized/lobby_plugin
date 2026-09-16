@@ -69,7 +69,7 @@ public class Statistics implements Methods{
 
     public static void createStatistics(){
         Statistics ls = new Statistics(
-                "jdbc:sqlite:" + System.getProperty("user.home") + "/databases/litestrike_db.sql",
+                "jdbc:sqlite:" + LobbyDatabase.dbDir() + "/litestrike_db.sql",
                 "LsGamesPlayers",
                 "LiteStrikeGames",
                 "player_uuid",
@@ -82,7 +82,7 @@ public class Statistics implements Methods{
         stats.put("ls", ls);
 
         Statistics ko = new Statistics(
-                "jdbc:sqlite:"+ System.getProperty("user.home")+"/databases/knockoff_db.sql",
+                "jdbc:sqlite:" + LobbyDatabase.dbDir() + "/knockoff_db.sql",
                 "KoGamesPlayers",
                 "KnockoffGames",
                 "player_uuid",
@@ -95,7 +95,7 @@ public class Statistics implements Methods{
         stats.put("ko", ko);
 
         Statistics cb = new Statistics(
-                "jdbc:sqlite:"+ System.getProperty("user.home")+"/databases/crystalblitz_db.sql",
+                "jdbc:sqlite:" + LobbyDatabase.dbDir() + "/crystalblitz_db.sql",
                 "CbGamesPlayers",
                 "CrystalBlitzGames",
                 "player_uuid",

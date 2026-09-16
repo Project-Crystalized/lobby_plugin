@@ -329,9 +329,9 @@ public class Quest {
     }
 
     public enum Game{
-        ls("LsGamesPlayers", "LiteStrikeGames","jdbc:sqlite:" + System.getProperty("user.home") + "/databases/litestrike_db.sql", "Litestrike"),
-        ko("KoGamesPlayers", "KnockoffGames","jdbc:sqlite:" + System.getProperty("user.home") + "/databases/knockoff_db.sql", "Knockoff"),
-        cb("CbGamesPlayers", "CrystalBlitzGames","jdbc:sqlite:" + System.getProperty("user.home") + "/databases/crystalblitz_db.sql", "Crystal Blitz");
+        ls("LsGamesPlayers", "LiteStrikeGames","jdbc:sqlite:" + LobbyDatabase.dbDir() + "/litestrike_db.sql", "Litestrike"),
+        ko("KoGamesPlayers", "KnockoffGames","jdbc:sqlite:" + LobbyDatabase.dbDir() + "/knockoff_db.sql", "Knockoff"),
+        cb("CbGamesPlayers", "CrystalBlitzGames","jdbc:sqlite:" + LobbyDatabase.dbDir() + "/crystalblitz_db.sql", "Crystal Blitz");
         final String playerTableName;
         final String tableName;
         final String URL;

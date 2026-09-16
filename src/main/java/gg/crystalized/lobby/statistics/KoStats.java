@@ -1,6 +1,7 @@
 package gg.crystalized.lobby.statistics;
 
 import net.kyori.adventure.text.Component;
+import gg.crystalized.lobby.LobbyDatabase;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
@@ -18,7 +19,7 @@ import static org.bukkit.Material.*;
 import static org.bukkit.Material.COAL;
 
 public class KoStats extends Statistics{
-    public static final String URL = "jdbc:sqlite:"+ System.getProperty("user.home")+"/databases/knockoff_db.sql";
+    public static final String URL = "jdbc:sqlite:" + LobbyDatabase.dbDir() + "/knockoff_db.sql";
     public KoStats(Statistics stat){
         super(stat);
     }
