@@ -46,7 +46,6 @@ public class Parkour {
         checkpointEntity = Nametag.EntityId;
         Nametag.EntityId++;
         parkours.add(this);
-
     }
 
     public static Parkour findParkour(Location start){
@@ -149,6 +148,7 @@ class ParkourRun{
 
     public void stop(boolean finished){
         p.getInventory().clear();
+        p.hideBossBar(timer.bar);
         InventoryManager.giveLobbyItems(p);
         timer.task.cancel();
         running.remove(this);

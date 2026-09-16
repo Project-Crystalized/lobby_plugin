@@ -1,6 +1,7 @@
 package gg.crystalized.lobby.parkour;
 
 import gg.crystalized.lobby.Lobby_plugin;
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -11,12 +12,15 @@ import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
 
 public class Timer{
     BukkitTask task;
+    BossBar bar;
     int i = 0;
     int tenth = 0;
     int seconds = 0;
     int minutes = 0;
     int hours = 0;
     public Timer(Player p){
+        bar = BossBar.bossBar(Component.text(buildTimer(0, 0,0, 0)).color(YELLOW), 0, BossBar.Color.RED, BossBar.Overlay.PROGRESS);
+        p.showBossBar(bar);
         task = new BukkitRunnable(){
             public void run(){
                 if(i == 2){
@@ -37,7 +41,7 @@ public class Timer{
                 }
                 i++;
 
-                p.sendActionBar(Component.text(buildTimer(tenth, seconds, minutes, hours)).color(YELLOW));
+                bar.name(Component.text(buildTimer(tenth, seconds, minutes, hours)).color(YELLOW));
 
         }}.runTaskTimer(Lobby_plugin.getInstance(), 0, 1);
     }
