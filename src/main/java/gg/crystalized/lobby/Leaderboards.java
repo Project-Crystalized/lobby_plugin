@@ -117,7 +117,7 @@ class WinLeaderboard {
 					Component text = buildText(p, snap, loc, type);
 					Integer num = 3;
 					Integer one = 1;
-					List<EntityData<?>> data = List.of(new EntityData<Byte>(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData<Component>(23, EntityDataTypes.ADV_COMPONENT, text), new EntityData<Integer>(25, EntityDataTypes.INT, 1345466930), new EntityData<Byte>(27, EntityDataTypes.BYTE, one.byteValue()));
+					List<EntityData<?>> data = List.of(new EntityData<>(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData<Component>(23, EntityDataTypes.ADV_COMPONENT, text), new EntityData<Integer>(25, EntityDataTypes.INT, 1345466930), new EntityData<Byte>(27, EntityDataTypes.BYTE, one.byteValue()));
 					WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(leaderboards.get(p).get(type), data);
 					User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
 					if(user != null) {
@@ -152,16 +152,17 @@ class WinLeaderboard {
 			return new LeaderboardSnapshot(text("null"), new HashMap<>(), 0);
 		}
 		try (Connection conn = DriverManager.getConnection(t.url)) {
-			String query = "SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + " GROUP BY player_uuid ORDER BY SUM(" + t.dbColumn + ") DESC;";
-			if(type.contains("pk")) query = "SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + " GROUP BY player_uuid ORDER BY SUM(" + t.dbColumn + ") ASC;";
-			ResultSet res = conn.createStatement().executeQuery(query);
-
-			Component base = text("Game Leaderboard\n").color(GOLD).append(t.title);
+			PreparedStatement query = conn.prepareStatement("SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + " GROUP BY player_uuid ORDER BY SUM(" + t.dbColumn + ") DESC;");
 			Parkour parkour = null;
-			if(type.contains("pk")){
+			Component base = text("Game Leaderboard\n").color(GOLD).append(t.title);
+			if(t == GameType.PARKOUR){
 				parkour = findParkourByLeaderboard(loc);
+				query = conn.prepareStatement("SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + " WHERE course = ? GROUP BY player_uuid ORDER BY SUM(" + t.dbColumn + ") ASC;");
+				query.setString(1, parkour.name);
 				base = base.append(text(parkour.name).color(parkour.color).decoration(BOLD, true));
 			}
+			ResultSet res = query.executeQuery();
+
 			ArrayList<TextComponent> topKey = new ArrayList<>();
 			HashMap<TextComponent, Integer> top = new HashMap<>();
 			HashMap<UUID, int[]> stats = new HashMap<>();

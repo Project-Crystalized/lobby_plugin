@@ -18,8 +18,8 @@ public class ParkourDatabase {
                 + "player_uuid 			BLOB,"
                 + "best_time 			INTEGER,"
                 + "course 			STRING,"
-                + "date 			INTEGER"
-                + ");";
+                + "date 			INTEGER,"
+                + "UNIQUE(player_uuid, course));";
         try (Connection conn = DriverManager.getConnection(URL)) {
             Statement stmt = conn.createStatement();
             stmt.execute(createTable);
