@@ -22,7 +22,6 @@ publishing {
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
-		maven("https://repo.dmulloy2.net/repository/public/")
 		maven("https://maven.citizensnpcs.co/repo")
     maven {url = uri("https://repo.opencollab.dev/main/") }
     maven {url = uri("https://jitpack.io")}
@@ -33,7 +32,6 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:26.2.build.+")
     implementation("org.xerial:sqlite-jdbc:3.47.0.0")
-    compileOnly("com.comphenix.protocol:ProtocolLib:5.3.0")
     compileOnly("net.citizensnpcs:citizens-main:2.0.43-SNAPSHOT") {
         exclude(group = "*", module = "*")
     }
@@ -42,7 +40,6 @@ dependencies {
     implementation("io.github.colonelparrot:jchessify:1.0.2")
     compileOnly ("com.github.bhlangonijr:chesslib:1.3.4")
 
-    compileOnly ("net.dmulloy2:ProtocolLib:5.4.0")
     compileOnly("com.github.retrooper:packetevents-spigot:2.13.0")
 }
 

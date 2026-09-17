@@ -582,6 +582,7 @@ public class LobbyDatabase {
     }
 
     public static boolean ownsCosmetic(OfflinePlayer p, Cosmetic c){
+        if(c == null) return false;
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT COUNT(*) AS count FROM Cosmetics WHERE player_uuid = ? AND cosmetic_id = ?;");
             prep.setBytes(1, uuid_to_bytes(p));

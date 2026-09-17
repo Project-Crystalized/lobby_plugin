@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static net.kyori.adventure.text.format.NamedTextColor.*;
+import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 import static org.bukkit.Material.COAL;
 import static org.bukkit.attribute.Attribute.*;
 import static org.bukkit.potion.PotionEffectType.JUMP_BOOST;
@@ -108,17 +110,20 @@ class ParkourRun{
     private void giveItemsAndRemoveAbilities(){
         ItemStack end = new ItemStack(COAL);
         ItemMeta endData = end.getItemMeta();
-        endData.displayName(Component.text("End parkour"));
+        endData.setItemModel(new NamespacedKey("crystalized", "ui/leave"));
+        endData.displayName(Component.translatable("crystalized.lobby.parkour.end").color(RED).decoration(ITALIC, false));
         end.setItemMeta(endData);
 
         ItemStack check = new ItemStack(COAL);
         ItemMeta checkData = check.getItemMeta();
-        checkData.displayName(Component.text("Return to Checkpoint"));
+        checkData.setItemModel(new NamespacedKey("crystalized", "ui/scn3/profile/info/right"));
+        checkData.displayName(Component.translatable("crystalized.lobby.parkour.return_to_checkpoint").color(BLUE).decoration(ITALIC, false));
         check.setItemMeta(checkData);
 
         ItemStack restart = new ItemStack(COAL);
         ItemMeta restartData = restart.getItemMeta();
-        restartData.displayName(Component.text("Restart parkour"));
+        restartData.setItemModel(new NamespacedKey("crystalized", "ui/replay"));
+        restartData.displayName(Component.translatable("crystalized.lobby.parkour.restart").color(GREEN).decoration(ITALIC, false));
         restart.setItemMeta(restartData);
 
         p.getInventory().setItem(8, end);
