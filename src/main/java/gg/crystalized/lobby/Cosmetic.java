@@ -329,17 +329,11 @@ public class Cosmetic{
             }
         }
 
-        if(type != ARMOR){
-            rebuild(inv, slotNumber, p, wearing != null ? wearing : isWearing(p));
-        }
+        inv.setItem(slotNumber, build(p, wearing != null ? wearing : isWearing(p), false, CosmeticView.isViewing(p, this)));
     }
 
     public void unEquipAllApartFrom(Player p){
         LobbyDatabase.unEquipCosmetics(p, this);
-    }
-
-    public void rebuild(Inventory inv, int slot, Player p, boolean wearing){
-        inv.setItem(slot, build(p, wearing, false, CosmeticView.isViewing(p, this)));
     }
 
     public static void equip(EquipmentSlot slot, Player p, ItemStack item){
