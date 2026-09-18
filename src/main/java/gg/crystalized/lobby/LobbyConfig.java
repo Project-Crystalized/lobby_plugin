@@ -165,9 +165,10 @@ class EntityRefresh implements Listener{
                 return;
             }
         }
-
+        int i = 0;
         for(Parkour p : parkours){
-            new WinLeaderboard("pk", p.leaderboard);
+            new WinLeaderboard("pk" + i, p.leaderboard);
+            i++;
         }
 
         for(NPCData data : LobbyConfig.NPCs.values()){

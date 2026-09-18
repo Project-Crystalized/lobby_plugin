@@ -21,8 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
-import static net.kyori.adventure.text.format.NamedTextColor.LIGHT_PURPLE;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 public class Nametag {
@@ -37,7 +36,7 @@ public class Nametag {
     public static int EntityId = 1000000;
     public Nametag(Player holder) {
         this.holder = holder;
-        components[0] = Component.text("lvl: " + holder.getLevel()).color(GREEN).decoration(ITALIC, false).append(Component.text("   " + "\ue15c: ").append(Component.text("" + LevelManager.getMoney(holder)).color(LIGHT_PURPLE).decoration(ITALIC, false)));
+        components[0] = Component.text("lvl: " + holder.getLevel()).color(GREEN).decoration(ITALIC, false).append(Component.text("   " + "\ue15c: ").color(WHITE)).append(Component.text("" + LevelManager.getMoney(holder)).color(LIGHT_PURPLE).decoration(ITALIC, false));
         components[1] = Ranks.getColoredName(holder);
         components[2] = Ranks.getRankWithName(holder);
 

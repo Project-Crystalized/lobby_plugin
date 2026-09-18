@@ -116,6 +116,9 @@ public class InventoryManager implements Listener {
                 return;
             }
             if(app.self == App.useCases.Set){
+                if (event.getClickedInventory() == null || !event.getClickedInventory().equals(event.getInventory())) {
+                    return;
+                }
                 Setting.changeSettings(app, p, event.getSlot());
                 return;
             }
@@ -134,6 +137,9 @@ public class InventoryManager implements Listener {
             app.action(p, p);
             if(app.self != null) ScrollableView.setView(p, app.self);
         }else if(Cosmetic.identifyCosmetic(item) != null){
+            if (event.getClickedInventory() == null || !event.getClickedInventory().equals(event.getInventory())) {
+                return;
+            }
             Cosmetic c = Cosmetic.identifyCosmetic(item);
             c.clicked(event.getClick(), p, event.getSlotType(), event.getSlot(), event.getInventory());
         }else if((quest = Quest.identifyQuest(p, item)) != null){
@@ -150,7 +156,9 @@ public class InventoryManager implements Listener {
             Achievement a = Achievement.identifyAchievement(p, item);
             if (a.done && p.getUniqueId().equals(a.player.getUniqueId())) {
                 a.claim();
-                event.getInventory().setItem(event.getSlot(), a.build());
+                if (event.getSlot() >= 0 && event.getSlot() < event.getInventory().getSize()) {
+                    event.getInventory().setItem(event.getSlot(), a.build());
+                }
             }
         }else if(Navigation.getNavigationItem(item) != null){
             p.teleport(Navigation.getNavigationItem(item).loc);

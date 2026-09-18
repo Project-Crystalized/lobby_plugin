@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static net.kyori.adventure.text.format.NamedTextColor.*;
+import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 import static org.bukkit.Material.COAL;
 import static org.bukkit.attribute.Attribute.*;
 import static org.bukkit.potion.PotionEffectType.JUMP_BOOST;
@@ -46,7 +48,6 @@ public class Parkour {
         checkpointEntity = Nametag.EntityId;
         Nametag.EntityId++;
         parkours.add(this);
-
     }
 
     public static Parkour findParkour(Location start){
@@ -89,7 +90,7 @@ class ParkourRun{
         this.p = p;
         this.course = course;
         this.lastCheckpoint = 0;
-        timer = new Timer();
+        timer = new Timer(p);
         giveItemsAndRemoveAbilities();
         showOrHideCheckpoint();
         running.add(this);
@@ -109,17 +110,20 @@ class ParkourRun{
     private void giveItemsAndRemoveAbilities(){
         ItemStack end = new ItemStack(COAL);
         ItemMeta endData = end.getItemMeta();
-        endData.displayName(Component.text("End parkour"));
+        endData.setItemModel(new NamespacedKey("crystalized", "ui/leave"));
+        endData.displayName(Component.translatable("crystalized.lobby.parkour.end").color(RED).decoration(ITALIC, false));
         end.setItemMeta(endData);
 
         ItemStack check = new ItemStack(COAL);
         ItemMeta checkData = check.getItemMeta();
-        checkData.displayName(Component.text("Return to Checkpoint"));
+        checkData.setItemModel(new NamespacedKey("crystalized", "ui/scn3/profile/info/right"));
+        checkData.displayName(Component.translatable("crystalized.lobby.parkour.return_to_checkpoint").color(BLUE).decoration(ITALIC, false));
         check.setItemMeta(checkData);
 
         ItemStack restart = new ItemStack(COAL);
         ItemMeta restartData = restart.getItemMeta();
-        restartData.displayName(Component.text("Restart parkour"));
+        restartData.setItemModel(new NamespacedKey("crystalized", "ui/replay"));
+        restartData.displayName(Component.translatable("crystalized.lobby.parkour.restart").color(GREEN).decoration(ITALIC, false));
         restart.setItemMeta(restartData);
 
         p.getInventory().setItem(8, end);
@@ -149,6 +153,7 @@ class ParkourRun{
 
     public void stop(boolean finished){
         p.getInventory().clear();
+        p.hideBossBar(timer.bar);
         InventoryManager.giveLobbyItems(p);
         timer.task.cancel();
         running.remove(this);
