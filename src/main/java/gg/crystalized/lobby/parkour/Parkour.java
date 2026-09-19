@@ -152,7 +152,6 @@ class ParkourRun{
             stop(true);
         }
         p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1f, 1f);
-        //TODO particles and sounds
     }
 
     public void stop(boolean finished){
