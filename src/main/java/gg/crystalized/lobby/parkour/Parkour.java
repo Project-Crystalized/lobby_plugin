@@ -4,6 +4,7 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
+import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
@@ -72,7 +73,8 @@ public class Parkour {
                     Location loc = checkpoints[0];
                     WrapperPlayServerSpawnEntity entity = new WrapperPlayServerSpawnEntity(checkpointEntity, UUID.randomUUID(), EntityTypes.SULFUR_CUBE, new com.github.retrooper.packetevents.protocol.world.Location
                             (loc.getX(), loc.getY(), loc.getZ(), 0, 0), 0, 0, new Vector3d());
-                    PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(entity);
+                    User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
+                    if(user != null) user.sendPacket(entity);
                 }
             }
         }.runTaskTimerAsynchronously(Lobby_plugin.getInstance(), 3, 3);

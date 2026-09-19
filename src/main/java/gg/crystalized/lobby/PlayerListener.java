@@ -70,10 +70,10 @@ public final class PlayerListener implements Listener {
 
 		new BukkitRunnable(){
 			public void run(){
-				Nametag.reloadNametag(p);
+				if(p.isOnline()) Nametag.reloadNametag(p);
 			}
 		}.runTaskLater(Lobby_plugin.getInstance(), 20);
-
+		p.setCollidable(false);
 		Ranks.renderTabList(p);
 
 		HashMap<String, Object> settings = LobbyDatabase.fetchSettings(p);
