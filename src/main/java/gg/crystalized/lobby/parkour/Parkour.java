@@ -14,12 +14,11 @@ import gg.crystalized.lobby.Lobby_plugin;
 import gg.crystalized.lobby.Nametag;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
+import org.bukkit.*;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -29,8 +28,10 @@ import java.util.UUID;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
+import static org.bukkit.Color.TEAL;
 import static org.bukkit.Material.COAL;
 import static org.bukkit.attribute.Attribute.*;
+import static org.bukkit.entity.EntityType.FIREWORK_ROCKET;
 import static org.bukkit.potion.PotionEffectType.JUMP_BOOST;
 
 public class Parkour {
@@ -70,7 +71,7 @@ public class Parkour {
             public void run(){
                 for(Player p: Bukkit.getOnlinePlayers()) {
                     if(ParkourRun.getRun(p) != null) continue;
-                    Location loc = checkpoints[0];
+                    Location loc = checkpoints[0].toCenterLocation();
                     WrapperPlayServerSpawnEntity entity = new WrapperPlayServerSpawnEntity(checkpointEntity, UUID.randomUUID(), EntityTypes.SULFUR_CUBE, new com.github.retrooper.packetevents.protocol.world.Location
                             (loc.getX(), loc.getY(), loc.getZ(), 0, 0), 0, 0, new Vector3d());
                     User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
@@ -150,6 +151,7 @@ class ParkourRun{
         if(lastCheckpoint == course.checkpoints.length-1){
             stop(true);
         }
+        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1f, 1f);
         //TODO particles and sounds
     }
 
@@ -159,7 +161,17 @@ class ParkourRun{
         InventoryManager.giveLobbyItems(p);
         timer.task.cancel();
         running.remove(this);
-        if(finished) ParkourDatabase.saveRun(this);
+        if(!finished) return;
+        ParkourDatabase.saveRun(this);
+
+        Firework firework = (Firework)p.getWorld().spawnEntity(p.getLocation(), FIREWORK_ROCKET);
+        FireworkEffect.Builder effect = FireworkEffect.builder();
+        effect.with(FireworkEffect.Type.STAR);
+        effect.withColor(hex2Rgb(course.color.asHexString()));
+        FireworkMeta meta = firework.getFireworkMeta();
+        meta.addEffect(effect.build());
+        firework.setFireworkMeta(meta);
+        firework.detonate();
     }
 
     public void showOrHideCheckpoint(){
@@ -168,7 +180,7 @@ class ParkourRun{
             PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(wrapper);
             return;
         }
-        Location loc = course.checkpoints[lastCheckpoint+1];
+        Location loc = course.checkpoints[lastCheckpoint+1].toCenterLocation();
         WrapperPlayServerSpawnEntity entity = new WrapperPlayServerSpawnEntity(course.checkpointEntity, UUID.randomUUID(), EntityTypes.SULFUR_CUBE, new com.github.retrooper.packetevents.protocol.world.Location
                 (loc.getX(), loc.getY(), loc.getZ(), 0, 0), 0, 0, new Vector3d());
         PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(entity);
@@ -176,6 +188,13 @@ class ParkourRun{
         List<EntityData<?>> data = List.of(new EntityData(0, EntityDataTypes.BYTE, ((Integer)0x40).byteValue()));
         WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(course.checkpointEntity, data);
         PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(metadata);
+    }
+
+    public static Color hex2Rgb(String colorStr) {
+        return Color.fromRGB(
+                Integer.valueOf( colorStr.substring( 1, 3 ), 16 ),
+                Integer.valueOf( colorStr.substring( 3, 5 ), 16 ),
+                Integer.valueOf( colorStr.substring( 5, 7 ), 16 ) );
     }
 }
 
