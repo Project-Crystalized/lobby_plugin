@@ -70,10 +70,10 @@ public final class PlayerListener implements Listener {
 
 		new BukkitRunnable(){
 			public void run(){
-				Nametag.reloadNametag(p);
+				if(p.isOnline()) Nametag.reloadNametag(p);
 			}
 		}.runTaskLater(Lobby_plugin.getInstance(), 20);
-
+		p.setCollidable(false);
 		Ranks.renderTabList(p);
 
 		HashMap<String, Object> settings = LobbyDatabase.fetchSettings(p);
@@ -254,6 +254,10 @@ public final class PlayerListener implements Listener {
 
 		if(e.getPlayer().getLocation().distance(LobbyConfig.Locations.get("clothing_room")) > 10){
 			view.endView();
+		}
+		if(e.getPlayer().getLocation().getY() <= -90) {
+			e.getPlayer().teleport(LobbyConfig.Locations.get("spawn"));
+			e.getPlayer().setFallDistance(0);
 		}
 	}
 

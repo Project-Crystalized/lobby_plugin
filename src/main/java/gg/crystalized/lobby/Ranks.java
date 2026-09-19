@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
+import static org.bukkit.scoreboard.Team.Option.COLLISION_RULE;
 import static org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY;
 import static org.bukkit.scoreboard.Team.OptionStatus.NEVER;
 
@@ -151,6 +152,7 @@ public enum Ranks {
             }
             team.addPlayer(player);
             team.setOption(NAME_TAG_VISIBILITY, NEVER);
+            team.setOption(COLLISION_RULE, NEVER);
         }
     }
 
