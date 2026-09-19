@@ -14,6 +14,7 @@
   "CRAFTMASTER_HAT": {"id": 25, "model": "cosmetic/head/craftmaster_hat", "level": null, "price": 5000, "slot": "HEAD", "name": "crystalized.cosmetic/head/craftmaster_hat"},
   "DRAGON": {"id": 26, "model": "cosmetic/head/dragon", "level": null, "price": 5000, "slot": "HEAD", "name": "crystalized.cosmetic/head/dragon"},
   "LEMON_CAP": {"id": 27, "model": "cosmetic/head/lemon_cap", "level": null, "price": 5000, "slot": "HEAD", "name": "crystalized.cosmetic/head/lemon_cap"},
+  "HAMSTER": {"id": 39, "model": "cosmetic/head/hamster", "level": null, "price": 4000, "slot": "HEAD", "name": "crystalized.cosmetic/head/hamster"},
 
   "HANDBAG": {"id": 5, "model": "cosmetic/handheld/handbag", "level": null, "price": 2000, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/handbag"},
   "US_FLAG": {"id": 23, "model": "cosmetic/handheld/merica_flag", "level": null, "price": 3000, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/merica_flag"},
