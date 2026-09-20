@@ -180,6 +180,8 @@ public class Achievement{
         if (!done || claimed) {
             return;
         }
+        LevelManager.giveExperience(player.getPlayer(), getXp());
+        LevelManager.giveMoney(player.getPlayer(), getMoney());
         boolean isFinalStage = stage >= temp.stages - 1;
         if (isFinalStage) {
             stage = temp.stages;
@@ -193,8 +195,6 @@ public class Achievement{
             //TODO placeholder sound
             player.getPlayer().playSound(player.getPlayer(), "minecraft:entity.experience_orb.pickup", 1, 1);
         }
-        LevelManager.giveExperience(player.getPlayer(), getXp());
-        LevelManager.giveMoney(player.getPlayer(), getMoney());
         LobbyDatabase.setAchievementDone(this);
         if (!isFinalStage) {
             setProgress(0);
