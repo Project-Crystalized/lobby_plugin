@@ -168,7 +168,7 @@ public class Achievement{
         }
         lore.add(Component.translatable("crystalized.shardcore.quests.progress").append(Component.text(progress + "/" + amount + "%")).color(WHITE).decoration(ITALIC, false));
         lore.add(Component.translatable("crystalized.shardcore.quests.reward").append(Component.text(getMoney() + "\ue15c   " + getXp() + "xp")).color(WHITE).decoration(ITALIC, false));
-        lore.add(Component.translatable("crystalized.shardcore.quests.stage").append(Component.text((stage + 1) + "/" + (temp.stages + 1))).color(WHITE).decoration(ITALIC, false));
+        lore.add(Component.translatable("crystalized.shardcore.quests.stage").append(Component.text(stage + "/" + temp.stages)).color(WHITE).decoration(ITALIC, false));
 
         meta.lore(lore);
         item.setItemMeta(meta);
@@ -186,6 +186,7 @@ public class Achievement{
         if (isFinalStage) {
             stage = temp.stages;
             claimed = true;
+            LobbyDatabase.progressStage(this);
             //TODO placeholder sound, different than the other one
             player.getPlayer().playSound(player.getPlayer(), "minecraft:entity.player.levelup", 1, 1);
         } else {
