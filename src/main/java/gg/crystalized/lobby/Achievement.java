@@ -27,14 +27,14 @@ import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 public class Achievement{
     static ArrayList<AchieveTemplate> templates = new ArrayList<>();
     static Map<UUID, List<Achievement>> achievements = new HashMap<>();
-    OfflinePlayer player;
-    boolean done;
-    boolean claimed;
-    int amount;
-    Quest.Difficulty difficulty;
-    int stage; //subtracted by 1, stage 1 is 0, stage 2 is 1, so on.
-    int progress; //percentage
-    AchieveTemplate temp;
+    public OfflinePlayer player;
+    public boolean done;
+    public boolean claimed;
+    private int amount;
+    private Quest.Difficulty difficulty;
+    public int stage; //subtracted by 1, stage 1 is 0, stage 2 is 1, so on.
+    public int progress; //percentage
+    public AchieveTemplate temp;
 
     public Achievement(OfflinePlayer player, AchieveTemplate temp, int progress, int stage, boolean done, boolean claimed){
         this.player = player;
@@ -177,21 +177,27 @@ public class Achievement{
     }
 
     void claim(){
+        if (!done || claimed) {
+            return;
+        }
         LevelManager.giveExperience(player.getPlayer(), getXp());
         LevelManager.giveMoney(player.getPlayer(), getMoney());
-        if (stage != temp.stages - 1) {
-            stage++;
-            LobbyDatabase.progressStage(this);
-            done = false;
-            LobbyDatabase.setAchievementDone(this);
-            //TODO placeholder sound
-            player.getPlayer().playSound(player.getPlayer(), "minecraft:entity.experience_orb.pickup", 1, 1);
-            setProgress(0);
-        } else {
-            //TODO placeholder sound, different than the other one
-            player.getPlayer().playSound(player.getPlayer(), "minecraft:entity.player.levelup", 1, 1);
+        boolean isFinalStage = stage >= temp.stages - 1;
+        if (isFinalStage) {
             stage = temp.stages;
             claimed = true;
+            //TODO placeholder sound, different than the other one
+            player.getPlayer().playSound(player.getPlayer(), "minecraft:entity.player.levelup", 1, 1);
+        } else {
+            stage++;
+            done = false;
+            LobbyDatabase.progressStage(this);
+            //TODO placeholder sound
+            player.getPlayer().playSound(player.getPlayer(), "minecraft:entity.experience_orb.pickup", 1, 1);
+        }
+        LobbyDatabase.setAchievementDone(this);
+        if (!isFinalStage) {
+            setProgress(0);
         }
         App.Achieve.deactivateApps(player);
         deactivateIconsBlink(player, this);
