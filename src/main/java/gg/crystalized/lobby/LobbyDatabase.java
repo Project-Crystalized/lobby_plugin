@@ -920,9 +920,10 @@ public class LobbyDatabase {
             sqlprop.put("transaction_mode", "IMMEDIATE");
             Connection conn = DriverManager.getConnection(URL, sqlprop);
             conn.setAutoCommit(false);
-            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET stage = stage +1 WHERE player_uuid = ? AND internal_name = ?;");
-            prep.setBytes(1, uuid_to_bytes(a.player));
-            prep.setString(2, a.temp.internalName);
+            PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET stage = ? WHERE player_uuid = ? AND internal_name = ?;");
+            prep.setInt(1, a.stage);
+            prep.setBytes(2, uuid_to_bytes(a.player));
+            prep.setString(3, a.temp.internalName);
             prep.executeUpdate();
             conn.commit();
             conn.close();
