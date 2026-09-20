@@ -70,7 +70,7 @@ public class Parkour {
             public void run(){
                 for(Player p: Bukkit.getOnlinePlayers()) {
                     if(ParkourRun.getRun(p) != null) continue;
-                    Location loc = checkpoints[0];
+                    Location loc = checkpoints[0].toCenterLocation();
                     WrapperPlayServerSpawnEntity entity = new WrapperPlayServerSpawnEntity(checkpointEntity, UUID.randomUUID(), EntityTypes.SULFUR_CUBE, new com.github.retrooper.packetevents.protocol.world.Location
                             (loc.getX(), loc.getY(), loc.getZ(), 0, 0), 0, 0, new Vector3d());
                     User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
@@ -179,7 +179,7 @@ class ParkourRun{
             PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(wrapper);
             return;
         }
-        Location loc = course.checkpoints[lastCheckpoint+1];
+        Location loc = course.checkpoints[lastCheckpoint+1].toCenterLocation();
         WrapperPlayServerSpawnEntity entity = new WrapperPlayServerSpawnEntity(course.checkpointEntity, UUID.randomUUID(), EntityTypes.SULFUR_CUBE, new com.github.retrooper.packetevents.protocol.world.Location
                 (loc.getX(), loc.getY(), loc.getZ(), 0, 0), 0, 0, new Vector3d());
         PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(entity);

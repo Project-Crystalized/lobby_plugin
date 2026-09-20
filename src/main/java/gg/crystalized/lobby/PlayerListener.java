@@ -268,7 +268,7 @@ public final class PlayerListener implements Listener {
 			public void run(){
 				Nametag.reloadNametag(e.getPlayer());
 			}
-		}.runTaskLater(Lobby_plugin.getInstance(), 3);
+		}.runTaskLater(Lobby_plugin.getInstance(), 20);
 	}
 }
 class LobbyChatRenderer implements ChatRenderer.ViewerUnaware{

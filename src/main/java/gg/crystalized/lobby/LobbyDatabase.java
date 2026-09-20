@@ -623,7 +623,7 @@ public class LobbyDatabase {
                 return c;
             }
         }
-        return null;
+        return Cosmetic.getCosmeticById(Cosmetic.DEFAULT_SHARDCORE);
     }
 
     public static ArrayList<Cosmetic> getWornCosmetics(OfflinePlayer p){
