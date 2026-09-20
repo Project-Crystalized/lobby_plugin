@@ -23,7 +23,9 @@ public class LobbyDatabase {
         }
         return d;
     }
+
     public static final String URL = "jdbc:sqlite:" + dbDir() + "/lobby_db.sql";
+
     public static void setup_databases(){
     String createLobbyPlayerTable = "CREATE TABLE IF NOT EXISTS LobbyPlayers ("
             + "player_uuid 			BLOB UNIQUE,"
@@ -79,7 +81,8 @@ public class LobbyDatabase {
             + "progress INTEGER,"
             + "stage      INTEGER,"
             + "done     INTEGER,"
-            + "claimed    INTEGER"
+            + "claimed    INTEGER,"
+            + "UNIQUE(player_uuid, internal_name)"
             +");";
 
         try (Connection conn = DriverManager.getConnection(URL)) {
@@ -898,7 +901,7 @@ public class LobbyDatabase {
             sqlprop.put("transaction_mode", "IMMEDIATE");
             Connection conn = DriverManager.getConnection(URL, sqlprop);
             conn.setAutoCommit(false);
-            PreparedStatement prep = conn.prepareStatement("INSERT INTO Achievements(player_uuid, internal_name, progress, stage, done, claimed) VALUES (?, ?, ?, 0, 0, 0);");
+            PreparedStatement prep = conn.prepareStatement("INSERT OR IGNORE INTO Achievements(player_uuid, internal_name, progress, stage, done, claimed) VALUES (?, ?, ?, 0, 0, 0);");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setString(2, a.temp.internalName);
             prep.setInt(3, a.progress);
