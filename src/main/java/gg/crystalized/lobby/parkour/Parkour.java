@@ -150,7 +150,7 @@ class ParkourRun{
         if(lastCheckpoint == course.checkpoints.length-1){
             stop(true);
         }
-        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1f, 1f);
+        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 2f, 1f);
 
     }
 
@@ -165,7 +165,7 @@ class ParkourRun{
 
         Firework firework = (Firework)p.getWorld().spawnEntity(p.getLocation(), FIREWORK_ROCKET);
         FireworkEffect.Builder effect = FireworkEffect.builder();
-        effect.with(FireworkEffect.Type.STAR);
+        effect.with(FireworkEffect.Type.BALL);
         effect.withColor(hex2Rgb(course.color.asHexString()));
         FireworkMeta meta = firework.getFireworkMeta();
         meta.addEffect(effect.build());

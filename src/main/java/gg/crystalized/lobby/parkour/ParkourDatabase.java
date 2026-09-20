@@ -12,7 +12,7 @@ import gg.crystalized.lobby.LobbyDatabase;
 
 public class ParkourDatabase {
     public static final String URL = "jdbc:sqlite:" + LobbyDatabase.dbDir() + "/lobby_db.sql";
-    //IMPORTANT the best_time is being stored as tenth of a second
+    //IMPORTANT the best_time is being stored as milliseconds (formally tenth of a second -> there might be issues with already existing parkour)
     public static void setup_parkour_table() {
         String createTable = "CREATE TABLE IF NOT EXISTS ParkourTimes ("
                 + "player_uuid 			BLOB,"
@@ -30,13 +30,13 @@ public class ParkourDatabase {
     }
 
     public static void saveRun(ParkourRun run){
-        int timeInTenths = run.timer.tenth + (run.timer.seconds * 10) + (run.timer.minutes * 60 * 10) + (run.timer.hours * 60 * 60 * 10);
+        int timeInMillis = run.timer.millis + (run.timer.seconds * 1000) + (run.timer.minutes * 60 * 1000) + (run.timer.hours * 60 * 60 * 1000);
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("INSERT INTO ParkourTimes(player_uuid, best_time, course, date) VALUES(?, ?, ?, unixepoch()) "
                     + "ON CONFLICT(player_uuid, course) DO UPDATE SET best_time = excluded.best_time, date = unixepoch() "
                     + "WHERE excluded.best_time < ParkourTimes.best_time;");
             prep.setBytes(1, uuid_to_bytes(run.p));
-            prep.setInt(2, timeInTenths);
+            prep.setInt(2, timeInMillis);
             prep.setString(3, run.course.name);
             prep.executeUpdate();
         }catch(SQLException e){

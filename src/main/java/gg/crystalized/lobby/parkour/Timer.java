@@ -3,7 +3,6 @@ package gg.crystalized.lobby.parkour;
 import gg.crystalized.lobby.Lobby_plugin;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -13,8 +12,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
 public class Timer{
     BukkitTask task;
     BossBar bar;
-    int i = 0;
-    int tenth = 0;
+    int millis = 0;
     int seconds = 0;
     int minutes = 0;
     int hours = 0;
@@ -23,33 +21,28 @@ public class Timer{
         p.showBossBar(bar);
         task = new BukkitRunnable(){
             public void run(){
-                if(i == 2){
-                    tenth++;
-                    i = 0;
-                }
-                if(tenth == 10){
+                millis = millis + 50;
+                if(millis >= 999){
                     seconds++;
-                    tenth = 0;
+                    millis = 0;
                 }
-                if(seconds == 60){
+                if(seconds >= 60){
                     minutes++;
                     seconds = 0;
                 }
-                if(minutes == 60){
+                if(minutes >= 60){
                     hours++;
                     minutes = 0;
                 }
-                i++;
-
-                bar.name(Component.text(buildTimer(tenth, seconds, minutes, hours)).color(YELLOW));
+                bar.name(Component.text(buildTimer(millis, seconds, minutes, hours)).color(YELLOW));
 
         }}.runTaskTimer(Lobby_plugin.getInstance(), 0, 1);
     }
 
-    public static String buildTimer(int tenth, int seconds, int minutes, int hours){
-        String ten = "" + tenth;
-        if(ten.length() < 2){
-            ten = "0" + ten;
+    public static String buildTimer(int millis, int seconds, int minutes, int hours){
+        String mil = "" + millis;
+        if(mil.length() < 3){
+            mil = "0".repeat(3-mil.length()) + mil;
         }
         String sec = "" + seconds;
         if(sec.length() < 2){
@@ -63,7 +56,7 @@ public class Timer{
         if(h.length() < 2){
             h = "0" + h;
         }
-        return h + ":" + min + ":" + sec + ":" + ten;
+        return h + ":" + min + ":" + sec + "." + mil;
     }
 }
 

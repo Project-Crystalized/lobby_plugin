@@ -205,11 +205,11 @@ class WinLeaderboard {
 				if(parkour == null) {
 					base = base.append(text("" + wins)).color(GREEN);
 				}else{
-					int hours = wins / 36000;
-					int minutes = (wins % 36000) / 600;
-					int seconds = (wins % 36000 % 600) / 10;
-					int tenth = wins % 36000 % 600 % 10;
-					base = base.append(text(gg.crystalized.lobby.parkour.Timer.buildTimer(tenth, seconds, minutes, hours))).color(GREEN);
+					int hours = wins / 3600000;
+					int minutes = (wins % 3600000) / 60000;
+					int seconds = (wins % 3600000 % 60000) / 1000;
+					int millis = wins % 3600000 % 60000 % 1000;
+					base = base.append(text(gg.crystalized.lobby.parkour.Timer.buildTimer(millis, seconds, minutes, hours))).color(GREEN);
 				}
 			}
 
@@ -251,11 +251,11 @@ class WinLeaderboard {
 		if(parkour == null) {
 			rows = rows.append(text("" + wins)).color(GREEN);
 		}else{
-			int hours = wins / 36000;
-			int minutes = (wins % 36000) / 600;
-			int seconds = (wins % 36000 % 600) / 10;
-			int tenth = wins % 36000 % 600 % 10;
-			rows = rows.append(text(gg.crystalized.lobby.parkour.Timer.buildTimer(tenth, seconds, minutes, hours))).color(GREEN);
+			int hours = wins / 3600000;
+			int minutes = (wins % 3600000) / 60000;
+			int seconds = (wins % 3600000 % 60000) / 1000;
+			int millis = wins % 3600000 % 60000 % 1000;
+			rows = rows.append(text(gg.crystalized.lobby.parkour.Timer.buildTimer(millis, seconds, minutes, hours))).color(GREEN);
 		}
 		return rows;
 	}
