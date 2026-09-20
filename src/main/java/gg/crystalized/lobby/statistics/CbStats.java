@@ -23,7 +23,7 @@ public class CbStats extends Statistics{
 
     public String getGameType(int gameId){
         try(Connection conn = DriverManager.getConnection(URL)) {
-            PreparedStatement prep = conn.prepareStatement("SELECT gametype FROM KnockoffGames WHERE game_id = ?;");
+            PreparedStatement prep = conn.prepareStatement("SELECT gametype FROM CrystalBlizGames WHERE game_id = ?;");
             prep.setInt(1, gameId);
             ResultSet set = prep.executeQuery();
             set.next();
@@ -37,7 +37,7 @@ public class CbStats extends Statistics{
 
     @Override
     public void extraNoLifetimeStats(OfflinePlayer p, ArrayList<StatUnit<?>> units, int gameId, boolean isLifetime){
-        units.add(new StatUnit<>(p, "gametype", getGameType(gameId), "ko", isLifetime));
+        units.add(new StatUnit<>(p, "gametype", getGameType(gameId), "cb", isLifetime));
     }
 
     @Override
@@ -69,6 +69,41 @@ public class CbStats extends Statistics{
                  */
             default: return new ItemStack(COAL);
         }
+    }
+
+    @Override
+    public ArrayList<StatUnit<?>[]> organise(ArrayList<StatUnit<?>> units){
+        ArrayList<StatUnit<?>[]> fin = new ArrayList<>();
+        ArrayList<ArrayList<StatUnit<?>>> arrays = new ArrayList<>();
+        boolean lifetime = units.getFirst().isLifetime;
+        for(StatUnit<?> unit : units){
+            LsStats.Group group = LsStats.Group.getGroup(unit.name, unit.isLifetime);
+            if (group == null) {
+                continue;
+            }
+            boolean life = group.isLifetime;
+            boolean doesntexist = true;
+            for (ArrayList<StatUnit<?>> arr : arrays) {
+                if(LsStats.Group.getGroup(arr.getFirst().name, life) == null){
+                    continue;
+                }
+                if (LsStats.Group.getGroup(arr.getFirst().name, life).equals(group)) {
+                    arr.add(unit);
+                    doesntexist = false;
+                    break;
+                }
+            }
+            if (doesntexist) {
+                ArrayList<StatUnit<?>> unitArray = new ArrayList<>();
+                unitArray.add(unit);
+                arrays.add(unitArray);
+            }
+        }
+        for(ArrayList<StatUnit<?>> list : arrays){
+            fin.add(StatUnit.toArray(list));
+        }
+        fin = LsStats.Group.sortByPriority(fin);
+        return fin;
     }
     enum Group {
         GAMES(new String[]{"name", "game", "games_won", "percent"}, true),

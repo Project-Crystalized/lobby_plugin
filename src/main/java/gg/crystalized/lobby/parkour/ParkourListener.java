@@ -29,13 +29,13 @@ public class ParkourListener implements Listener {
         ParkourRun run = ParkourRun.getRun(p);
         if(run == null) return;
 
-        if(p.getInventory().getItem(6).equals(item)){
+        if(p.getInventory().getItem(6) != null && p.getInventory().getItem(6).equals(item)){
             //return to checkpoint
             p.teleport(run.course.checkpoints[run.lastCheckpoint]);
             p.lookAt(run.course.checkpoints[run.lastCheckpoint+1].getX(), run.course.checkpoints[run.lastCheckpoint].getY(), run.course.checkpoints[run.lastCheckpoint].getZ(), LookAnchor.EYES);
         }
 
-        if(p.getInventory().getItem(7).equals(item)){
+        if(p.getInventory().getItem(7) != null && p.getInventory().getItem(7).equals(item)){
             //restart
             p.teleport(run.course.checkpoints[0]);
             p.lookAt(run.course.checkpoints[run.lastCheckpoint+1].getX(), run.course.checkpoints[run.lastCheckpoint].getY(), run.course.checkpoints[run.lastCheckpoint].getZ(), LookAnchor.EYES);
@@ -43,7 +43,7 @@ public class ParkourListener implements Listener {
             new ParkourRun(p, run.course);
         }
 
-        if(p.getInventory().getItem(8).equals(item)){
+        if(p.getInventory().getItem(8) != null && p.getInventory().getItem(8).equals(item)){
             run.stop(false);
         }
     }

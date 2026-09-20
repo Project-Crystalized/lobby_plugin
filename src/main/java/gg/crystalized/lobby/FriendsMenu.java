@@ -18,6 +18,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.profile.PlayerTextures;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -99,6 +100,16 @@ public class FriendsMenu {
             inv.setItem(slot, stack);
             slot++;
         }
+
+        new BukkitRunnable(){
+            public void run(){
+                if(ScrollableView.getView(p).view != App.useCases.Friends){
+                    cancel();
+                    return;
+                }
+                placeFriends(p, inv, page);
+            }
+        }.runTaskLater(Lobby_plugin.getInstance(), 20);
     }
 
     public static void clickedFriend(ItemStack item, Player p, ClickType click){
@@ -141,6 +152,7 @@ public class FriendsMenu {
 
     public static boolean isOnline(String name){
         Long t = areOnline.get(name);
+
         if(t == null){
             return false;
         }
