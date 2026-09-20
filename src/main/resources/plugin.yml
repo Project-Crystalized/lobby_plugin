@@ -4,7 +4,7 @@ main: gg.crystalized.lobby.Lobby_plugin
 api-version: '1.21.1'
 load: POSTWORLD
 
-softdepend: [Floodgate, Citizens]
+softdepend: [packetevents, Floodgate, Citizens]
 
 commands:
   chess:
@@ -38,8 +38,6 @@ commands:
     description: "teleport back to spawn"
     usage: "/spawn"
     aliases: ["s"]
-    permission: crystalized.lobby.spawn
-    premission: "[!] You don't have permission to run this command, this is probably a bug"
   reload_cosmetics:
     description: "reload the cosmetics"
     usage: "/reload_cosmetics"

@@ -92,6 +92,7 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
         if(Lobby_plugin.getInstance().passive_mode){
             return false;
         }
+        if(!sender.isOp()) return false;
         if(sender instanceof Player){
             LevelManager.giveExperience((Player) sender, Integer.parseInt(args[0]));
             return true;
@@ -103,6 +104,7 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
         if(Lobby_plugin.getInstance().passive_mode){
             return false;
         }
+        if(!sender.isOp()) return false;
         if(sender instanceof Player){
             LevelManager.giveMoney((Player) sender, Integer.parseInt(args[0]));
             return true;
