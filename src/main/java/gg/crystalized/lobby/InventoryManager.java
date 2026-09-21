@@ -283,7 +283,6 @@ public class InventoryManager implements Listener {
         }
     }
 
-    //TODO this needs testing v
     public static void doScrolling(App a, Player p, InventoryView view){
         App.useCases use = ScrollableView.getView(p).view;
 
@@ -333,6 +332,19 @@ public class InventoryManager implements Listener {
             }
         }
         return false;
+    }
+
+    public static void giveUnqueueButton(Player p){
+        if(Ranks.getPayRank(p) == Ranks.sun_sub.ordinal()){
+            p.getInventory().setItem(6, App.Unqueue.build());
+            return;
+        }
+        if(Ranks.getPayRank(p) == Ranks.moon_one.ordinal()){
+            p.getInventory().setItem(7, App.Unqueue.build());
+            return;
+        }
+
+        p.getInventory().setItem(8, App.Unqueue.build());
     }
 }
 

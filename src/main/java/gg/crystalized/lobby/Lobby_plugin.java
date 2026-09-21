@@ -187,6 +187,13 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 			}else{
 				FriendsMenu.areOnline.remove(p);
 			}
+		}else if(message1.equals("queue")){
+			String message2 = in.readUTF();
+			if(message2.equals("leave")){
+				player.getInventory().remove(App.Unqueue.build());
+			}else if(message2.equals("enter")){
+				InventoryManager.giveUnqueueButton(player);
+			}
 		}
 	}
 

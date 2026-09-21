@@ -74,6 +74,7 @@ public enum App {
     Home("ui/invisible", useCases.UI, Component.translatable("crystalized.shardcore.generic.home").color(WHITE).decoration(ITALIC, false), null),
     Requeue("ui/replay", useCases.Demand, Component.translatable("crystalized.game.generic.requeue").color(WHITE).decoration(ITALIC, false), 7),
     BackToHub("ui/leave", useCases.Demand, Component.translatable("crystalized.game.generic.to_lobby").color(WHITE).decoration(ITALIC, false), 8),
+    Unqueue("ui/leave", useCases.Demand, Component.translatable("crystalized.game.generic.unqueue").color(WHITE).decoration(ITALIC, false), 8),
     MsgSetting("ui/scn3/settings/msg", useCases.Set, new useCases[]{useCases.Settings}, Component.translatable("crystalized.shardcore.settings.direct_messages").color(WHITE).decoration(ITALIC, false), 30, "dms"),
     FriendRequestSetting("ui/scn3/settings/friend_requests", useCases.Set, new useCases[]{useCases.Settings}, Component.translatable("crystalized.shardcore.settings.friend_requests").color(WHITE).decoration(ITALIC, false), 39, "friends_requests"),
     PartyRequestSetting("ui/scn3/settings/party_requests", useCases.Set, new useCases[]{useCases.Settings}, Component.translatable("crystalized.shardcore.settings.party_invites").color(WHITE).decoration(ITALIC, false), 48, "party_requests"),
@@ -345,6 +346,12 @@ public enum App {
             out.writeUTF("Connect");
             out.writeUTF("lobby");
             out.writeUTF("false");
+            p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
+        }
+        if(this == Unqueue){
+            ByteArrayDataOutput out = ByteStreams.newDataOutput();
+            out.writeUTF("queue");
+            out.writeUTF("leave");
             p.sendPluginMessage(Lobby_plugin.getInstance(), "crystalized:main", out.toByteArray());
         }
         if(this == LeaveWardrobe){
