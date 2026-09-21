@@ -110,7 +110,7 @@ public class StatItem {
         lore.add(com);
         for(int i = 1; i < stat.length; i++){
             lore.add(style(getItemName(stat[i].name, isLifetime), alias));
-            Component value = Component.text(stat[i].value + "").color(WHITE).decoration(ITALIC, false);
+            Component value = Component.translatable(stat[i].value + "").color(WHITE).decoration(ITALIC, false);
             lore.add(value);
         }
         return lore;

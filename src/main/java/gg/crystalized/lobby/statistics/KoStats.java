@@ -41,6 +41,7 @@ public class KoStats extends Statistics{
     @Override
     public void extraNoLifetimeStats(OfflinePlayer p, ArrayList<StatUnit<?>> units, int gameId, boolean isLifetime){
         units.add(new StatUnit<>(p, "gametype", getGameType(gameId), "ko", isLifetime));
+        units.add(new StatUnit<>(p, "other_team", Statistics.stats.get("ko").getTeam(gameId, false), "ko", isLifetime));
     }
 
     @Override
@@ -100,7 +101,7 @@ public class KoStats extends Statistics{
             case ITEMS:
                 ItemStack item = new ItemStack(COAL);
                 ItemMeta meta = item.getItemMeta();
-                meta.setItemModel(new NamespacedKey("crystalized", "items/cloud_totem"));
+                meta.setItemModel(new NamespacedKey("crystalized", "cloud_totem"));
                 item.setItemMeta(meta);
                 return item;
             default: return new ItemStack(COAL);

@@ -38,6 +38,7 @@ public class CbStats extends Statistics{
     @Override
     public void extraNoLifetimeStats(OfflinePlayer p, ArrayList<StatUnit<?>> units, int gameId, boolean isLifetime){
         units.add(new StatUnit<>(p, "gametype", getGameType(gameId), "cb", isLifetime));
+        units.add(new StatUnit<>(p, "other_team", Statistics.stats.get("cb").getTeam(gameId, false), "cb", isLifetime));
     }
 
     @Override

@@ -101,10 +101,10 @@ public class Statistics implements Methods{
                 "player_uuid",
                 "games_won",
                 "map",
-                new String[]{"team", "kills", "deaths"},
+                new String[]{"team", "kills", "deaths", "nexus_kills"},
                 null,
                 CbStats.class,
-                GOLD);
+                LIGHT_PURPLE);
         stats.put("cb", cb);
     }
 
@@ -138,14 +138,14 @@ public class Statistics implements Methods{
                     units.add(new StatUnit<>(p, data.getColumnLabel(i), gameId, alias, isLifetime));
                 } else if (isLifetime && data.getColumnLabel(i).equals(wasWinner)) {
                     units.add(new StatUnit<>(p, data.getColumnLabel(i), getPlayerWins(p), alias, isLifetime));
-                }else if (isLifetime && fun.apply(set) instanceof Integer) {
+                }else if (isLifetime && (fun.apply(set) instanceof Integer || fun.apply(set) instanceof Double)) {
                     units.add(new StatUnit<>(p, data.getColumnLabel(i), sumColumns(data.getColumnLabel(i), p), alias, isLifetime));
                 }else {
                     units.add(new StatUnit<>(p, data.getColumnLabel(i), fun.apply(set), alias, isLifetime));
                 }
             }
             if(isLifetime){
-                units.add(new StatUnit<>(p, "percent", Component.translatable(calculatePercent(p)), alias, isLifetime));
+                units.add(new StatUnit<>(p, "percent", calculatePercent(p), alias, isLifetime));
             }else{
                 units.add(new StatUnit<>(p, "winner", getTeam(gameId, true), alias, isLifetime));
                 (statClass.cast(newInst())).extraNoLifetimeStats(p, units, gameId, isLifetime);
