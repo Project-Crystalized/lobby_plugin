@@ -1,6 +1,7 @@
 package gg.crystalized.lobby.parkour;
 
 import io.papermc.paper.entity.LookAnchor;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -45,6 +46,9 @@ public class ParkourListener implements Listener {
 
         if(p.getInventory().getItem(8) != null && p.getInventory().getItem(8).equals(item)){
             run.stop(false);
+            Location loc = run.course.checkpoints[0].clone();
+            loc.setX(run.course.checkpoints[0].getX()+1);
+            p.teleport(loc);
         }
     }
 

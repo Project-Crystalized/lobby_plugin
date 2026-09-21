@@ -23,7 +23,7 @@ public class CbStats extends Statistics{
 
     public String getGameType(int gameId){
         try(Connection conn = DriverManager.getConnection(URL)) {
-            PreparedStatement prep = conn.prepareStatement("SELECT gametype FROM CrystalBlizGames WHERE game_id = ?;");
+            PreparedStatement prep = conn.prepareStatement("SELECT gametype FROM CrystalBlitzGames WHERE game_id = ?;");
             prep.setInt(1, gameId);
             ResultSet set = prep.executeQuery();
             set.next();

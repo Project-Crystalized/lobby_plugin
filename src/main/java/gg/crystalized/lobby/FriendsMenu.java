@@ -107,9 +107,26 @@ public class FriendsMenu {
                     cancel();
                     return;
                 }
-                placeFriends(p, inv, page);
+                updateFriendMeta(p, inv);
             }
         }.runTaskLater(Lobby_plugin.getInstance(), 20);
+    }
+
+    public static void updateFriendMeta(Player p, Inventory inv){
+        for(ItemStack item : inv.getContents()){
+            if(item == null || item.getType() != Material.PLAYER_HEAD) continue;
+            String name = item.getPersistentDataContainer().get(key, PersistentDataType.STRING);
+            if(name == null){
+                return;
+            }
+            OfflinePlayer friend = Bukkit.getOfflinePlayer(name);
+            checkOnline(p, friend);
+            ItemMeta meta = item.getItemMeta();
+            List<Component> lore = meta.lore();
+            lore.set(lore.size() -1, (isOnline(name) ? Component.translatable("crystalized.generic.online").color(GREEN) : Component.translatable("crystalized.generic.offline").color(RED)));
+            meta.lore(lore);
+            item.setItemMeta(meta);
+        }
     }
 
     public static void clickedFriend(ItemStack item, Player p, ClickType click){

@@ -191,7 +191,7 @@ class WinLeaderboard {
 			}
 
 			lastErrorLogged = false;
-			int total = balance(longest + "......" + "1000000");
+			int total = balance(longest + "......" + "10000000000");
 			for(int j = 0; j <= topKey.size()-1; j++){
 				String top_str = PlainTextComponentSerializer.plainText().serialize(topKey.get(j));
 				Component num = Leaderboards.get_styles(j+1);

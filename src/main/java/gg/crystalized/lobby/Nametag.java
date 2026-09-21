@@ -71,7 +71,7 @@ public class Nametag {
         nametags.add(this);
     }
 
-    private void renderNametag(Player recipient){
+    public void renderNametag(Player recipient){
         for(int i = 0; i < components.length; i++){
             makeDisplay(true, recipient, i);
             makeArmorStand(true, recipient, i);
@@ -128,13 +128,13 @@ public class Nametag {
             if(tag == null){
                 continue;
             }
-            if(p.getLocation().distance(holder.getLocation()) <= maxDistance){
+            if(p.getLocation().distance(holder.getLocation()) <= maxDistance && holder.canSee(p)){
                 if(!tooFarAway.contains(tag)) continue;
                 tooFarAway.remove(tag);
                 tag.renderNametag(holder);
                 continue;
             }
-            if(tooFarAway.contains(tag)) continue;
+            if(tooFarAway.contains(tag) && holder.canSee(p) && p.isOnline()) continue;
             tooFarAway.add(tag);
             User user = PacketEvents.getAPI().getPlayerManager().getUser(holder);
             for(int id :  ArrayUtils.addAll(tag.armorIds, tag.displayIds)) {
@@ -189,6 +189,24 @@ public class Nametag {
         }.runTaskAsynchronously(Lobby_plugin.getInstance());
         nametags.remove(tag);
         tag.locationChecker.cancel();
+    }
+
+    public static void hideSpecificNametag(Player recipient, Player p){
+        if(Lobby_plugin.getInstance().passive_mode && !Lobby_plugin.getInstance().doNametagsDespitePassive){
+            return;
+        }
+        Nametag tag = getNametag(p);
+        if (tag == null) return;
+        new BukkitRunnable() {
+            public void run() {
+                for (int id : ArrayUtils.addAll(tag.armorIds, tag.displayIds)) {
+                    WrapperPlayServerDestroyEntities wrapper = new WrapperPlayServerDestroyEntities(id);
+                    User user = PacketEvents.getAPI().getPlayerManager().getUser(recipient);
+                    if (user == null) return;
+                    user.sendPacket(wrapper);
+                }
+            }
+        }.runTaskAsynchronously(Lobby_plugin.getInstance());
     }
 
     //sendToPlayer = true -> packet is sent to only p

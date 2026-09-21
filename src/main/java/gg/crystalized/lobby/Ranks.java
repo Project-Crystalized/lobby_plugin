@@ -111,7 +111,7 @@ public enum Ranks {
 
     public static Component getJoinMessage(Player p){
         if(getRank(p) == rankless){
-            return null;
+            return Component.text("");
         }
 
         return getNameWithName(p).append(Component.translatable("crystalized.lobby.chat.message.player_join").color(GREEN));
