@@ -164,13 +164,13 @@ public class Nametag {
                 continue;
             }
             tag.setPassengers(true, holder, 0);
-            if(p.getLocation().distance(holder.getLocation()) <= maxDistance && holder.canSee(p)){
+            if(p.getLocation().distance(holder.getLocation()) <= maxDistance && holder.canSee(p) && !p.isInvisible()){
                 if(!tooFarAway.contains(tag)) continue;
                 tooFarAway.remove(tag);
                 tag.renderNametag(holder);
                 continue;
             }
-            if(tooFarAway.contains(tag) && holder.canSee(p) && p.isOnline()) continue;
+            if(tooFarAway.contains(tag) && holder.canSee(p) && p.isOnline() && !p.isInvisible()) continue;
             tooFarAway.add(tag);
             User user = PacketEvents.getAPI().getPlayerManager().getUser(holder);
             for(int id :  ArrayUtils.addAll(tag.armorIds, tag.displayIds)) {
