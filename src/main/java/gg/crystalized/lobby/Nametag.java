@@ -103,7 +103,7 @@ public class Nametag {
     }
 
     public static void reloadNametag(Player p){
-        if(Lobby_plugin.getInstance().passive_mode && !Lobby_plugin.getInstance().doNametagsDespitePassive){
+        if(Lobby_plugin.getInstance().passive_mode){
             return;
         }
         removeNametag(p);
@@ -120,6 +120,41 @@ public class Nametag {
         }.runTaskTimer(Lobby_plugin.getInstance(), 20, 20);
     }
 
+    //for API
+    public static Nametag reloadNametag(Player p, Component[] components){
+        if(Lobby_plugin.getInstance().passive_mode && !Lobby_plugin.getInstance().doNametagsDespitePassive){
+            return null;
+        }
+        removeNametag(p);
+        renderAllNametags(p);
+        Nametag tag = new Nametag(p, components);
+        if(tag.locationChecker != null){
+            return tag;
+        }
+
+        tag.locationChecker = new BukkitRunnable(){
+            public void run(){
+                tag.locationChecker();
+            }
+        }.runTaskTimer(Lobby_plugin.getInstance(), 20, 20);
+        return tag;
+    }
+
+    public void updateContent(Component[] newContent){
+        int i = 0;
+        for(int id : displayIds){
+            if(newContent.length <= i){
+                WrapperPlayServerDestroyEntities wrapper = new WrapperPlayServerDestroyEntities(id);
+                sendToEveryoneApartFrom(holder, wrapper);
+                continue;
+            }
+            List<EntityData<?>> data = List.of(new EntityData<>(23, EntityDataTypes.ADV_COMPONENT, newContent[i]));
+            WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(id, data);
+            sendToEveryoneApartFrom(holder, metadata);
+            i++;
+        }
+    }
+
     public void locationChecker(){
         int maxDistance = 30;
         for(Player p : Bukkit.getOnlinePlayers()){
@@ -128,6 +163,7 @@ public class Nametag {
             if(tag == null){
                 continue;
             }
+            tag.setPassengers(true, holder, 0);
             if(p.getLocation().distance(holder.getLocation()) <= maxDistance && holder.canSee(p)){
                 if(!tooFarAway.contains(tag)) continue;
                 tooFarAway.remove(tag);
