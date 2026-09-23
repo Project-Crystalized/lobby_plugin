@@ -85,6 +85,16 @@ public class Leaderboards {
 		}
 		return s;
 	}
+
+	public static int balance(String name) {
+		char[] chars = name.toCharArray();
+		int sum = 0;
+		for (char c : chars) {
+			sum += BitmapGlyphInfo.getBitmapGlyphInfo(c).width;
+		}
+		sum += name.length() - 1;
+		return sum / 2;
+	}
 }
 
 class WinLeaderboard {
@@ -138,7 +148,7 @@ class WinLeaderboard {
 		Component rows = snap.sharedText.append(text("\n")).append(text("-----------------").color(GRAY));
 		Component num = Leaderboards.get_styles(own[0]);
 		String num_str = PlainTextComponentSerializer.plainText().serialize(num);
-		int padding = snap.total - (balance(num_str) + balance(PlainTextComponentSerializer.plainText().serialize(Ranks.getName(p))) + balance("" + own[1]));
+		int padding = snap.total - (Leaderboards.balance(num_str) + Leaderboards.balance(PlainTextComponentSerializer.plainText().serialize(Ranks.getName(p))) + Leaderboards.balance("" + own[1]));
 		String dots = ".".repeat(padding);
 		rows = rows.append(text("\n")).append(num);
 		rows = rows.append(Ranks.getName(p)).append(text(dots).color(GRAY));
@@ -205,7 +215,7 @@ class WinLeaderboard {
 				h++;
 				int wins = res.getInt("SUM(" + t.dbColumn + ")");
 
-				if(balance(name_str) > balance(longest)){
+				if(Leaderboards.balance(name_str) > Leaderboards.balance(longest)){
 					longest = name_str;
 				}
 				stats.put(uuid, new int[]{h, wins});
@@ -217,12 +227,12 @@ class WinLeaderboard {
 			}
 
 			lastErrorLogged = false;
-			int total = balance(longest + "......" + "10000000000");
+			int total = Leaderboards.balance(longest + "......" + "10000000000");
 			for(int j = 0; j <= topKey.size()-1; j++){
 				String top_str = PlainTextComponentSerializer.plainText().serialize(topKey.get(j));
 				Component num = Leaderboards.get_styles(j+1);
 				String num_str = PlainTextComponentSerializer.plainText().serialize(num);
-				int padding = total - (balance(num_str) + balance(top_str) + balance("" + top.get(topKey.get(j))));
+				int padding = total - (Leaderboards.balance(num_str) + Leaderboards.balance(top_str) + Leaderboards.balance("" + top.get(topKey.get(j))));
 				//Bukkit.getLogger().warning(type + ": " + top.get(topKey.get(j)).content());
 				String dots = ".".repeat(padding);
 				base = base.append(text("\n")).append(num);
@@ -255,43 +265,6 @@ class WinLeaderboard {
 			}
 			return new LeaderboardSnapshot(fallbackBase, new HashMap<>(), 0);
 		}
-	}
-
-	String get_small_cap_num(int i) {
-		switch (i) {
-			case 0:
-				return "𝟢";
-			case 1:
-				return "𝟣";
-			case 2:
-				return "𝟤";
-			case 3:
-				return "𝟥";
-			case 4:
-				return "𝟦";
-			case 5:
-				return "𝟧";
-			case 6:
-				return "𝟨";
-			case 7:
-				return "𝟩";
-			case 8:
-				return "𝟪";
-			case 9:
-				return "𝟫";
-			default:
-				return "";
-		}
-	}
-
-	public static int balance(String name) {
-		char[] chars = name.toCharArray();
-		int sum = 0;
-		for (char c : chars) {
-			sum += BitmapGlyphInfo.getBitmapGlyphInfo(c).width;
-		}
-		sum += name.length() - 1;
-		return sum / 2;
 	}
 
 	enum GameType{
