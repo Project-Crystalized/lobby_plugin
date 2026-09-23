@@ -14,6 +14,7 @@ import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -26,7 +27,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 public class Nametag {
-    Player holder;
+    OfflinePlayer holder;
     //0 = levels & money, 1 = name, 2 = rank
     Component[] components = new Component[3];
     int[] displayIds = new int[3];
@@ -82,20 +83,23 @@ public class Nametag {
 
     public static void renderAllNametags(Player p){
         for(Nametag tag : nametags){
-            if(!tag.holder.isOnline()) continue;
+            if(!tag.holder.isOnline()){
+                disconnect(tag.holder);
+                continue;
+            }
             tag.renderNametag(p);
         }
     }
 
     private static void sendToEveryoneApartFrom(Player p, PacketWrapper<?> wrapper){
         for(Player player : Bukkit.getOnlinePlayers()){
-            if (p.equals(player)) continue;
+            if (p != null && p.equals(player)) continue;
             User user = PacketEvents.getAPI().getPlayerManager().getUser(player);
             if(user != null) user.sendPacket(wrapper);
         }
     }
 
-    public static Nametag getNametag(Player p){
+    public static Nametag getNametag(OfflinePlayer p){
         for(Nametag tag : nametags){
             if(tag.holder.equals(p)){
                 return tag;
@@ -147,12 +151,12 @@ public class Nametag {
         for(int id : displayIds){
             if(newContent.length <= i){
                 WrapperPlayServerDestroyEntities wrapper = new WrapperPlayServerDestroyEntities(id);
-                sendToEveryoneApartFrom(holder, wrapper);
+                sendToEveryoneApartFrom(holder.getPlayer(), wrapper);
                 continue;
             }
             List<EntityData<?>> data = List.of(new EntityData<>(23, EntityDataTypes.ADV_COMPONENT, newContent[i]));
             WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(id, data);
-            sendToEveryoneApartFrom(holder, metadata);
+            sendToEveryoneApartFrom(holder.getPlayer(), metadata);
             i++;
         }
     }
@@ -165,14 +169,19 @@ public class Nametag {
             if(tag == null){
                 continue;
             }
-            tag.setPassengers(true, holder, 0);
-            if(p.getLocation().distance(holder.getLocation()) <= maxDistance && holder.canSee(p) && !p.isInvisible() && p.getGameMode() != GameMode.SPECTATOR && p.isOnline()){
+            Player hold = holder.getPlayer();
+            if(hold == null){
+                disconnect(holder);
+                return;
+            }
+            tag.setPassengers(true, hold, 0);
+            if(p.getLocation().distance(hold.getLocation()) <= maxDistance && hold.canSee(p) && !p.isInvisible() && p.getGameMode() != GameMode.SPECTATOR && p.isOnline()){
                 if(!tooFarAway.contains(tag)) continue;
                 tooFarAway.remove(tag);
-                tag.renderNametag(holder);
+                tag.renderNametag(hold);
                 continue;
             }
-            if(tooFarAway.contains(tag) && holder.canSee(p) && p.isOnline() && !p.isInvisible() && p.getGameMode() != GameMode.SPECTATOR) continue;
+            if(tooFarAway.contains(tag) && hold.canSee(p) && p.isOnline() && !p.isInvisible() && p.getGameMode() != GameMode.SPECTATOR) continue;
             tooFarAway.add(tag);
             User user = PacketEvents.getAPI().getPlayerManager().getUser(holder);
             for(int id :  ArrayUtils.addAll(tag.armorIds, tag.displayIds)) {
@@ -211,7 +220,7 @@ public class Nametag {
         remove.locationChecker.cancel();
     }
 
-    public static void disconnect(Player p){
+    public static void disconnect(OfflinePlayer p){
         if(Lobby_plugin.getInstance().passive_mode && !Lobby_plugin.getInstance().doNametagsDespitePassive){
             return;
         }
@@ -221,7 +230,7 @@ public class Nametag {
             public void run() {
                 for (int id : ArrayUtils.addAll(tag.armorIds, tag.displayIds)) {
                     WrapperPlayServerDestroyEntities wrapper = new WrapperPlayServerDestroyEntities(id);
-                    sendToEveryoneApartFrom(p, wrapper);
+                    sendToEveryoneApartFrom(p.getPlayer(), wrapper);
                 }
             }
         }.runTaskAsynchronously(Lobby_plugin.getInstance());
@@ -278,11 +287,15 @@ public class Nametag {
     }
 
     private void setPassengers(boolean sendToPlayer, Player p, int i){
+        if(holder.getPlayer() == null){
+            disconnect(holder);
+            return;
+        }
         User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
         if(user == null) return;
         WrapperPlayServerSetPassengers passengers;
         if(i == 0){
-            passengers = new WrapperPlayServerSetPassengers(holder.getEntityId(), new int[]{armorIds[i]});
+            passengers = new WrapperPlayServerSetPassengers(holder.getPlayer().getEntityId(), new int[]{armorIds[i]});
         }else {
             passengers = new WrapperPlayServerSetPassengers(displayIds[i-1], new int[]{armorIds[i]});
         }
