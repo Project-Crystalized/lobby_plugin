@@ -58,12 +58,13 @@ public class RankDisplay {
 			int i = 0;
 			while (res.next()) {
 				i++;
-				String name = Bukkit.getOfflinePlayer(Leaderboards.convertBytesToUUID(res.getBytes("player_uuid"))).getName();
 				Component num = Leaderboards.get_styles(i);
 				int rp = res.getInt("rp");
 				Component rank = get_rank_symbol(res.getInt("rank"));
 				leaderbaord_rows = leaderbaord_rows.append(text("\n")).append(num);
-				leaderbaord_rows = leaderbaord_rows.append(text("" + name + " ").color(WHITE));
+				leaderbaord_rows = leaderbaord_rows
+						.append(Ranks.getName(Bukkit.getOfflinePlayer(Leaderboards.convertBytesToUUID(res.getBytes("player_uuid")))))
+						.append(text(" "));
 				leaderbaord_rows = leaderbaord_rows.append(rank.append(text(" " + rp + "rp\n")).color(WHITE));
 			}
 			return leaderbaord_rows;
@@ -95,9 +96,9 @@ public class RankDisplay {
 				PlayerRankedData prd = ranked.get(p.getUniqueId());
 				Component text;
 				if(prd == null){
-					text = Component.text(p.getName()).append(Component.translatable("crystalized.game.litestrike.ranked.unranked"));
+					text = Ranks.getName(p).append(Component.translatable("crystalized.game.litestrike.ranked.unranked"));
 				}else{
-					text = Component.text(p.getName()).append(get_rank(prd.rank)).append(Component.translatable("crystalized.game.litestrike.ranked.with_rp", List.of(Component.text(prd.rp))));
+					text = Ranks.getName(p).append(get_rank(prd.rank)).append(Component.translatable("crystalized.game.litestrike.ranked.with_rp", List.of(Component.text(prd.rp))));
 					text = text.append(Component.translatable("crystalized.game.litestrike.ranked.number", List.of(Component.text(prd.row_nr))));
 				}
 				display.setVisibleByDefault(false);

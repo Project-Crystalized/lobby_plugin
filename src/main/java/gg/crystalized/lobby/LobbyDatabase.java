@@ -454,7 +454,7 @@ public class LobbyDatabase {
             return set.getInt("textures") == 1;
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
-            Bukkit.getLogger().warning("update settings for " + p.getName() + " UUID: " + p.getUniqueId());
+            Bukkit.getLogger().severe("error for canSeeConfusingTextures " + p.getName() + " UUID: " + p.getUniqueId());
         }
         return false;
     }
