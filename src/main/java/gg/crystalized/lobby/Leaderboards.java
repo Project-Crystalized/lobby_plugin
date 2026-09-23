@@ -92,58 +92,84 @@ class WinLeaderboard {
 	boolean lastErrorLogged = false;
 
 	static class LeaderboardSnapshot {
-		Component base;
-		HashMap<UUID, int[]> stats;
+		Component sharedText;
+		HashMap<UUID, int[]> player_stats;
 		int total;
 
 		LeaderboardSnapshot(Component base, HashMap<UUID, int[]> stats, int total){
-			this.base = base;
-			this.stats = stats;
+			this.sharedText = base;
+			this.player_stats = stats;
 			this.total = total;
 		}
 	}
 
-	public WinLeaderboard(String type, Location loc) {
+	public WinLeaderboard(String game_type, Location loc) {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				LeaderboardSnapshot snap = computeSnapshot(type, loc);
+				LeaderboardSnapshot snap = computeSnapshot(game_type, loc);
 				for(Player p : Bukkit.getOnlinePlayers()) {
-					leaderboards.computeIfAbsent(p, k -> new HashMap<>());
-					if(!leaderboards.get(p).containsKey(type)){
-						createDisplay(p, loc, type, snap);
-						continue;
-					}
-					Component text = buildText(p, snap, loc, type);
-					Integer num = 3;
-					Integer one = 1;
-					List<EntityData<?>> data = List.of(new EntityData<>(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData<Component>(23, EntityDataTypes.ADV_COMPONENT, text), new EntityData<Integer>(25, EntityDataTypes.INT, 1345466930), new EntityData<Byte>(27, EntityDataTypes.BYTE, one.byteValue()));
-					WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(leaderboards.get(p).get(type), data);
 					User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
-					if(user != null) {
-						user.sendPacket(metadata);
+					if(user == null) continue;
+
+					leaderboards.computeIfAbsent(p, k -> new HashMap<>());
+					if(!leaderboards.get(p).containsKey(game_type)){
+						createDisplay(user, p, loc, game_type);
 					}
+
+					Component text = buildText(p, snap, loc, game_type);
+
+					int lb_entity_id = leaderboards.get(p).get(game_type);
+					user.sendPacket(displayMetadata(lb_entity_id, text));
 				}
 			}
-		}.runTaskTimer(Lobby_plugin.getInstance(), 1, (20 * 10));
+		}.runTaskTimer(Lobby_plugin.getInstance(), 20, (20 * 10));
 	}
 
-	static void createDisplay(Player p, Location loc, String type, LeaderboardSnapshot snap){
+	static Component buildText(Player p, LeaderboardSnapshot snap, Location loc, String type){
+		int[] own = snap.player_stats.get(p.getUniqueId());
+		if(own == null){
+			return snap.sharedText;
+		}
+		Parkour parkour = null;
+		if(type.contains("pk")) {
+			parkour = findParkourByLeaderboard(loc);
+		}
+		Component rows = snap.sharedText.append(text("\n")).append(text("-----------------").color(GRAY));
+		Component num = Leaderboards.get_styles(own[0]);
+		String num_str = PlainTextComponentSerializer.plainText().serialize(num);
+		int padding = snap.total - (balance(num_str) + balance(PlainTextComponentSerializer.plainText().serialize(Ranks.getName(p))) + balance("" + own[1]));
+		String dots = ".".repeat(padding);
+		rows = rows.append(text("\n")).append(num);
+		rows = rows.append(Ranks.getName(p)).append(text(dots).color(GRAY));
+		int wins = own[1];
+		if(parkour == null) {
+			rows = rows.append(text("" + wins)).color(GREEN);
+		}else{
+			int hours = wins / 3600000;
+			int minutes = (wins % 3600000) / 60000;
+			int seconds = (wins % 3600000 % 60000) / 1000;
+			int millis = wins % 3600000 % 60000 % 1000;
+			rows = rows.append(text(gg.crystalized.lobby.parkour.Timer.buildTimer(millis, seconds, minutes, hours))).color(GREEN);
+		}
+		return rows;
+	}
+
+	static void createDisplay(User user, Player p, Location loc, String type){
 		int id = Nametag.EntityId;
 		leaderboards.get(p).put(type, id);
 		Nametag.EntityId++;
 		WrapperPlayServerSpawnEntity entity = new WrapperPlayServerSpawnEntity(id, UUID.randomUUID(), EntityTypes.TEXT_DISPLAY, new com.github.retrooper.packetevents.protocol.world.Location
 				(loc.getX(), loc.getY(), loc.getZ(), 0, 0), 0, 0, new Vector3d());
-		PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(entity);
+		user.sendPacket(entity);
+	}
 
-		Integer num = 3;
-		Integer one = 1;
-		List<EntityData<?>> data = List.of(new EntityData<Byte>(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData<Component>(23, EntityDataTypes.ADV_COMPONENT, buildText(p, snap, loc, type)), new EntityData<Integer>(25, EntityDataTypes.INT, 1345466930), new EntityData<Byte>(27, EntityDataTypes.BYTE, one.byteValue()));
-		WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(id, data);
-		User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
-		if(user != null) {
-			PacketEvents.getAPI().getPlayerManager().getUser(p).sendPacket(metadata);
-		}
+	static WrapperPlayServerEntityMetadata displayMetadata(int entityId, Component text) {
+		List<EntityData<?>> data = List.of(new EntityData<>(15, EntityDataTypes.BYTE, (byte) 3),
+				new EntityData<Component>(23, EntityDataTypes.ADV_COMPONENT, text),
+				new EntityData<Integer>(25, EntityDataTypes.INT, 1345466930),
+				new EntityData<Byte>(27, EntityDataTypes.BYTE, (byte) 1));
+		return new WrapperPlayServerEntityMetadata(entityId, data);
 	}
 
 	LeaderboardSnapshot computeSnapshot(String type, Location loc){
@@ -229,35 +255,6 @@ class WinLeaderboard {
 			}
 			return new LeaderboardSnapshot(fallbackBase, new HashMap<>(), 0);
 		}
-	}
-
-	static Component buildText(Player p, LeaderboardSnapshot snap, Location loc, String type){
-		int[] own = snap.stats.get(p.getUniqueId());
-		if(own == null){
-			return snap.base;
-		}
-		Parkour parkour = null;
-		if(type.contains("pk")) {
-			parkour = findParkourByLeaderboard(loc);
-		}
-		Component rows = snap.base.append(text("\n")).append(text("-----------------").color(GRAY));
-		Component num = Leaderboards.get_styles(own[0]);
-		String num_str = PlainTextComponentSerializer.plainText().serialize(num);
-		int padding = snap.total - (balance(num_str) + balance(PlainTextComponentSerializer.plainText().serialize(Ranks.getName(p))) + balance("" + own[1]));
-		String dots = ".".repeat(padding);
-		rows = rows.append(text("\n")).append(num);
-		rows = rows.append(Ranks.getName(p)).append(text(dots).color(GRAY));
-		int wins = own[1];
-		if(parkour == null) {
-			rows = rows.append(text("" + wins)).color(GREEN);
-		}else{
-			int hours = wins / 3600000;
-			int minutes = (wins % 3600000) / 60000;
-			int seconds = (wins % 3600000 % 60000) / 1000;
-			int millis = wins % 3600000 % 60000 % 1000;
-			rows = rows.append(text(gg.crystalized.lobby.parkour.Timer.buildTimer(millis, seconds, minutes, hours))).color(GREEN);
-		}
-		return rows;
 	}
 
 	String get_small_cap_num(int i) {
