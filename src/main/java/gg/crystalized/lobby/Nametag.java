@@ -13,6 +13,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.*;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -164,13 +165,13 @@ public class Nametag {
                 continue;
             }
             tag.setPassengers(true, holder, 0);
-            if(p.getLocation().distance(holder.getLocation()) <= maxDistance && holder.canSee(p) && !p.isInvisible()){
+            if(p.getLocation().distance(holder.getLocation()) <= maxDistance && holder.canSee(p) && !p.isInvisible() && p.getGameMode() != GameMode.SPECTATOR){
                 if(!tooFarAway.contains(tag)) continue;
                 tooFarAway.remove(tag);
                 tag.renderNametag(holder);
                 continue;
             }
-            if(tooFarAway.contains(tag) && holder.canSee(p) && p.isOnline() && !p.isInvisible()) continue;
+            if(tooFarAway.contains(tag) && holder.canSee(p) && p.isOnline() && !p.isInvisible() && p.getGameMode() != GameMode.SPECTATOR) continue;
             tooFarAway.add(tag);
             User user = PacketEvents.getAPI().getPlayerManager().getUser(holder);
             for(int id :  ArrayUtils.addAll(tag.armorIds, tag.displayIds)) {

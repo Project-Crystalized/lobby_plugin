@@ -41,8 +41,7 @@ public final class PlayerListener implements Listener {
 		LevelManager.moneyCache.remove(p.getUniqueId());
 		Ranks.rankCache.remove(p.getUniqueId());
 
-		e.joinMessage(null);
-		Bukkit.getServer().sendMessage(Ranks.getJoinMessage(p));
+		e.joinMessage(Ranks.getJoinMessage(p));
 		App.active.put(p, new ArrayList<>());
 
 		boolean inDatabase = LobbyDatabase.isPlayerInDatabase(p);
