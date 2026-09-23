@@ -82,6 +82,7 @@ public class Nametag {
 
     public static void renderAllNametags(Player p){
         for(Nametag tag : nametags){
+            if(!tag.holder.isOnline()) continue;
             tag.renderNametag(p);
         }
     }
@@ -165,7 +166,7 @@ public class Nametag {
                 continue;
             }
             tag.setPassengers(true, holder, 0);
-            if(p.getLocation().distance(holder.getLocation()) <= maxDistance && holder.canSee(p) && !p.isInvisible() && p.getGameMode() != GameMode.SPECTATOR){
+            if(p.getLocation().distance(holder.getLocation()) <= maxDistance && holder.canSee(p) && !p.isInvisible() && p.getGameMode() != GameMode.SPECTATOR && p.isOnline()){
                 if(!tooFarAway.contains(tag)) continue;
                 tooFarAway.remove(tag);
                 tag.renderNametag(holder);

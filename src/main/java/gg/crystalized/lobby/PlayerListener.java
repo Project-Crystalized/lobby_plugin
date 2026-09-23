@@ -264,7 +264,7 @@ public final class PlayerListener implements Listener {
 	}
 
 	@EventHandler
-	public void onTeleport(PlayerTeleportEvent e){
+	public void onTeleport(PlayerTeleportEvent e){ 
 		new BukkitRunnable(){
 			public void run(){
 				Nametag.reloadNametag(e.getPlayer());
