@@ -186,7 +186,7 @@ public enum Ranks {
         if(cached != null) return cached;
         HashMap<String, Object> playerData = LobbyDatabase.fetchPlayerData(p);
         Ranks rank;
-        if(playerData.get("rank_id") == null){
+        if(playerData == null || playerData.get("rank_id") == null){
             rank = rankless;
         }else if((Integer)playerData.get("rank_id") != 0){
             rank = values()[(Integer)playerData.get("rank_id")];
