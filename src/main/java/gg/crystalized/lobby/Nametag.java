@@ -123,7 +123,7 @@ public class Nametag {
             public void run(){
                 tag.locationChecker();
             }
-        }.runTaskTimer(Lobby_plugin.getInstance(), 20, 20);
+        }.runTaskTimer(Lobby_plugin.getInstance(), 1, 1);
     }
 
     //for API
@@ -142,7 +142,7 @@ public class Nametag {
             public void run(){
                 tag.locationChecker();
             }
-        }.runTaskTimer(Lobby_plugin.getInstance(), 20, 20);
+        }.runTaskTimer(Lobby_plugin.getInstance(), 1, 1);
         return tag;
     }
 
