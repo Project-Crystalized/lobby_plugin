@@ -82,12 +82,17 @@ public class Nametag {
     }
 
     public static void renderAllNametags(Player p){
+        ArrayList<Nametag> toDisconnect = new ArrayList<>();
         for(Nametag tag : nametags){
             if(!tag.holder.isOnline()){
-                disconnect(tag.holder);
+                toDisconnect.add(tag);
                 continue;
             }
             tag.renderNametag(p);
+        }
+
+        for(Nametag tag : toDisconnect){
+            disconnect(tag.holder);
         }
     }
 

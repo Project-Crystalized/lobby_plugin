@@ -212,6 +212,9 @@ public class Cosmetic{
     }
 
     public static App getButton(InventoryView view){
+        if(Cosmetic.identifyCosmetic(view.getTopInventory().getItem(29)) == null){
+            return null;
+        }
         EquipmentSlot slot = Cosmetic.identifyCosmetic(view.getTopInventory().getItem(29)).slot;
         if(slot == null){
             return null;

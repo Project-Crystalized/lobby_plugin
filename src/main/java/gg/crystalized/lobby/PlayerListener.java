@@ -205,6 +205,9 @@ public final class PlayerListener implements Listener {
 		}
 		NPC npc = CitizensAPI.getNPCRegistry().getNPC(e.getEntity());
 		World w = e.getDamager().getWorld();
+		if(!(e.getDamager() instanceof Player)){
+			return;
+		}
 		for(NPCData data : LobbyConfig.NPCs.values()){
 			if(!data.loc.equals(e.getEntity().getLocation())){
 				continue;

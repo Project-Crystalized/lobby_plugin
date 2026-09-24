@@ -22,6 +22,7 @@ import org.bukkit.potion.PotionEffect;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import static gg.crystalized.lobby.Quest.setQuests;
@@ -75,6 +76,7 @@ public enum App {
     Requeue("ui/replay", useCases.Demand, Component.translatable("crystalized.game.generic.requeue").color(WHITE).decoration(ITALIC, false), 7),
     BackToHub("ui/leave", useCases.Demand, Component.translatable("crystalized.game.generic.to_lobby").color(WHITE).decoration(ITALIC, false), 8),
     Unqueue("ui/leave", useCases.Demand, Component.translatable("crystalized.game.generic.queue.unqueue").color(WHITE).decoration(ITALIC, false), 8),
+    //GameCompass("COMPASS", useCases.Demand, Component.translatable("item.minecraft.compass").color(WHITE).decoration(ITALIC, false), 6),
     MsgSetting("ui/scn3/settings/msg", useCases.Set, new useCases[]{useCases.Settings}, Component.translatable("crystalized.shardcore.settings.direct_messages").color(WHITE).decoration(ITALIC, false), 30, "dms"),
     FriendRequestSetting("ui/scn3/settings/friend_requests", useCases.Set, new useCases[]{useCases.Settings}, Component.translatable("crystalized.shardcore.settings.friend_requests").color(WHITE).decoration(ITALIC, false), 39, "friends_requests"),
     PartyRequestSetting("ui/scn3/settings/party_requests", useCases.Set, new useCases[]{useCases.Settings}, Component.translatable("crystalized.shardcore.settings.party_invites").color(WHITE).decoration(ITALIC, false), 48, "party_requests"),
@@ -192,13 +194,21 @@ public enum App {
     }
 
     public ItemStack build(){
-        ItemStack i = new ItemStack(Material.COAL);
+        Material material = getMaterial();
+        ItemStack i = new ItemStack(material);
         ItemMeta meta = i.getItemMeta();
-        meta.setItemModel(new NamespacedKey("crystalized", model));
+        if(material == Material.COAL) meta.setItemModel(new NamespacedKey("crystalized", model));
         meta.displayName(name);
         i.setItemMeta(meta);
         this.addPDC(i);
         return i;
+    }
+
+    private Material getMaterial(){
+        for(Material m : Material.values()){
+            if(Objects.equals(m.toString(), model)) return m;
+        }
+        return Material.COAL;
     }
 
     private void addPDC(ItemStack item){
