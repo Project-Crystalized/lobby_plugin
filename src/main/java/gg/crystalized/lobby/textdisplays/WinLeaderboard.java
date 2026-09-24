@@ -7,21 +7,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
-import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
-import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.protocol.player.User;
-import com.github.retrooper.packetevents.util.Vector3d;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
 
 import gg.crystalized.lobby.Lobby_plugin;
-import gg.crystalized.lobby.Nametag;
 import gg.crystalized.lobby.Ranks;
 import gg.crystalized.lobby.parkour.Parkour;
 
@@ -40,7 +32,6 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 
 public class WinLeaderboard {
-	public static HashMap<Player, HashMap<String, Integer>> leaderboards = new HashMap<>();
 	boolean lastErrorLogged = false;
 
 	static class LeaderboardSnapshot {
@@ -64,15 +55,15 @@ public class WinLeaderboard {
 					User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
 					if(user == null) continue;
 
-					leaderboards.computeIfAbsent(p, k -> new HashMap<>());
-					if(!leaderboards.get(p).containsKey(game_type)){
-						createDisplay(user, p, loc, game_type);
+					Leaderboards.leaderboards.computeIfAbsent(p, k -> new HashMap<>());
+					if(!Leaderboards.leaderboards.get(p).containsKey(game_type)){
+						Leaderboards.createDisplay(user, p, loc, game_type);
 					}
 
 					Component text = buildText(p, snap, loc, game_type);
 
-					int lb_entity_id = leaderboards.get(p).get(game_type);
-					user.sendPacket(displayMetadata(lb_entity_id, text));
+					int lb_entity_id = Leaderboards.leaderboards.get(p).get(game_type);
+					user.sendPacket(Leaderboards.displayMetadata(lb_entity_id, text));
 				}
 			}
 		}.runTaskTimer(Lobby_plugin.getInstance(), 20, (20 * 10));
@@ -105,23 +96,6 @@ public class WinLeaderboard {
 			rows = rows.append(text(gg.crystalized.lobby.parkour.Timer.buildTimer(millis, seconds, minutes, hours))).color(GREEN);
 		}
 		return rows;
-	}
-
-	static void createDisplay(User user, Player p, Location loc, String type){
-		int id = Nametag.EntityId;
-		leaderboards.get(p).put(type, id);
-		Nametag.EntityId++;
-		WrapperPlayServerSpawnEntity entity = new WrapperPlayServerSpawnEntity(id, UUID.randomUUID(), EntityTypes.TEXT_DISPLAY, new com.github.retrooper.packetevents.protocol.world.Location
-				(loc.getX(), loc.getY(), loc.getZ(), 0, 0), 0, 0, new Vector3d());
-		user.sendPacket(entity);
-	}
-
-	static WrapperPlayServerEntityMetadata displayMetadata(int entityId, Component text) {
-		List<EntityData<?>> data = List.of(new EntityData<>(15, EntityDataTypes.BYTE, (byte) 3),
-				new EntityData<Component>(23, EntityDataTypes.ADV_COMPONENT, text),
-				new EntityData<Integer>(25, EntityDataTypes.INT, 1345466930),
-				new EntityData<Byte>(27, EntityDataTypes.BYTE, (byte) 1));
-		return new WrapperPlayServerEntityMetadata(entityId, data);
 	}
 
 	LeaderboardSnapshot computeSnapshot(String type, Location loc){

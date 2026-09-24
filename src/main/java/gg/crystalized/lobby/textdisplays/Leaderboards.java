@@ -3,17 +3,47 @@ package gg.crystalized.lobby.textdisplays;
 import java.nio.ByteBuffer;
 import java.util.*;
 
+import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
+import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
+import com.github.retrooper.packetevents.protocol.player.User;
+import com.github.retrooper.packetevents.util.Vector3d;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
+
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
 
 import net.kyori.adventure.text.Component;
 
 import gg.crystalized.lobby.BitmapGlyphInfo;
 import gg.crystalized.lobby.LobbyDatabase;
+import gg.crystalized.lobby.Nametag;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 
 public class Leaderboards {
+	public static HashMap<Player, HashMap<String, Integer>> leaderboards = new HashMap<>();
+
+	static void createDisplay(User user, Player p, Location loc, String type){
+		int id = Nametag.EntityId;
+		leaderboards.get(p).put(type, id);
+		Nametag.EntityId++;
+		WrapperPlayServerSpawnEntity entity = new WrapperPlayServerSpawnEntity(id, UUID.randomUUID(), EntityTypes.TEXT_DISPLAY, new com.github.retrooper.packetevents.protocol.world.Location
+				(loc.getX(), loc.getY(), loc.getZ(), 0, 0), 0, 0, new Vector3d());
+		user.sendPacket(entity);
+	}
+
+	static WrapperPlayServerEntityMetadata displayMetadata(int entityId, Component text) {
+		List<EntityData<?>> data = List.of(new EntityData<>(15, EntityDataTypes.BYTE, (byte) 3),
+				new EntityData<Component>(23, EntityDataTypes.ADV_COMPONENT, text),
+				new EntityData<Integer>(25, EntityDataTypes.INT, 1345466930),
+				new EntityData<Byte>(27, EntityDataTypes.BYTE, (byte) 1));
+		return new WrapperPlayServerEntityMetadata(entityId, data);
+	}
+
 	public static final String LS_URL = "jdbc:sqlite:" + LobbyDatabase.dbDir() + "/litestrike_db.sql";
 	public static final String KO_URL = "jdbc:sqlite:" + LobbyDatabase.dbDir() + "/knockoff_db.sql";
 	public static final String CB_URL = "jdbc:sqlite:" + LobbyDatabase.dbDir() + "/crystalblitz_db.sql";

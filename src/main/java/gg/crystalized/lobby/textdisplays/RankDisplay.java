@@ -42,7 +42,6 @@ public class RankDisplay {
 	}
 
 	public RankDisplay() {
-		Bukkit.getLogger().info("creating a Rank Display!");
 		new BukkitRunnable() {
 			@Override
 			public void run() {
@@ -51,15 +50,15 @@ public class RankDisplay {
 					User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
 					if (user == null) continue;
 
-					WinLeaderboard.leaderboards.computeIfAbsent(p, k -> new HashMap<>());
-					if (!WinLeaderboard.leaderboards.get(p).containsKey(RANKED_TYPE)) {
-						WinLeaderboard.createDisplay(user, p, lb_loc, RANKED_TYPE);
+					Leaderboards.leaderboards.computeIfAbsent(p, k -> new HashMap<>());
+					if (!Leaderboards.leaderboards.get(p).containsKey(RANKED_TYPE)) {
+						Leaderboards.createDisplay(user, p, lb_loc, RANKED_TYPE);
 					}
 
 					Component text = buildText(p, snap);
 
-					int entityId = WinLeaderboard.leaderboards.get(p).get(RANKED_TYPE);
-					user.sendPacket(WinLeaderboard.displayMetadata(entityId, text));
+					int entityId = Leaderboards.leaderboards.get(p).get(RANKED_TYPE);
+					user.sendPacket(Leaderboards.displayMetadata(entityId, text));
 				}
 			}
 		}.runTaskTimer(Lobby_plugin.getInstance(), 20, (20 * 10));
