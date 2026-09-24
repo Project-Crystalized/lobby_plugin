@@ -2,12 +2,14 @@ package gg.crystalized.lobby.textdisplays;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.protocol.player.User;
 
 import gg.crystalized.lobby.Leaderboards;
 import gg.crystalized.lobby.LobbyConfig;
@@ -15,12 +17,8 @@ import gg.crystalized.lobby.Lobby_plugin;
 import gg.crystalized.lobby.Ranks;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Color;
 import org.bukkit.Location;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.TextDisplay;
-import org.bukkit.entity.Display.Billboard;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import net.kyori.adventure.text.Component;
@@ -30,89 +28,82 @@ import static net.kyori.adventure.text.Component.text;
 
 public class RankDisplay {
 
-	private static Location display_loc = LobbyConfig.Locations.get("ls-ranked-display");
 	private static Location lb_loc = LobbyConfig.Locations.get("ls-ranked-leaderboard");
+
+	private static final String RANKED_TYPE = "ls-ranked";
+
+	static class RankedSnapshot {
+		Component sharedText;
+		HashMap<UUID, PlayerRankedData> ranked;
+
+		RankedSnapshot(Component sharedText, HashMap<UUID, PlayerRankedData> ranked) {
+			this.sharedText = sharedText;
+			this.ranked = ranked;
+		}
+	}
 
 	public RankDisplay() {
 		Bukkit.getLogger().info("creating a Rank Display!");
-		spawn_leaderboard();
-	}
-
-	private void spawn_leaderboard() {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				lb_loc.getNearbyEntitiesByType(TextDisplay.class, 0.5).forEach(entity -> entity.remove());
-				TextDisplay display = (TextDisplay) lb_loc.getWorld().spawnEntity(lb_loc, EntityType.TEXT_DISPLAY);
-				display.setShadowed(true);
-				display.setBillboard(Billboard.VERTICAL);
-				display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
-				display.text(get_leaderboard_text());
+				RankedSnapshot snap = computeSnapshot();
+				for (Player p : Bukkit.getOnlinePlayers()) {
+					User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
+					if (user == null) continue;
 
-				update_display();
+					WinLeaderboard.leaderboards.computeIfAbsent(p, k -> new HashMap<>());
+					if (!WinLeaderboard.leaderboards.get(p).containsKey(RANKED_TYPE)) {
+						WinLeaderboard.createDisplay(user, p, lb_loc, RANKED_TYPE);
+					}
+
+					Component text = buildText(p, snap);
+
+					int entityId = WinLeaderboard.leaderboards.get(p).get(RANKED_TYPE);
+					user.sendPacket(WinLeaderboard.displayMetadata(entityId, text));
+				}
 			}
-		}.runTaskTimer(Lobby_plugin.getInstance(), 15, (20 * 10));
+		}.runTaskTimer(Lobby_plugin.getInstance(), 20, (20 * 10));
 	}
 
-	private static Component get_leaderboard_text() {
-		String query = "SELECT * FROM LsRanks ORDER BY rp DESC LIMIT 10;";
+	static RankedSnapshot computeSnapshot() {
 		try (Connection conn = DriverManager.getConnection(Leaderboards.LS_URL)) {
-			ResultSet res = conn.createStatement().executeQuery(query);
-
-			Component leaderbaord_rows = text("RANK Leaderboard\n").color(GOLD).append(text("LITESTRIKE\n---------------------").color(GREEN));
-			int i = 0;
-			while (res.next()) {
-				i++;
-				Component num = Leaderboards.get_styles(i);
-				int rp = res.getInt("rp");
-				Component rank = get_rank_symbol(res.getInt("rank"));
-				leaderbaord_rows = leaderbaord_rows.append(text("\n")).append(num);
-				leaderbaord_rows = leaderbaord_rows
-						.append(Ranks.getName(Bukkit.getOfflinePlayer(Leaderboards.convertBytesToUUID(res.getBytes("player_uuid")))))
-						.append(text(" "));
-				leaderbaord_rows = leaderbaord_rows.append(rank.append(text(" " + rp + "rp\n")).color(WHITE));
-			}
-			return leaderbaord_rows;
-		} catch (SQLException e) {
-			Bukkit.getLogger().severe("sqlerror in Rank Leaderboard: "+e);
-			return Component.text("sqlerror: "+e);
-		}
-	}
-
-	public static void update_display() {
-		try (Connection conn = DriverManager.getConnection(Leaderboards.LS_URL)) {
-			String query = "SELECT player_uuid, rank, rp FROM LsRanks ORDER BY rp DESC;";
-			PreparedStatement ps = conn.prepareStatement(query);
-			display_loc.getNearbyEntitiesByType(TextDisplay.class, 2.0).forEach(entity -> entity.remove());
+			ResultSet rs = conn.createStatement().executeQuery("SELECT player_uuid, rank, rp FROM LsRanks ORDER BY rp DESC;");
+			Component sharedText = text("RANK Leaderboard\n").color(GOLD).append(text("LITESTRIKE\n---------------------").color(GREEN));
 			HashMap<UUID, PlayerRankedData> ranked = new HashMap<>();
-			ResultSet rs = ps.executeQuery();
 			int row = 1;
+			int i = 0;
 			while (rs.next()) {
 				UUID uuid = Leaderboards.convertBytesToUUID(rs.getBytes("player_uuid"));
-				ranked.put(uuid, new PlayerRankedData(uuid, rs.getInt("rank"), rs.getInt("rp"), row));
+				int rank = rs.getInt("rank");
+				int rp = rs.getInt("rp");
+				ranked.put(uuid, new PlayerRankedData(uuid, rank, rp, row));
 				row++;
-			}
-			for (Player p : Bukkit.getOnlinePlayers()) {
-				TextDisplay display = (TextDisplay) display_loc.getWorld().spawnEntity(display_loc, EntityType.TEXT_DISPLAY);
-				display.setShadowed(true);
-				display.setBillboard(Billboard.VERTICAL);
-				display.setBackgroundColor(Color.fromARGB(80, 50, 50, 50));
-
-				PlayerRankedData prd = ranked.get(p.getUniqueId());
-				Component text;
-				if(prd == null){
-					text = Ranks.getName(p).append(Component.translatable("crystalized.game.litestrike.ranked.unranked"));
-				}else{
-					text = Ranks.getName(p).append(get_rank(prd.rank)).append(Component.translatable("crystalized.game.litestrike.ranked.with_rp", List.of(Component.text(prd.rp))));
-					text = text.append(Component.translatable("crystalized.game.litestrike.ranked.number", List.of(Component.text(prd.row_nr))));
+				if (i < 10) {
+					i++;
+					Component num = Leaderboards.get_styles(i);
+					sharedText = sharedText.append(text("\n")).append(num);
+					sharedText = sharedText
+							.append(Ranks.getName(Bukkit.getOfflinePlayer(uuid)))
+							.append(text(" "));
+					sharedText = sharedText.append(get_rank_symbol(rank).append(text(" " + rp + "rp\n")).color(WHITE));
 				}
-				display.setVisibleByDefault(false);
-				display.text(text);
-				p.showEntity(Lobby_plugin.getInstance(), display);
 			}
+			return new RankedSnapshot(sharedText, ranked);
 		} catch (SQLException e) {
-			Bukkit.getLogger().severe("sqlerror in Rank Display: "+e);
+			Bukkit.getLogger().severe("sqlerror in Rank Leaderboard: " + e);
+			return new RankedSnapshot(Component.text("sqlerror: " + e), new HashMap<>());
 		}
+	}
+
+	static Component buildText(Player p, RankedSnapshot snap) {
+		PlayerRankedData prd = snap.ranked.get(p.getUniqueId());
+		if (prd == null) {
+			return snap.sharedText;
+		}
+		Component text = snap.sharedText.append(text("\n")).append(text("-----------------").color(GRAY));
+		text = text.append(text("\n")).append(Ranks.getName(p)).append(get_rank(prd.rank)).append(Component.translatable("crystalized.game.litestrike.ranked.with_rp", List.of(Component.text(prd.rp))));
+		return text.append(Component.translatable("crystalized.game.litestrike.ranked.number", List.of(Component.text(prd.row_nr))));
 	}
 
 	private static Component get_rank(int rank) {
