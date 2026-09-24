@@ -1,4 +1,4 @@
-package gg.crystalized.lobby;
+package gg.crystalized.lobby.textdisplays;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -8,6 +8,11 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+
+import gg.crystalized.lobby.Leaderboards;
+import gg.crystalized.lobby.LobbyConfig;
+import gg.crystalized.lobby.Lobby_plugin;
+import gg.crystalized.lobby.Ranks;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -163,18 +168,18 @@ public class RankDisplay {
 				return Component.text("error");
 		}
 	}
-}
 
-class PlayerRankedData {
-	public int rank;
-	public int rp;
-	public UUID uuid;
-	public int row_nr;
+	static class PlayerRankedData {
+		public int rank;
+		public int rp;
+		public UUID uuid;
+		public int row_nr;
 
-	public PlayerRankedData(UUID uuid, int rank, int rp, int row_nr) {
-		this.uuid = uuid;
-		this.rank = rank;
-		this.rp = rp;
-		this.row_nr = row_nr;
+		public PlayerRankedData(UUID uuid, int rank, int rp, int row_nr) {
+			this.uuid = uuid;
+			this.rank = rank;
+			this.rp = rp;
+			this.row_nr = row_nr;
+		}
 	}
 }

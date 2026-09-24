@@ -20,6 +20,7 @@ import org.bukkit.inventory.meta.FireworkMeta;
 
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
+import gg.crystalized.lobby.textdisplays.WinLeaderboard;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
