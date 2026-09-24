@@ -20,7 +20,6 @@ import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
 
-import gg.crystalized.lobby.Leaderboards;
 import gg.crystalized.lobby.Lobby_plugin;
 import gg.crystalized.lobby.Nametag;
 import gg.crystalized.lobby.Ranks;

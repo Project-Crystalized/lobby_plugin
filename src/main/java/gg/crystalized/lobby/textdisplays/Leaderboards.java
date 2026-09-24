@@ -1,10 +1,13 @@
-package gg.crystalized.lobby;
+package gg.crystalized.lobby.textdisplays;
 
 import java.nio.ByteBuffer;
 import java.util.*;
 
 
 import net.kyori.adventure.text.Component;
+
+import gg.crystalized.lobby.BitmapGlyphInfo;
+import gg.crystalized.lobby.LobbyDatabase;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.Component.text;

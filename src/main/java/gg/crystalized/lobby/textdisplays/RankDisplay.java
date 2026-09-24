@@ -11,7 +11,6 @@ import java.util.UUID;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.player.User;
 
-import gg.crystalized.lobby.Leaderboards;
 import gg.crystalized.lobby.LobbyConfig;
 import gg.crystalized.lobby.Lobby_plugin;
 import gg.crystalized.lobby.Ranks;
@@ -101,9 +100,9 @@ public class RankDisplay {
 		if (prd == null) {
 			return snap.sharedText;
 		}
-		Component text = snap.sharedText.append(text("\n")).append(text("-----------------").color(GRAY));
-		text = text.append(text("\n")).append(Ranks.getName(p)).append(get_rank(prd.rank)).append(Component.translatable("crystalized.game.litestrike.ranked.with_rp", List.of(Component.text(prd.rp))));
-		return text.append(Component.translatable("crystalized.game.litestrike.ranked.number", List.of(Component.text(prd.row_nr))));
+		Component ownLine = text("\n").append(Ranks.getName(p)).append(get_rank(prd.rank)).append(Component.translatable("crystalized.game.litestrike.ranked.with_rp", List.of(Component.text(prd.rp))));
+		ownLine = ownLine.append(Component.translatable("crystalized.game.litestrike.ranked.number", List.of(Component.text(prd.row_nr))));
+		return snap.sharedText.append(text("\n")).append(text("-----------------").color(GRAY)).append(ownLine.color(WHITE));
 	}
 
 	private static Component get_rank(int rank) {
