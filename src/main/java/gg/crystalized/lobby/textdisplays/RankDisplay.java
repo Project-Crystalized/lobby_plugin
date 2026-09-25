@@ -24,6 +24,7 @@ import net.kyori.adventure.text.Component;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 
 public class RankDisplay {
 
@@ -67,7 +68,7 @@ public class RankDisplay {
 	static RankedSnapshot computeSnapshot() {
 		try (Connection conn = DriverManager.getConnection(Leaderboards.LS_URL)) {
 			ResultSet rs = conn.createStatement().executeQuery("SELECT player_uuid, rank, rp FROM LsRanks ORDER BY rp DESC;");
-			Component sharedText = text("RANK Leaderboard\n").color(GOLD).append(text("LITESTRIKE\n---------------------").color(GREEN));
+			Component sharedText = text("").append(text("RANK Leaderboard\n").color(GOLD)).append(text("LITESTRIKE\n").color(GREEN).decoration(BOLD, true));
 			HashMap<UUID, PlayerRankedData> ranked = new HashMap<>();
 			int row = 1;
 			int i = 0;

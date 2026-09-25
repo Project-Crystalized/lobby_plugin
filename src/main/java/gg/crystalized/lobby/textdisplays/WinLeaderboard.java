@@ -114,7 +114,7 @@ public class WinLeaderboard {
 		try (Connection conn = DriverManager.getConnection(t.url)) {
 			PreparedStatement query = conn.prepareStatement("SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + " GROUP BY player_uuid ORDER BY SUM(" + t.dbColumn + ") DESC;");
 			Parkour parkour = null;
-			Component base = text("Game Leaderboard\n").color(GREEN).append(t.title);
+			Component base = text("").append(text("Game Leaderboard\n").color(GREEN)).append(t.title);
 			if(t == GameType.PARKOUR){
 				parkour = findParkourByLeaderboard(loc);
 				query = conn.prepareStatement("SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + " WHERE course = ? GROUP BY player_uuid ORDER BY SUM(" + t.dbColumn + ") ASC;");
@@ -178,7 +178,7 @@ public class WinLeaderboard {
 
 			return new LeaderboardSnapshot(base, stats, total);
 		} catch (SQLException e) {
-			Component fallbackBase = text("Game Leaderboard\n").color(GREEN).append(t.title);
+			Component fallbackBase = text("").append(text("Game Leaderboard\n").color(GREEN)).append(t.title);
 			try (Connection conn = DriverManager.getConnection(t.url)) {
 				ResultSet count = conn.createStatement().executeQuery("SELECT COUNT(*) AS c FROM " + t.dbName);
 				if(count.next() && count.getInt("c") > 0){
