@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -21,6 +22,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.Component.text;
@@ -70,23 +73,52 @@ public class RankDisplay {
 			ResultSet rs = conn.createStatement().executeQuery("SELECT player_uuid, rank, rp FROM LsRanks ORDER BY rp DESC;");
 			Component sharedText = text("").append(text("RANK Leaderboard\n").color(GOLD)).append(text("LITESTRIKE\n").color(GREEN).decoration(BOLD, true));
 			HashMap<UUID, PlayerRankedData> ranked = new HashMap<>();
+			ArrayList<TextComponent> topKey = new ArrayList<>();
+			HashMap<TextComponent, int[]> top = new HashMap<>();
+			String longest = "";
+			String longestValue = "";
 			int row = 1;
-			int i = 0;
 			while (rs.next()) {
 				UUID uuid = Leaderboards.convertBytesToUUID(rs.getBytes("player_uuid"));
 				int rank = rs.getInt("rank");
 				int rp = rs.getInt("rp");
 				ranked.put(uuid, new PlayerRankedData(uuid, rank, rp, row));
 				row++;
-				if (i < 10) {
-					i++;
-					Component num = Leaderboards.get_styles(i);
-					sharedText = sharedText.append(text("\n")).append(num);
-					sharedText = sharedText
-							.append(Ranks.getName(Bukkit.getOfflinePlayer(uuid)))
-							.append(text(" "));
-					sharedText = sharedText.append(get_rank_symbol(rank).append(text(" " + rp + "rp\n")).color(WHITE));
+				TextComponent name = (TextComponent) Ranks.getName(Bukkit.getOfflinePlayer(uuid));
+				String name_str = PlainTextComponentSerializer.plainText().serialize(name);
+				if (top.containsKey(name)) {
+					continue;
 				}
+				String value_str = PlainTextComponentSerializer.plainText()
+						.serialize(get_rank_symbol(rank).append(text(" " + rp + "rp")));
+				if (Leaderboards.balance(name_str) > Leaderboards.balance(longest)) {
+					longest = name_str;
+				}
+				if (Leaderboards.balance(value_str) > Leaderboards.balance(longestValue)) {
+					longestValue = value_str;
+				}
+				if (topKey.size() < 10) {
+					topKey.add(name);
+					top.put(name, new int[] { rank, rp });
+				}
+			}
+
+			int minDots = 6;
+			int total = Leaderboards.balance(longest + "........" + longestValue) + minDots;
+			for (int j = 0; j <= topKey.size() - 1; j++) {
+				String top_str = PlainTextComponentSerializer.plainText().serialize(topKey.get(j));
+				Component num = Leaderboards.get_styles(j + 1);
+				String num_str = PlainTextComponentSerializer.plainText().serialize(num);
+				String value_str = PlainTextComponentSerializer.plainText().serialize(
+						get_rank_symbol(top.get(topKey.get(j))[0])
+								.append(text(" " + top.get(topKey.get(j))[1] + "rp")));
+				int numWidth = j + 1 == 1 ? Leaderboards.balanceBold(num_str) : Leaderboards.balance(num_str);
+				int padding = total - (numWidth + Leaderboards.balance(top_str) + Leaderboards.balance(value_str));
+				String dots = ".".repeat(Math.max(0, padding));
+				sharedText = sharedText.append(text("\n")).append(num);
+				sharedText = sharedText.append(topKey.get(j)).append(text(dots).color(GRAY));
+				sharedText = sharedText.append(get_rank_symbol(top.get(topKey.get(j))[0])
+						.append(text(" " + top.get(topKey.get(j))[1] + "rp\n")).color(WHITE));
 			}
 			return new RankedSnapshot(sharedText, ranked);
 		} catch (SQLException e) {
