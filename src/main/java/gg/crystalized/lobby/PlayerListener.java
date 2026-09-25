@@ -18,14 +18,13 @@ import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.meta.FireworkMeta;
 
-import net.citizensnpcs.api.CitizensAPI;
-import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import static net.kyori.adventure.text.Component.text;
+import static org.bukkit.entity.EntityType.MANNEQUIN;
 import static org.bukkit.entity.EntityType.TEXT_DISPLAY;
 
 import java.util.ArrayList;
@@ -178,14 +177,13 @@ public final class PlayerListener implements Listener {
 				fw.setFireworkMeta(fwm);
 		}
 		e.setCancelled(true);
-		if((e.getRightClicked() instanceof Player) && !CitizensAPI.getNPCRegistry().isNPC(e.getRightClicked())){
+		if((e.getRightClicked() instanceof Player)){
 			App.Profiles.action(player, (Player)e.getRightClicked());
 		}
-		if (!CitizensAPI.getNPCRegistry().isNPC(e.getRightClicked())) {
+		if (e.getRightClicked().getType() != MANNEQUIN) {
 			return;
 		}
-		NPC npc = CitizensAPI.getNPCRegistry().getNPC(e.getRightClicked());
-		World w = e.getPlayer().getWorld();
+
 		for(NPCData data : LobbyConfig.NPCs.values()){
 			if(!data.loc.equals(e.getRightClicked().getLocation())){
 				continue;
@@ -200,11 +198,10 @@ public final class PlayerListener implements Listener {
 			return;
 		}
 		e.setCancelled(true);
-		if (!CitizensAPI.getNPCRegistry().isNPC(e.getEntity())) {
+		if (e.getEntity().getType() != MANNEQUIN) {
 			return;
 		}
-		NPC npc = CitizensAPI.getNPCRegistry().getNPC(e.getEntity());
-		World w = e.getDamager().getWorld();
+
 		if(!(e.getDamager() instanceof Player)){
 			return;
 		}

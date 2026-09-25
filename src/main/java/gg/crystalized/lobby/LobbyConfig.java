@@ -9,9 +9,6 @@ import com.google.gson.JsonParser;
 import gg.crystalized.lobby.parkour.Parkour;
 import gg.crystalized.lobby.statistics.StatView;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
-import net.citizensnpcs.api.CitizensAPI;
-import net.citizensnpcs.api.npc.NPC;
-import net.citizensnpcs.trait.SkinTrait;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
@@ -23,7 +20,9 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Mannequin;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.bukkit.profile.PlayerTextures;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.intellij.lang.annotations.Subst;
 
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -36,6 +35,7 @@ import java.util.logging.Level;
 import static gg.crystalized.lobby.parkour.Parkour.parkours;
 import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 import static org.bukkit.entity.EntityType.MANNEQUIN;
+import static org.bukkit.profile.PlayerTextures.SkinModel.CLASSIC;
 import static org.bukkit.profile.PlayerTextures.SkinModel.SLIM;
 
 public class LobbyConfig {
@@ -96,7 +96,6 @@ public class LobbyConfig {
 
 class EntityRefresh implements Listener{
     static ArrayList<Location> toBeRefreshed;
-    static ArrayList<Chunk> loadedChunks = new ArrayList<>();
 
     public static void setupEntityRefresh(){
         ArrayList<Location> list = new ArrayList<>();
@@ -130,9 +129,8 @@ class EntityRefresh implements Listener{
         new BukkitRunnable() {
             public void run() {
                 Collection<Entity> l = loc.getNearbyEntities(1, 1, 1);
-                for (
-                        Entity e : l) {
-                    if (CitizensAPI.getNPCRegistry().isNPC(e)) {
+                for (Entity e : l) {
+                    if (e.getType() == MANNEQUIN) {
                         e.remove();
                     }
 
@@ -183,9 +181,8 @@ class EntityRefresh implements Listener{
 class NPCData{
     Location loc = null;
     String name = null;
-    String skinName = null;
-    String skinSignature = null;
-    String skinValue = null;
+    String skin = null;
+    PlayerTextures.SkinModel  model;
     Object action = null;
 
     public static void newNPCData(String key, Map<String, JsonElement> map){
@@ -218,10 +215,12 @@ class NPCData{
     public void declareSkin(String keyName, Map<String, JsonElement> map){
         for(String k : map.keySet()){
             if(getKeyName(k, "skin").toLowerCase().contains(keyName) && k.contains("skin")){
-                JsonArray array = map.get(k).getAsJsonArray();
-                skinName = array.get(0).getAsString();
-                skinSignature = array.get(1).getAsString();
-                skinValue = array.get(1).getAsString();
+                skin = map.get(k).getAsString();
+                if(skin.contains("slim")){
+                    model = SLIM;
+                }else{
+                    model = CLASSIC;
+                }
                 return;
             }
         }
@@ -291,21 +290,23 @@ class NPCData{
 
     public void spawnNPC(){
         try {
-            /*
             Mannequin npc = (Mannequin)loc.getWorld().spawnEntity(loc, MANNEQUIN);
             ResolvableProfile.Builder profile = ResolvableProfile.resolvableProfile();
             ResolvableProfile.SkinPatchBuilder builder = ResolvableProfile.SkinPatch.skinPatch();
-            builder.body(new NamespacedKey("minecraft", "entity/player/slim/alex"));
-            builder.model(SLIM);
+            builder.body(new NamespacedKey("crystalized", skin));
+            builder.model(model);
             profile.skinPatch(builder.build());
             profile.uuid(UUID.randomUUID());
             profile.name(name);
             npc.setProfile(profile.build());
-             */
+            npc.customName(Component.text(name));
+
+            /*
             NPC npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.PLAYER, name, loc);
             SkinTrait trait = npc.getOrAddTrait(SkinTrait.class);
             trait.setSkinPersistent(skinName, skinSignature, skinValue);
             npc.spawn(loc);
+             */
         }catch(IllegalArgumentException e){}
     }
 

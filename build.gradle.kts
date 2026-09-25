@@ -22,7 +22,7 @@ publishing {
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
-		maven("https://maven.citizensnpcs.co/repo")
+		//maven("https://maven.citizensnpcs.co/repo")
     maven {url = uri("https://repo.opencollab.dev/main/") }
     maven {url = uri("https://jitpack.io")}
     maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
@@ -32,9 +32,9 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:26.2.build.+")
     implementation("org.xerial:sqlite-jdbc:3.47.0.0")
-    compileOnly("net.citizensnpcs:citizens-main:2.0.43-SNAPSHOT") {
-        exclude(group = "*", module = "*")
-    }
+    //compileOnly("net.citizensnpcs:citizens-main:2.0.43-SNAPSHOT") {
+        //exclude(group = "*", module = "*")
+    //}
     compileOnly("org.geysermc.floodgate:api:2.2.3-SNAPSHOT")
 
     implementation("io.github.colonelparrot:jchessify:1.0.2")

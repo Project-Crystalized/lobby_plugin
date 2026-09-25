@@ -166,6 +166,15 @@ public class Nametag {
         }
     }
 
+    public void updateMounting(){
+        if(holder.getPlayer() == null){
+            disconnect(holder);
+            return;
+        }
+        WrapperPlayServerSetPassengers passengers = new WrapperPlayServerSetPassengers(holder.getPlayer().getEntityId(), new int[]{armorIds[0]});
+        sendToEveryoneApartFrom(holder.getPlayer(), passengers);
+    }
+
     public void locationChecker(){
         int maxDistance = 30;
         for(Player p : Bukkit.getOnlinePlayers()){

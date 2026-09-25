@@ -1,6 +1,5 @@
 package gg.crystalized.lobby;
 
-import net.citizensnpcs.api.CitizensAPI;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -166,9 +165,6 @@ public class Setting {
         double value = toDouble(settings.get("show_players"));
         HashSet<UUID> friends = value == 0.5 ? LobbyDatabase.getFriends(p) : null;
         for(Player player : Bukkit.getOnlinePlayers()){
-            if (CitizensAPI.getNPCRegistry().isNPC(player)) {
-                continue;
-            }
             boolean isFriend = friends != null && friends.contains(player.getUniqueId());
             if((value == 0.5 && isFriend) || value == 1){
                 p.showPlayer(Lobby_plugin.getInstance(), player);

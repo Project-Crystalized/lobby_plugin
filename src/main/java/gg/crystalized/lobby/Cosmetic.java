@@ -5,14 +5,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.CustomModelData;
+import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import io.papermc.paper.entity.LookAnchor;
-import net.citizensnpcs.api.CitizensAPI;
-import net.citizensnpcs.api.npc.NPC;
-import net.citizensnpcs.api.trait.trait.Equipment;
-import net.citizensnpcs.trait.SkinTrait;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
-import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Mannequin;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryType;
@@ -22,13 +19,12 @@ import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.codehaus.plexus.util.IOUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +35,7 @@ import static gg.crystalized.lobby.LobbyDatabase.ownsCosmetic;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.BOLD;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
+import static org.bukkit.entity.EntityType.MANNEQUIN;
 import static org.bukkit.event.inventory.InventoryType.SlotType.ARMOR;
 import static org.bukkit.inventory.EquipmentSlot.HEAD;
 import static org.bukkit.inventory.EquipmentSlot.OFF_HAND;
@@ -355,59 +352,60 @@ class CosmeticView{
     Player p;
     private boolean running = false;
     Cosmetic currentCosmetic = null;
-    NPC mannequin;
+    Mannequin mannequin;
     CosmeticView(Player player){
-        Location loc = LobbyConfig.Locations.get("clothing_room");
-        this.mannequin = CitizensAPI.getNPCRegistry().createNPC(EntityType.PLAYER, "You", loc);
         this.p = player;
     }
     public void startView(Cosmetic c){
+        if(getView(p).running) return;
+        Location loc = LobbyConfig.Locations.get("clothing_room").clone();
+        this.mannequin = (Mannequin)loc.getWorld().spawnEntity(loc, MANNEQUIN);
         running = true;
         if(c != null){
             currentCosmetic = c;
-            mannequin.getOrAddTrait(Equipment.class).set(getEquipmentSlot(c.slot), c.build(p, false, false, isViewing(p, c)));
+            mannequin.getEquipment().setItem(c.slot, c.build(p, false, false, isViewing(p, c)), true);
         }
-        Location loc = LobbyConfig.Locations.get("clothing_room").clone();
-        SkinTrait skin = mannequin.getOrAddTrait(SkinTrait.class);
-        skin.setSkinPersistent(p);
-        skin.setSkinName(p.getName(), true);
-        mannequin.spawn(loc);
+        mannequin.setProfile(ResolvableProfile.resolvableProfile(p.getPlayerProfile()));
+        mannequin.customName(Component.translatable("crystalized.generic.you"));
 
         loc.setX(loc.getX() + 2);
         p.teleport(loc);
-        p.lookAt(mannequin.getEntity(), LookAnchor.EYES, LookAnchor.EYES);
+        p.lookAt(mannequin, LookAnchor.EYES, LookAnchor.EYES);
         giveItems();
         for(Player player : Bukkit.getOnlinePlayers()){
-            player.hideEntity(Lobby_plugin.getInstance(), mannequin.getEntity());
+            player.hideEntity(Lobby_plugin.getInstance(), mannequin);
+            player.hideEntity(Lobby_plugin.getInstance(), p);
         }
-        p.showEntity(Lobby_plugin.getInstance(), mannequin.getEntity());
+        p.showEntity(Lobby_plugin.getInstance(), mannequin);
     }
 
     public void changeCosmetic(Cosmetic c){
-        currentCosmetic = c;
-        Map<Equipment.EquipmentSlot, ItemStack> equipment = mannequin.getOrAddTrait(Equipment.class).getEquipmentBySlot();
-        for(Equipment.EquipmentSlot key : equipment.keySet()){
-            mannequin.getOrAddTrait(Equipment.class).set(key, null);
+        if(currentCosmetic != null) {
+            mannequin.getEquipment().setItem(currentCosmetic.slot, null, true);
         }
-        mannequin.getOrAddTrait(Equipment.class).set(getEquipmentSlot(c.slot), c.build(p, false, false, isViewing(p, c)));
+        currentCosmetic = c;
+        mannequin.getEquipment().setItem(c.slot, c.build(p, false, false, isViewing(p, c)), true);
     }
 
     public void removeCosmetic(){
+        mannequin.getEquipment().setItem(currentCosmetic.slot, null, true);
         currentCosmetic = null;
-        Map<Equipment.EquipmentSlot, ItemStack> equipment = mannequin.getOrAddTrait(Equipment.class).getEquipmentBySlot();
-        for(Equipment.EquipmentSlot key : equipment.keySet()){
-            mannequin.getOrAddTrait(Equipment.class).set(key, null);
-        }
     }
 
     public void endView(){
         running = false;
         views.remove(this);
-        mannequin.despawn();
+        mannequin.remove();
+        mannequin = null;
         p.setGameMode(GameMode.SURVIVAL);
         p.teleport(LobbyConfig.Locations.get("spawn"));
         p.getInventory().clear();
         InventoryManager.giveLobbyItems(p);
+
+        for(Player player : Bukkit.getOnlinePlayers()){
+            player.showEntity(Lobby_plugin.getInstance(), p);
+        }
+
         new BukkitRunnable(){
             public void run(){
                 Cosmetic.giveCosmetics(p);
@@ -473,15 +471,6 @@ class CosmeticView{
         inv.clear(3);
         inv.setItem(8, App.LeaveWardrobe.build(p));
         inv.setItem(4, App.EquipBuy.build(p));
-    }
-
-    private static Equipment.EquipmentSlot getEquipmentSlot(EquipmentSlot slot){
-        for(Equipment.EquipmentSlot equip : Equipment.EquipmentSlot.values()){
-            if(equip.toBukkit().equals(slot)){
-                return equip;
-            }
-        }
-        return null;
     }
 
     public static CosmeticView findView(Player p){
