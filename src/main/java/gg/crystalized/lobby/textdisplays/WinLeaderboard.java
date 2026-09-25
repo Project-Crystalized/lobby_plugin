@@ -63,10 +63,11 @@ public class WinLeaderboard {
 					Component text = buildText(p, snap, loc, game_type);
 
 					int lb_entity_id = Leaderboards.leaderboards.get(p).get(game_type);
-					user.sendPacket(Leaderboards.displayMetadata(lb_entity_id, text));
+					user.sendPacket(Leaderboards.displayMetadata(lb_entity_id, text,
+							game_type.startsWith("pk") ? Leaderboards.BILLBOARD_VERTICAL : Leaderboards.BILLBOARD_FIXED));
 				}
 			}
-		}.runTaskTimer(Lobby_plugin.getInstance(), 20, (20 * 10));
+		}.runTaskTimer(Lobby_plugin.getInstance(), 2, (20 * 10));
 	}
 
 	static String formatValue(Parkour parkour, int wins) {

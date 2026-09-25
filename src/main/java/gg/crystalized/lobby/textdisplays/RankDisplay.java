@@ -62,10 +62,10 @@ public class RankDisplay {
 					Component text = buildText(p, snap);
 
 					int entityId = Leaderboards.leaderboards.get(p).get(RANKED_TYPE);
-					user.sendPacket(Leaderboards.displayMetadata(entityId, text));
+					user.sendPacket(Leaderboards.displayMetadata(entityId, text, Leaderboards.BILLBOARD_FIXED));
 				}
 			}
-		}.runTaskTimer(Lobby_plugin.getInstance(), 20, (20 * 10));
+		}.runTaskTimer(Lobby_plugin.getInstance(), 2, (20 * 10));
 	}
 
 	static RankedSnapshot computeSnapshot() {
