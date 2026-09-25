@@ -8,6 +8,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import gg.crystalized.lobby.parkour.Parkour;
 import gg.crystalized.lobby.statistics.StatView;
+import gg.crystalized.lobby.textdisplays.RankDisplay;
+import gg.crystalized.lobby.textdisplays.WinLeaderboard;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;

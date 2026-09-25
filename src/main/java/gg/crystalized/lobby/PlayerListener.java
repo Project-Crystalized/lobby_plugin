@@ -18,6 +18,8 @@ import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.meta.FireworkMeta;
 
+import gg.crystalized.lobby.textdisplays.Leaderboards;
+
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -126,7 +128,7 @@ public final class PlayerListener implements Listener {
 		Achievement.achievements.remove(e.getPlayer().getUniqueId());
 		LevelManager.moneyCache.remove(e.getPlayer().getUniqueId());
 		Ranks.rankCache.remove(e.getPlayer().getUniqueId());
-		WinLeaderboard.leaderboards.remove(e.getPlayer());
+		Leaderboards.leaderboards.remove(e.getPlayer());
 		App.active.remove(e.getPlayer());
 		ScrollableView.removeView(e.getPlayer());
 	}
