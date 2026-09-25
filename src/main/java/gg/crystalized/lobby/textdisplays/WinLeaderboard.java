@@ -69,6 +69,17 @@ public class WinLeaderboard {
 		}.runTaskTimer(Lobby_plugin.getInstance(), 20, (20 * 10));
 	}
 
+	static String formatValue(Parkour parkour, int wins) {
+		if (parkour == null) {
+			return "" + wins;
+		}
+		int hours = wins / 3600000;
+		int minutes = (wins % 3600000) / 60000;
+		int seconds = (wins % 3600000 % 60000) / 1000;
+		int millis = wins % 3600000 % 60000 % 1000;
+		return gg.crystalized.lobby.parkour.Timer.buildTimer(millis, seconds, minutes, hours);
+	}
+
 	static Component buildText(Player p, LeaderboardSnapshot snap, Location loc, String type){
 		int[] own = snap.player_stats.get(p.getUniqueId());
 		if(own == null){
@@ -81,19 +92,16 @@ public class WinLeaderboard {
 		Component rows = snap.sharedText.append(text("\n")).append(text("-----------------").color(GRAY));
 		Component num = Leaderboards.get_styles(own[0]);
 		String num_str = PlainTextComponentSerializer.plainText().serialize(num);
-		int padding = snap.total - (Leaderboards.balance(num_str) + Leaderboards.balance(PlainTextComponentSerializer.plainText().serialize(Ranks.getName(p))) + Leaderboards.balance("" + own[1]));
-		String dots = ".".repeat(padding);
+		String valueText = formatValue(parkour, own[1]);
+		int numWidth = own[0] == 1 ? Leaderboards.balanceBold(num_str) : Leaderboards.balance(num_str);
+		int padding = snap.total - (numWidth + Leaderboards.balance(PlainTextComponentSerializer.plainText().serialize(Ranks.getName(p))) + Leaderboards.balance(valueText));
+		String dots = ".".repeat(Math.max(0, padding));
 		rows = rows.append(text("\n")).append(num);
 		rows = rows.append(Ranks.getName(p)).append(text(dots).color(GRAY));
-		int wins = own[1];
 		if(parkour == null) {
-			rows = rows.append(text("" + wins)).color(GREEN);
+			rows = rows.append(text(valueText)).color(WHITE);
 		}else{
-			int hours = wins / 3600000;
-			int minutes = (wins % 3600000) / 60000;
-			int seconds = (wins % 3600000 % 60000) / 1000;
-			int millis = wins % 3600000 % 60000 % 1000;
-			rows = rows.append(text(gg.crystalized.lobby.parkour.Timer.buildTimer(millis, seconds, minutes, hours))).color(GREEN);
+			rows = rows.append(text(valueText)).color(GREEN);
 		}
 		return rows;
 	}
@@ -106,7 +114,7 @@ public class WinLeaderboard {
 		try (Connection conn = DriverManager.getConnection(t.url)) {
 			PreparedStatement query = conn.prepareStatement("SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + " GROUP BY player_uuid ORDER BY SUM(" + t.dbColumn + ") DESC;");
 			Parkour parkour = null;
-			Component base = text("Game Leaderboard\n").color(GOLD).append(t.title);
+			Component base = text("Game Leaderboard\n").color(GREEN).append(t.title);
 			if(t == GameType.PARKOUR){
 				parkour = findParkourByLeaderboard(loc);
 				query = conn.prepareStatement("SELECT player_uuid, SUM(" + t.dbColumn + ") FROM " + t.dbName + " WHERE course = ? GROUP BY player_uuid ORDER BY SUM(" + t.dbColumn + ") ASC;");
@@ -121,6 +129,7 @@ public class WinLeaderboard {
 
 			int h = 0;
 			String longest = "";
+			String longestValue = "";
 			while (res.next()) {
 				UUID uuid = Leaderboards.convertBytesToUUID(res.getBytes("player_uuid"));
 				TextComponent name = (TextComponent)Ranks.getName(Bukkit.getOfflinePlayer(uuid));
@@ -134,6 +143,10 @@ public class WinLeaderboard {
 				if(Leaderboards.balance(name_str) > Leaderboards.balance(longest)){
 					longest = name_str;
 				}
+				String valueText = formatValue(parkour, wins);
+				if(Leaderboards.balance(valueText) > Leaderboards.balance(longestValue)){
+					longestValue = valueText;
+				}
 				stats.put(uuid, new int[]{h, wins});
 
 				if(h <= 10){
@@ -143,31 +156,29 @@ public class WinLeaderboard {
 			}
 
 			lastErrorLogged = false;
-			int total = Leaderboards.balance(longest + "......" + "10000000000");
+			int minDots = 6;
+			int total = Leaderboards.balance(longest + "........" + longestValue) + minDots;
 			for(int j = 0; j <= topKey.size()-1; j++){
 				String top_str = PlainTextComponentSerializer.plainText().serialize(topKey.get(j));
 				Component num = Leaderboards.get_styles(j+1);
 				String num_str = PlainTextComponentSerializer.plainText().serialize(num);
-				int padding = total - (Leaderboards.balance(num_str) + Leaderboards.balance(top_str) + Leaderboards.balance("" + top.get(topKey.get(j))));
+				String valueText = formatValue(parkour, top.get(topKey.get(j)));
+				int numWidth = j + 1 == 1 ? Leaderboards.balanceBold(num_str) : Leaderboards.balance(num_str);
+				int padding = total - (numWidth + Leaderboards.balance(top_str) + Leaderboards.balance(valueText));
 				//Bukkit.getLogger().warning(type + ": " + top.get(topKey.get(j)).content());
-				String dots = ".".repeat(padding);
+				String dots = ".".repeat(Math.max(0, padding));
 				base = base.append(text("\n")).append(num);
 				base = base.append(topKey.get(j)).append(text(dots).color(GRAY));
-				int wins = top.get(topKey.get(j));
 				if(parkour == null) {
-					base = base.append(text("" + wins)).color(GREEN);
+					base = base.append(text(valueText)).color(WHITE);
 				}else{
-					int hours = wins / 3600000;
-					int minutes = (wins % 3600000) / 60000;
-					int seconds = (wins % 3600000 % 60000) / 1000;
-					int millis = wins % 3600000 % 60000 % 1000;
-					base = base.append(text(gg.crystalized.lobby.parkour.Timer.buildTimer(millis, seconds, minutes, hours))).color(GREEN);
+					base = base.append(text(valueText)).color(GREEN);
 				}
 			}
 
 			return new LeaderboardSnapshot(base, stats, total);
 		} catch (SQLException e) {
-			Component fallbackBase = text("Game Leaderboard\n").color(GOLD).append(t.title);
+			Component fallbackBase = text("Game Leaderboard\n").color(GREEN).append(t.title);
 			try (Connection conn = DriverManager.getConnection(t.url)) {
 				ResultSet count = conn.createStatement().executeQuery("SELECT COUNT(*) AS c FROM " + t.dbName);
 				if(count.next() && count.getInt("c") > 0){

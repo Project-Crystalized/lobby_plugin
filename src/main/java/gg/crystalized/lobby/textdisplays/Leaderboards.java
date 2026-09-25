@@ -39,6 +39,7 @@ public class Leaderboards {
 	static WrapperPlayServerEntityMetadata displayMetadata(int entityId, Component text) {
 		List<EntityData<?>> data = List.of(new EntityData<>(15, EntityDataTypes.BYTE, (byte) 3),
 				new EntityData<Component>(23, EntityDataTypes.ADV_COMPONENT, text),
+				new EntityData<Integer>(24, EntityDataTypes.INT, 240),
 				new EntityData<Integer>(25, EntityDataTypes.INT, 1345466930),
 				new EntityData<Byte>(27, EntityDataTypes.BYTE, (byte) 1));
 		return new WrapperPlayServerEntityMetadata(entityId, data);
@@ -108,6 +109,16 @@ public class Leaderboards {
 		int sum = 0;
 		for (char c : chars) {
 			sum += BitmapGlyphInfo.getBitmapGlyphInfo(c).width;
+		}
+		sum += name.length() - 1;
+		return sum / 2;
+	}
+
+	public static int balanceBold(String name) {
+		char[] chars = name.toCharArray();
+		int sum = 0;
+		for (char c : chars) {
+			sum += BitmapGlyphInfo.getBitmapGlyphInfo(c).width + 1;
 		}
 		sum += name.length() - 1;
 		return sum / 2;
