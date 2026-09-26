@@ -309,7 +309,9 @@ class NPCData{
             trait.setSkinPersistent(skinName, skinSignature, skinValue);
             npc.spawn(loc);
              */
-        }catch(IllegalArgumentException e){}
+        }catch(IllegalArgumentException e){
+            Bukkit.getLogger().log(Level.SEVERE, "[Lobby_plugin] Failed to spawn NPC name=" + name + " skin=" + skin + " loc=" + loc, e);
+        }
     }
 
     public static ArrayList<String> deleteRest(ArrayList<String> map, String key){
