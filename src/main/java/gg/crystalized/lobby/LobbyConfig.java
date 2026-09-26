@@ -302,6 +302,7 @@ class NPCData{
             profile.name(name);
             npc.setProfile(profile.build());
             npc.customName(Component.text(name));
+            npc.setCustomNameVisible(true);
 
             /*
             NPC npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.PLAYER, name, loc);
