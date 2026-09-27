@@ -161,6 +161,7 @@ class ParkourRun{
         timer.task.cancel();
         running.remove(this);
         if(!finished) return;
+        p.sendMessage(Component.text(course.name + ": ").color(course.color).append(Component.text(Timer.buildTimer(timer.millis, timer.seconds, timer.minutes, timer.hours)).color(WHITE)));
         ParkourDatabase.saveRun(this);
 
         Firework firework = (Firework)p.getWorld().spawnEntity(p.getLocation(), FIREWORK_ROCKET);
