@@ -505,7 +505,7 @@ class CosmeticView{
 
     public void equipOrBuy(Player p){
         if(!ownsCosmetic(p, currentCosmetic)) {
-            if (currentCosmetic.price == null) {
+            if (currentCosmetic == null || currentCosmetic.price == null) {
                 return;
             }
 

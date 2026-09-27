@@ -299,7 +299,7 @@ class NPCData{
             builder.model(model);
             profile.skinPatch(builder.build());
             profile.uuid(UUID.randomUUID());
-            profile.name(name);
+            //profile.name(name);
             npc.setProfile(profile.build());
             npc.customName(Component.text(name));
             npc.setCustomNameVisible(true);

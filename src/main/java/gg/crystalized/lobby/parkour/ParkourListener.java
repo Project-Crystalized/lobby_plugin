@@ -32,8 +32,12 @@ public class ParkourListener implements Listener {
 
         if(p.getInventory().getItem(6) != null && p.getInventory().getItem(6).equals(item)){
             //return to checkpoint
-            p.teleport(run.course.checkpoints[run.lastCheckpoint]);
-            p.lookAt(run.course.checkpoints[run.lastCheckpoint+1].getX(), run.course.checkpoints[run.lastCheckpoint].getY(), run.course.checkpoints[run.lastCheckpoint].getZ(), LookAnchor.EYES);
+            Location loc = run.course.checkpoints[run.lastCheckpoint].clone().toCenterLocation();
+            loc.setY(loc.getBlockY());
+            loc.setYaw(run.course.checkpoints[run.lastCheckpoint].getYaw());
+            loc.setPitch(run.course.checkpoints[run.lastCheckpoint].getPitch());
+            p.teleport(loc);
+            //p.lookAt(run.course.checkpoints[run.lastCheckpoint+1].getX(), run.course.checkpoints[run.lastCheckpoint].getY(), run.course.checkpoints[run.lastCheckpoint].getZ(), LookAnchor.EYES);
         }
 
         if(p.getInventory().getItem(7) != null && p.getInventory().getItem(7).equals(item)){
@@ -46,8 +50,11 @@ public class ParkourListener implements Listener {
 
         if(p.getInventory().getItem(8) != null && p.getInventory().getItem(8).equals(item)){
             run.stop(false);
-            Location loc = run.course.checkpoints[0].clone();
-            loc.setX(run.course.checkpoints[0].getX()+1);
+            Location loc = run.course.checkpoints[0].clone().toCenterLocation();
+            loc.setY(loc.getBlockY());
+            loc.setX(run.course.checkpoints[0].getX()+2);
+            loc.setYaw(run.course.checkpoints[0].getYaw());
+            loc.setPitch(run.course.checkpoints[0].getPitch());
             p.teleport(loc);
         }
     }

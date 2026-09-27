@@ -45,7 +45,7 @@ public class ParkourConfig {
         Location[] checkpoints = new Location[array.size()];
         for(int i = 0; i < array.size(); i++){
             JsonArray checkpoint = array.get(i).getAsJsonArray();
-            checkpoints[i] = new Location(Bukkit.getWorld("world"), checkpoint.get(0).getAsInt(), checkpoint.get(1).getAsInt(), checkpoint.get(2).getAsInt());
+            checkpoints[i] = new Location(Bukkit.getWorld("world"), checkpoint.get(0).getAsInt(), checkpoint.get(1).getAsInt(), checkpoint.get(2).getAsInt(), checkpoint.get(3).getAsFloat(), checkpoint.get(4).getAsFloat());
         }
         return checkpoints;
     }
