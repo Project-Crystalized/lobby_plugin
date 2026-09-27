@@ -18,10 +18,13 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
@@ -43,12 +46,13 @@ public class Nametag {
         components[2] = Ranks.getRankWithName(holder);
 
         for(int i = 0; i < 3; i++) {
+            final int temp = i;
             displayIds[i] = EntityId;
-            makeDisplay(false, holder, i);
+            doForEveryoneBut(holder, p -> makeDisplay(p, temp));
             EntityId++;
             armorIds[i] = EntityId;
-            makeArmorStand(false, holder, i);
-            setPassengers(false, holder, i);
+            doForEveryoneBut(holder, p -> makeArmorStand(p, temp));
+            doForEveryoneBut(holder, p -> setPassengers(p, temp));
             EntityId++;
         }
         nametags.add(this);
@@ -62,12 +66,13 @@ public class Nametag {
         this.armorIds = new int[components.length];
 
         for(int i = 0; i < components.length; i++) {
+            final int temp = i;
             displayIds[i] = EntityId;
-            makeDisplay(false, holder, i);
+            doForEveryoneBut(holder, p -> makeDisplay(p, temp));
             EntityId++;
             armorIds[i] = EntityId;
-            makeArmorStand(false, holder, i);
-            setPassengers(false, holder, i);
+            doForEveryoneBut(holder, p -> makeArmorStand(p, temp));
+            doForEveryoneBut(holder, p -> setPassengers(p, temp));
             EntityId++;
         }
         nametags.add(this);
@@ -75,9 +80,9 @@ public class Nametag {
 
     public void renderNametag(Player recipient){
         for(int i = 0; i < components.length; i++){
-            makeDisplay(true, recipient, i);
-            makeArmorStand(true, recipient, i);
-            setPassengers(true, recipient, i);
+            makeDisplay(recipient, i);
+            makeArmorStand(recipient, i);
+            setPassengers(recipient, i);
         }
     }
 
@@ -99,8 +104,17 @@ public class Nametag {
     private static void sendToEveryoneApartFrom(Player p, PacketWrapper<?> wrapper){
         for(Player player : Bukkit.getOnlinePlayers()){
             if (p != null && p.equals(player)) continue;
+            FloodgateApi floodgate = FloodgateApi.getInstance();
+            boolean isBedrock = floodgate.isFloodgatePlayer(player.getUniqueId());
             User user = PacketEvents.getAPI().getPlayerManager().getUser(player);
             if(user != null) user.sendPacket(wrapper);
+        }
+    }
+
+    private static void doForEveryoneBut(Player p, Consumer<Player> con){
+        for(Player recipient : Bukkit.getOnlinePlayers()){
+            if (p != null && p.equals(recipient)) continue;
+            con.accept(recipient);
         }
     }
 
@@ -151,28 +165,50 @@ public class Nametag {
         return tag;
     }
 
-    public void updateContent(Component[] newContent){
+    private void updateContent(Player recipient, Component[] newContent){
+        FloodgateApi floodgate = FloodgateApi.getInstance();
+        boolean isBedrock = floodgate.isFloodgatePlayer(recipient.getUniqueId());
+        int [] array = isBedrock ? armorIds : displayIds;
         int i = 0;
-        for(int id : displayIds){
+        for(int id : array){
             if(newContent.length <= i){
                 WrapperPlayServerDestroyEntities wrapper = new WrapperPlayServerDestroyEntities(id);
-                sendToEveryoneApartFrom(holder.getPlayer(), wrapper);
+                User user = PacketEvents.getAPI().getPlayerManager().getUser(recipient);
+                if (user == null) return;
+                user.sendPacket(wrapper);
                 continue;
             }
-            List<EntityData<?>> data = List.of(new EntityData<>(23, EntityDataTypes.ADV_COMPONENT, newContent[i]));
+            List<EntityData<?>> data;
+            if(!isBedrock) {
+                data = List.of(new EntityData<>(23, EntityDataTypes.ADV_COMPONENT, newContent[i]));
+            }else{
+                data = List.of(new EntityData(2, EntityDataTypes.OPTIONAL_ADV_COMPONENT, Optional.of(newContent[i])));
+            }
             WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(id, data);
-            sendToEveryoneApartFrom(holder.getPlayer(), metadata);
+            User user = PacketEvents.getAPI().getPlayerManager().getUser(recipient);
+            if (user == null) return;
+            user.sendPacket(metadata);
             i++;
         }
     }
 
-    public void updateMounting(){
+    public void updateContent(Component[] newContent){
+        doForEveryoneBut(holder.getPlayer(), p -> updateContent(p, newContent));
+    }
+
+    private void updateMounting(Player recipient){
         if(holder.getPlayer() == null){
             disconnect(holder);
             return;
         }
         WrapperPlayServerSetPassengers passengers = new WrapperPlayServerSetPassengers(holder.getPlayer().getEntityId(), new int[]{armorIds[0]});
-        sendToEveryoneApartFrom(holder.getPlayer(), passengers);
+        User user = PacketEvents.getAPI().getPlayerManager().getUser(recipient);
+        if(user == null) return;
+        user.sendPacket(passengers);
+    }
+
+    public void updateMounting(){
+        doForEveryoneBut(holder.getPlayer(), this::updateMounting);
     }
 
     public void locationChecker(){
@@ -188,7 +224,7 @@ public class Nametag {
                 disconnect(holder);
                 return;
             }
-            tag.setPassengers(true, hold, 0);
+            tag.setPassengers(hold, 0);
             if(p.getLocation().distance(hold.getLocation()) <= maxDistance && hold.canSee(p) && !p.isInvisible() && p.getGameMode() != GameMode.SPECTATOR && p.isOnline()){
                 if(!tooFarAway.contains(tag)) continue;
                 tooFarAway.remove(tag);
@@ -234,7 +270,7 @@ public class Nametag {
         remove.locationChecker.cancel();
     }
 
-    public static void disconnect(OfflinePlayer p){
+    private static void disconnect(OfflinePlayer p, Player recipient){
         if(Lobby_plugin.getInstance().passive_mode && !Lobby_plugin.getInstance().doNametagsDespitePassive){
             return;
         }
@@ -244,12 +280,18 @@ public class Nametag {
             public void run() {
                 for (int id : ArrayUtils.addAll(tag.armorIds, tag.displayIds)) {
                     WrapperPlayServerDestroyEntities wrapper = new WrapperPlayServerDestroyEntities(id);
-                    sendToEveryoneApartFrom(p.getPlayer(), wrapper);
+                    User user = PacketEvents.getAPI().getPlayerManager().getUser(recipient);
+                    if(user == null) return;
+                    user.sendPacket(wrapper);
                 }
             }
         }.runTaskAsynchronously(Lobby_plugin.getInstance());
         nametags.remove(tag);
         tag.locationChecker.cancel();
+    }
+
+    public static void disconnect(OfflinePlayer p){
+        doForEveryoneBut(p.getPlayer(), rec ->  disconnect(p, rec));
     }
 
     public static void hideSpecificNametag(Player recipient, Player p){
@@ -272,49 +314,60 @@ public class Nametag {
 
     //sendToPlayer = true -> packet is sent to only p
     //sendToPlayer = false -> packet is sent to everyone but p
-    private void makeDisplay(boolean sendToPlayer, Player p, int i){
+    private void makeDisplay(Player p, int i){
+        FloodgateApi floodgate = FloodgateApi.getInstance();
+        boolean isBedrock = floodgate.isFloodgatePlayer(p.getUniqueId());
+        if(isBedrock){
+            return;
+        }
         WrapperPlayServerSpawnEntity entity = new WrapperPlayServerSpawnEntity(displayIds[i], UUID.randomUUID(), EntityTypes.TEXT_DISPLAY, new com.github.retrooper.packetevents.protocol.world.Location
                 (holder.getLocation().getX(), holder.getLocation().getY(), holder.getLocation().getZ(), 0, 0), 0, 0, new Vector3d());
         User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
         if(user == null) return;
-        if(sendToPlayer) user.sendPacket(entity); else sendToEveryoneApartFrom(p, entity);
+        user.sendPacket(entity);
 
         Integer num = 3;
         List<EntityData<?>> data = List.of(new EntityData(15, EntityDataTypes.BYTE, num.byteValue()), new EntityData(23, EntityDataTypes.ADV_COMPONENT, components[i]));
         WrapperPlayServerEntityMetadata metadata = new WrapperPlayServerEntityMetadata(displayIds[i], data);
-        if(sendToPlayer) user.sendPacket(metadata); else sendToEveryoneApartFrom(p, metadata);
+        user.sendPacket(metadata);
     }
 
-    private void makeArmorStand(boolean sendToPlayer, Player p, int i){
+    private void makeArmorStand(Player p, int i){
+        FloodgateApi floodgate = FloodgateApi.getInstance();
+        boolean isBedrock = floodgate.isFloodgatePlayer(p.getUniqueId());
         User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
         if(user == null) return;
         WrapperPlayServerSpawnEntity armor = new WrapperPlayServerSpawnEntity(armorIds[i], UUID.randomUUID(), EntityTypes.ARMOR_STAND, new Location
                 (holder.getLocation().getX(), holder.getLocation().getY(), holder.getLocation().getZ(), 0, 0), 0, 0, new Vector3d());
-        if(sendToPlayer) user.sendPacket(armor); else sendToEveryoneApartFrom(p, armor);
+        user.sendPacket(armor);
 
         WrapperPlayServerUpdateAttributes attribute = new WrapperPlayServerUpdateAttributes(armorIds[i], List.of(new WrapperPlayServerUpdateAttributes.Property(Attributes.SCALE, 0.15, List.of(new WrapperPlayServerUpdateAttributes.PropertyModifier(Attributes.SCALE.getName(), 0, WrapperPlayServerUpdateAttributes.PropertyModifier.Operation.ADDITION)))));
-        if(sendToPlayer) user.sendPacket(attribute); else sendToEveryoneApartFrom(p, attribute);
+        user.sendPacket(attribute);
 
-        List<EntityData<?>> data= List.of(new EntityData(0, EntityDataTypes.BYTE, ((Integer)0x20).byteValue()));
+        List<EntityData<?>> data= List.of(new EntityData(0, EntityDataTypes.BYTE, ((Integer)0x20).byteValue()), new EntityData(2, EntityDataTypes.OPTIONAL_ADV_COMPONENT, Optional.of(components[i])), new EntityData(3, EntityDataTypes.BOOLEAN, isBedrock));
         WrapperPlayServerEntityMetadata meta = new WrapperPlayServerEntityMetadata(armorIds[i], data);
-        if(sendToPlayer) user.sendPacket(meta); else sendToEveryoneApartFrom(p, meta);
+        user.sendPacket(meta);
     }
 
-    private void setPassengers(boolean sendToPlayer, Player p, int i){
+    private void setPassengers(Player p, int i){
         if(holder.getPlayer() == null){
             disconnect(holder);
             return;
         }
+        FloodgateApi floodgate = FloodgateApi.getInstance();
+        boolean isBedrock = floodgate.isFloodgatePlayer(p.getUniqueId());
         User user = PacketEvents.getAPI().getPlayerManager().getUser(p);
         if(user == null) return;
         WrapperPlayServerSetPassengers passengers;
         if(i == 0){
             passengers = new WrapperPlayServerSetPassengers(holder.getPlayer().getEntityId(), new int[]{armorIds[i]});
+        }else if(isBedrock){
+            passengers = new WrapperPlayServerSetPassengers(armorIds[i-1], new int[]{armorIds[i]});
         }else {
             passengers = new WrapperPlayServerSetPassengers(displayIds[i-1], new int[]{armorIds[i]});
         }
-        if(sendToPlayer) user.sendPacket(passengers); else sendToEveryoneApartFrom(p, passengers);
+        user.sendPacket(passengers);
         WrapperPlayServerSetPassengers pass = new WrapperPlayServerSetPassengers(armorIds[i], new int[]{displayIds[i]});
-        if(sendToPlayer) user.sendPacket(pass); else sendToEveryoneApartFrom(p, pass);
+        user.sendPacket(pass);
     }
 }

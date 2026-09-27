@@ -329,13 +329,13 @@ public enum App {
         }
         if(this == Requeue){
             ArrayList<String> plugins = new ArrayList<>();
-            stream(Bukkit.getServer().getPluginManager().getPlugins()).forEach(pl -> plugins.add(pl.getName()));
+            stream(Bukkit.getServer().getPluginManager().getPlugins()).forEach(pl -> plugins.add(pl.getName().toLowerCase()));
             String queue = null;
-            if(plugins.contains("Litestrike")){
+            if(plugins.contains("litestrike")){
                 queue = "litestrike";
-            }else if(plugins.contains("Knockoff")){
+            }else if(plugins.contains("knockoff")){
                 queue = "knockoff";
-            }else if(plugins.contains("Crystal_blitz")){
+            }else if(plugins.contains("crystalblitz")){
                 queue = "crystalblitz";
             }
 
