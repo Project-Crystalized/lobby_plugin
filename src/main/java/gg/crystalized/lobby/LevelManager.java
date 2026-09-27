@@ -24,6 +24,7 @@ public class LevelManager implements Listener {
     static final ConcurrentHashMap<UUID, Integer> moneyCache = new ConcurrentHashMap<>();
 
     public static void giveExperience(Player p, int exp){
+        updateLevel(p);
         p.giveExp(exp);
         try(Connection conn = DriverManager.getConnection(LobbyDatabase.URL)){
             String insertData = "UPDATE LobbyPlayers SET exp_to_next_lvl = ?, level = ? WHERE player_uuid = ?;";
