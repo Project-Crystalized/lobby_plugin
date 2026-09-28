@@ -127,7 +127,16 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
             return false;
         }
 
+        int previous = Ranks.getPayRank(p);
         if(args[1].equals("clear")){
+            List<Quest> quests = Quest.getQuests(p);
+            if(previous == 8){
+                quests.removeFirst();
+            }else if(previous == 7){
+                quests.removeFirst();
+                quests.removeFirst();
+            }
+            Quest.setQuests(p, quests);
             LobbyDatabase.setRank(p, 0);
             LobbyDatabase.setPayedRank(p, -1);
         }
@@ -153,6 +162,16 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
             InventoryManager.giveLobbyItems(p.getPlayer());
         }
 
+        List<Quest> quests = Quest.getQuests(p);
+        if((previous == 0 && Ranks.getPayRank(p) == 8) || (previous == 8 && Ranks.getPayRank(p) == 7)){
+            quests.add(Quest.addQuest(p));
+        }
+
+        if(previous == 0 && Ranks.getPayRank(p) == 7){
+            quests.add(Quest.addQuest(p));
+            quests.add(Quest.addQuest(p));
+        }
+        Quest.setQuests(p, quests);
         LobbyDatabase.setQuestRerolls(p);
         return true;
     }

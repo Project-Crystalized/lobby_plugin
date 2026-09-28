@@ -31,9 +31,9 @@ public enum Ranks {
     5 = sub-project maker
     6 = creator
 
-    7 = supporter
+    7 = subscription (sun)
     8 = one time payment (moon)
-    9 = subscription (sun)
+    9 = supporter
      */
 
     rankless("#a1a1a1", "", "", 10, "[J] rankless", "ui/invisible", false),

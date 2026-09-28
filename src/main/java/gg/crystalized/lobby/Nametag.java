@@ -101,11 +101,9 @@ public class Nametag {
         }
     }
 
-    private static void sendToEveryoneApartFrom(Player p, PacketWrapper<?> wrapper){
+    private static void sendToEveryoneApartFrom(OfflinePlayer p, PacketWrapper<?> wrapper){
         for(Player player : Bukkit.getOnlinePlayers()){
             if (p != null && p.equals(player)) continue;
-            FloodgateApi floodgate = FloodgateApi.getInstance();
-            boolean isBedrock = floodgate.isFloodgatePlayer(player.getUniqueId());
             User user = PacketEvents.getAPI().getPlayerManager().getUser(player);
             if(user != null) user.sendPacket(wrapper);
         }
@@ -270,7 +268,7 @@ public class Nametag {
         remove.locationChecker.cancel();
     }
 
-    private static void disconnect(OfflinePlayer p, Player recipient){
+    public static void disconnect(OfflinePlayer p){
         if(Lobby_plugin.getInstance().passive_mode && !Lobby_plugin.getInstance().doNametagsDespitePassive){
             return;
         }
@@ -280,9 +278,7 @@ public class Nametag {
             public void run() {
                 for (int id : ArrayUtils.addAll(tag.armorIds, tag.displayIds)) {
                     WrapperPlayServerDestroyEntities wrapper = new WrapperPlayServerDestroyEntities(id);
-                    User user = PacketEvents.getAPI().getPlayerManager().getUser(recipient);
-                    if(user == null) return;
-                    user.sendPacket(wrapper);
+                    sendToEveryoneApartFrom(p, wrapper);
                 }
             }
         }.runTaskAsynchronously(Lobby_plugin.getInstance());
@@ -290,9 +286,9 @@ public class Nametag {
         tag.locationChecker.cancel();
     }
 
-    public static void disconnect(OfflinePlayer p){
-        doForEveryoneBut(p.getPlayer(), rec ->  disconnect(p, rec));
-    }
+    //public static void disconnect(OfflinePlayer p){
+        //doForEveryoneBut(p.getPlayer(), rec ->  disconnect(p, rec));
+    //}
 
     public static void hideSpecificNametag(Player recipient, Player p){
         if(Lobby_plugin.getInstance().passive_mode && !Lobby_plugin.getInstance().doNametagsDespitePassive){

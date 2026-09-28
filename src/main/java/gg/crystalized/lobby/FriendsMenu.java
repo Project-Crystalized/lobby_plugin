@@ -161,6 +161,7 @@ public class FriendsMenu {
     }
 
     public static void checkOnline(Player player, OfflinePlayer p){
+        if(p == null) return;
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         out.writeUTF("Online");
         out.writeUTF(p.getName());

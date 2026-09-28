@@ -4,6 +4,7 @@ import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.CustomModelData;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static gg.crystalized.lobby.LobbyDatabase.uuid_to_bytes;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
@@ -36,13 +38,13 @@ public class Quest {
     Difficulty difficulty;
     boolean claimed;
     boolean done;
-    public Quest(OfflinePlayer p, Game game, boolean forSeveral, Category category,int amount){
+    public Quest(OfflinePlayer p, Game game, boolean forSeveral, Category category,int amount, Difficulty difficulty){
         this.player = p;
         this.game = game;
         this.forSeveral = forSeveral;
         this.category = category;
         this.amount = amount;
-        this.difficulty = category != null ? Difficulty.getDifficulty(category.min, category.max, amount, category.baseDiff) : Difficulty.HARD;
+        this.difficulty = difficulty;
         this.claimed = false;
         this.done = false;
 
@@ -89,7 +91,17 @@ public class Quest {
 
     public static Quest[] rollQuests(Player p){
         allQuests.remove(p.getUniqueId());
-        Quest[] quests = new Quest[7];
+        int questAmount = 7;
+        if(Ranks.getPayRank(p) == Ranks.sun_sub.ordinal()){
+            questAmount = 9;
+        }else if(Ranks.getPayRank(p) == Ranks.moon_one.ordinal()){
+            questAmount = 8;
+        }
+        Quest[] quests = new Quest[questAmount];
+        int easy = 0;
+        int medium = 0;
+        int hard = 0;
+        int expert = 0;
         ArrayList<Category> alreadyRolled = new ArrayList<>();
         for(int i = 0; i < quests.length -1; i++) {
             Game game = Game.values()[(int) Math.floor(Math.random() * (Game.values().length))];
@@ -97,25 +109,55 @@ public class Quest {
             int c = (int) Math.floor(Math.random() * (Category.getCategories(game).size()-1));
             Category category = Category.getCategories(game).get(c);
             int amount = (int) Math.floor(Math.random() * (category.max - category.min + 1) + category.min);
-
-            while (alreadyRolled.contains(category) || (!forSeveral && !category.forOneGame)) {
+            Difficulty diff = Difficulty.getDifficulty(category.min, category.max, amount, category.baseDiff);
+            while (alreadyRolled.contains(category) || (!forSeveral && !category.forOneGame) || isDifficultyFull(diff, easy, medium, hard, expert)) {
                 game = Game.values()[(int) Math.floor(Math.random() * (Game.values().length))];
                 forSeveral = Math.floor(Math.random() * 2) == 1;
                 c = (int) Math.floor(Math.random() * Category.getCategories(game).size());
                 category = Category.getCategories(game).get(c);
                 amount = (int) Math.floor(Math.random() * (category.max - category.min + 1) + category.min);
+                diff = Difficulty.getDifficulty(category.min, category.max, amount, category.baseDiff);
             }
 
             alreadyRolled.add(category);
             if(forSeveral){
                 amount = amount * 3;
             }
-            Quest quest = new Quest(p, game, forSeveral, category, amount);
+            Quest quest = new Quest(p, game, forSeveral, category, amount, diff);
             quests[i] = quest;
+            if(diff == Difficulty.EASY){
+                easy++;
+            }else if(diff == Difficulty.MEDIUM){
+                medium++;
+            }else if(diff == Difficulty.HARD){
+                hard++;
+            }else if(diff == Difficulty.EXPERT){
+                expert++;
+            }
         }
-        quests[6] = new Quest(p, null, false, null, 6);
+        quests[questAmount-1] = new Quest(p, null, false, null, 6, Difficulty.HARD);
         allQuests.put(p.getUniqueId(), new ArrayList<>(Arrays.asList(quests)));
         return quests;
+    }
+
+    public static boolean isDifficultyFull(Difficulty diff, int easy, int medium, int hard, int expert){
+        if(diff == Difficulty.EASY && easy >= 2){
+            return true;
+        }
+
+        if(diff == Difficulty.MEDIUM && medium >= 2){
+            return true;
+        }
+
+        if(diff == Difficulty.HARD && hard >= 2){
+            return true;
+        }
+
+        if(diff == Difficulty.EXPERT && expert >= 2){
+            return true;
+        }
+
+        return false;
     }
 
     public void rerollQuest(){
@@ -124,25 +166,56 @@ public class Quest {
         int c = (int) Math.floor(Math.random() * (Category.getCategories(game).size()-1));
         Category category = Category.getCategories(game).get(c);
         int amount = (int) Math.floor(Math.random() * (category.max - category.min + 1) + category.min);
-
-        while (this.category == category || (!forSeveral && !category.forOneGame) || this.difficulty != Difficulty.getDifficulty(category.min, category.max, amount, category.baseDiff)) {
+        Difficulty diff = Difficulty.getDifficulty(category.min, category.max, amount, category.baseDiff);
+        while (this.category == category || (!forSeveral && !category.forOneGame) || this.difficulty != diff) {
             game = Game.values()[(int) Math.floor(Math.random() * (Game.values().length))];
             forSeveral = Math.floor(Math.random() * 2) == 1;
             c = (int) Math.floor(Math.random() * Category.getCategories(game).size());
             category = Category.getCategories(game).get(c);
             amount = (int) Math.floor(Math.random() * (category.max - category.min + 1) + category.min);
+            diff = Difficulty.getDifficulty(category.min, category.max, amount, category.baseDiff);
         }
 
-        Quest quest = new Quest(player, game, forSeveral, category, amount);
+        Quest quest = new Quest(player, game, forSeveral, category, amount, diff);
         allQuests.get(player.getUniqueId()).remove(this);
         allQuests.get(player.getUniqueId()).add(quest);
         LobbyDatabase.replaceQuest(player, this, quest);
         LobbyDatabase.rerollReduce(player); 
     }
 
+    public static Quest addQuest(OfflinePlayer player){
+        Game game = Game.values()[(int) Math.floor(Math.random() * (Game.values().length))];
+        boolean forSeveral = Math.floor(Math.random() * 2) == 1;
+        int c = (int) Math.floor(Math.random() * (Category.getCategories(game).size()-1));
+        Category category = Category.getCategories(game).get(c);
+        int amount = (int) Math.floor(Math.random() * (category.max - category.min + 1) + category.min);
+        Difficulty diff = Difficulty.getDifficulty(category.min, category.max, amount, category.baseDiff);
+        ArrayList<Category> alreadyRolled = getQuests(player).stream().map(Quest::getCategory).collect(Collectors.toCollection(ArrayList::new));
+
+        while (alreadyRolled.contains(category) || (!forSeveral && !category.forOneGame)) {
+            game = Game.values()[(int) Math.floor(Math.random() * (Game.values().length))];
+            forSeveral = Math.floor(Math.random() * 2) == 1;
+            c = (int) Math.floor(Math.random() * Category.getCategories(game).size());
+            category = Category.getCategories(game).get(c);
+            amount = (int) Math.floor(Math.random() * (category.max - category.min + 1) + category.min);
+            diff = Difficulty.getDifficulty(category.min, category.max, amount, category.baseDiff);
+        }
+        return new Quest(player, game, forSeveral, category, amount, diff);
+    }
+
+    public Category getCategory(){
+        return category;
+    }
+
     public static ArrayList<Quest> getQuests(OfflinePlayer p){
         List<Quest> quests = allQuests.get(p.getUniqueId());
         return quests == null ? new ArrayList<>() : new ArrayList<>(quests);
+    }
+
+    public static void setQuests(OfflinePlayer p, List<Quest> quests){
+        allQuests.remove(p.getUniqueId());
+        allQuests.put(p.getUniqueId(), quests);
+        LobbyDatabase.updateQuests(p);
     }
 
     void claim(){
@@ -310,11 +383,13 @@ public class Quest {
         int line = 3;
         HashMap<Quest, Integer> progress = getProgresses(p);
         boolean canReroll = LobbyDatabase.canRerollQuest(p);
-        for(Quest q : getQuests(p)){
+        ArrayList<Quest> quests =  getQuests(p);
+        for(Quest q : quests){
             if(Objects.equals(q.questNumber, "-1")){
                 inv.setItem(4, q.build(progress.get(q), false));
                 continue;
             }
+
             if(slot >= border[line]){
                 line++;
                 slot = nextLine[line];
@@ -414,7 +489,7 @@ public class Quest {
             double q1 = (min + q2) /2;
             double q3 = (max + q2) /2;
 
-            if((value >= min && value < q1) || baseDiff == EXPERT){
+            if(value < q1 || baseDiff == EXPERT){
                 return baseDiff;
             }
 

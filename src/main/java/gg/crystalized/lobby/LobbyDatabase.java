@@ -895,6 +895,26 @@ public class LobbyDatabase {
         }
     }
 
+    public static void updateQuests(OfflinePlayer p){
+        try(Connection conn = DriverManager.getConnection(URL)){
+            PreparedStatement prep = conn.prepareStatement("DELETE FROM Quests WHERE player_uuid = ?;");
+            prep.setBytes(1, uuid_to_bytes(p));
+            prep.executeUpdate();
+
+            PreparedStatement pr = conn.prepareStatement("INSERT INTO Quests(player_uuid, quest, done, claimed) VALUES (?, ?, ?, ?);");
+            pr.setBytes(1, uuid_to_bytes(p));
+            for(Quest q : Quest.getQuests(p)){
+                pr.setString(2, q.questNumber);
+                pr.setInt(3, q.done ? 1 : 0);
+                pr.setInt(4, q.claimed ? 1 : 0);
+                pr.executeUpdate();
+            }
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't update");
+        }
+    }
+
     public static void addAchievement(OfflinePlayer p, Achievement a){
         try{
             Properties sqlprop = new Properties();
