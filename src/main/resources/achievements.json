@@ -27,6 +27,7 @@
 			{"name": "cb_clutch", "difficulty": "MEDIUM"},
 			{"name": "cb_puritarian", "difficulty": "MEDIUM"},
 			{"name": "cb_nexuscollecter", "difficulty": "HARD"},
+			{"name": "cb_everythingbought", "difficulty": "HARD"},
 			{"name": "cb_elimeveryone", "difficulty": "EXPERT"}
 		]
 	}

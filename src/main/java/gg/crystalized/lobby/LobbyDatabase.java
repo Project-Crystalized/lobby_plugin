@@ -55,7 +55,8 @@ public class LobbyDatabase {
     String createCosmeticsTable = "CREATE TABLE IF NOT EXISTS Cosmetics ("
             + "player_uuid        BLOB,"
             + "cosmetic_id        INTEGER,"
-            + "currently_wearing   INTEGER"
+            + "currently_wearing   INTEGER,"
+            + "UNIQUE(player_uuid, cosmetic_id)"
             +");";
 
     String createSettingsTable = "CREATE TABLE IF NOT EXISTS Settings ("
@@ -299,7 +300,7 @@ public class LobbyDatabase {
 
     public static void addCosmetic(Player p, Cosmetic c, boolean wearing){
         try(Connection conn = DriverManager.getConnection(URL)){
-            PreparedStatement prep = conn.prepareStatement("INSERT INTO Cosmetics(player_uuid, cosmetic_id, currently_wearing) VALUES(?, ?, ?);");
+            PreparedStatement prep = conn.prepareStatement("INSERT OR IGNORE INTO Cosmetics(player_uuid, cosmetic_id, currently_wearing) VALUES(?, ?, ?);");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setInt(2, c.id);
             int i = 0;
@@ -307,7 +308,10 @@ public class LobbyDatabase {
                 i = 1;
             }
             prep.setInt(3, i);
-            prep.executeUpdate();
+            int rows = prep.executeUpdate();
+            if (rows == 0) {
+                Bukkit.getLogger().warning("ignored duplicate cosmetic insert for " + p.getName() + " UUID: " + p.getUniqueId() + " cosmetic_id: " + c.id);
+            }
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("failed adding cosmetic to database");
