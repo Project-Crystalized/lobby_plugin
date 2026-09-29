@@ -405,7 +405,7 @@ public class LobbyDatabase {
     public static void makeNewSettingsEntry(Player p){
         try(Connection conn = DriverManager.getConnection(URL)){
             String makeNewEntry = "INSERT INTO Settings(player_uuid, dms, textures, show_players, height, friends_requests, party_requests)"
-                    + "VALUES (?, 1 ,0 ,1 ,0.5 ,1, 1)";
+                    + "VALUES (?, 1 ,1 ,1 ,0.5 ,1, 1)";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, uuid_to_bytes(p));
             prepared.executeUpdate();
