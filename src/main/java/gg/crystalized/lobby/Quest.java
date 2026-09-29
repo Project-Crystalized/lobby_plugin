@@ -110,7 +110,7 @@ public class Quest {
             Category category = Category.getCategories(game).get(c);
             int amount = (int) Math.floor(Math.random() * (category.max - category.min + 1) + category.min);
             Difficulty diff = Difficulty.getDifficulty(category.min, category.max, amount, category.baseDiff);
-            while (alreadyRolled.contains(category) || (!forSeveral && !category.forOneGame) || isDifficultyFull(diff, easy, medium, hard, expert)) {
+            while (alreadyRolled.contains(category) || (forSeveral && !category.forOneGame) || isDifficultyFull(diff, easy, medium, hard, expert)) {
                 game = Game.values()[(int) Math.floor(Math.random() * (Game.values().length))];
                 forSeveral = Math.floor(Math.random() * 2) == 1;
                 c = (int) Math.floor(Math.random() * Category.getCategories(game).size());
@@ -489,7 +489,7 @@ public class Quest {
             double q1 = (min + q2) /2;
             double q3 = (max + q2) /2;
 
-            if(value < q1 || baseDiff == EXPERT){
+            if((value >= min && value < q1) || baseDiff == EXPERT){
                 return baseDiff;
             }
 

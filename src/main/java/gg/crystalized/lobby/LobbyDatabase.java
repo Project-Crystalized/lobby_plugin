@@ -368,10 +368,8 @@ public class LobbyDatabase {
         try(Connection conn = DriverManager.getConnection(URL)){
             PreparedStatement prep = conn.prepareStatement("SELECT COUNT(*) AS count FROM LobbyPlayers WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
-            if(prep.executeQuery().getInt("count") > 0){
-                return true;
-            }
-            return false;
+            return prep.executeQuery().getInt("count") > 0;
+
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't check existence in database for " + p.getName() + " UUID: " + p.getUniqueId());

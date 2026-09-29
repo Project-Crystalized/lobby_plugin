@@ -106,6 +106,7 @@ public class Setting {
     }
 
     public static Double toDouble(Object o){
+        if(o == null) return 0.0;
         if(o instanceof Double){
             return (Double)o;
         }
