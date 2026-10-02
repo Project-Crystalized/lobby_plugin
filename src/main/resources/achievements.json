@@ -19,7 +19,8 @@
 			{"name": "ko_unlocker", "difficulty": "EASY"},
 			{"name": "ko_deflector", "difficulty": "MEDIUM"},
 			{"name": "ko_grapplekill", "difficulty": "MEDIUM"},
-			{"name": "ko_flawlesswin", "difficulty": "HARD"}
+			{"name": "ko_flawlesswin", "difficulty": "HARD"},
+			{"name": "ko_pacifist", "difficulty": "HARD"}
 		],
 		"crystalblitz": [
 			{"name": "cb_win", "difficulty": "MEDIUM"},
