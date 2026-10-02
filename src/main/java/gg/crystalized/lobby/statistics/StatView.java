@@ -38,7 +38,7 @@ public class StatView implements Listener {
         return view;
     }
     public void startPlayerView(ItemStack player){
-        Inventory inv = Bukkit.createInventory(viewer, 54, Component.text("\uA000\uA006").color(WHITE));
+        Inventory inv = Bukkit.createInventory(viewer, 54, Component.text("\uA000\uA012").color(WHITE));
         OfflinePlayer p = Bukkit.getOfflinePlayer(player.getPersistentDataContainer().get(new NamespacedKey("crystalized", "profile_holder"), PersistentDataType.STRING));
         stats = p;
         boolean isLifetime = page == -1;
