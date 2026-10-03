@@ -34,6 +34,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 	List<CrystalizedChess> ChessGames = new ArrayList<>();
 	public boolean passive_mode = false;
 	public boolean doNametagsDespitePassive = false;
+	public static ArrayList<Player> inQueue = new ArrayList<>();
 
 
 	@Override
@@ -191,9 +192,11 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 			String message2 = in.readUTF();
 			if(message2.equals("leave")){
 				player.getInventory().remove(App.Unqueue.build());
+				inQueue.remove(player);
 				if(passive_mode) player.getInventory().setItem(8, App.BackToHub.build());
 			}else if(message2.equals("enter")){
 				InventoryManager.giveUnqueueButton(player);
+				inQueue.add(player);
 			}
 		}
 	}

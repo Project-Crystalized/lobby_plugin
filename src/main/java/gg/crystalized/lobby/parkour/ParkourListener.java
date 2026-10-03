@@ -1,5 +1,7 @@
 package gg.crystalized.lobby.parkour;
 
+import gg.crystalized.lobby.InventoryManager;
+import gg.crystalized.lobby.Lobby_plugin;
 import io.papermc.paper.entity.LookAnchor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -56,6 +58,7 @@ public class ParkourListener implements Listener {
             loc.setYaw(run.course.checkpoints[0].getYaw());
             loc.setPitch(run.course.checkpoints[0].getPitch());
             p.teleport(loc);
+            if(Lobby_plugin.inQueue.contains(p)) InventoryManager.giveUnqueueButton(p);
         }
     }
 
