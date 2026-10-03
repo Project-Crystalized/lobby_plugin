@@ -962,7 +962,13 @@ public class LobbyDatabase {
             prep.setBytes(1, uuid_to_bytes(p));
             ResultSet set = prep.executeQuery();
             while(set.next()){
-                Achievement a = new Achievement(p, AchieveTemplate.getAchieveTemplate(set.getString("internal_name")), set.getInt("progress"), set.getInt("stage"), set.getInt("done") == 1, set.getInt("claimed") == 1);
+                String internalName = set.getString("internal_name");
+                AchieveTemplate template = AchieveTemplate.getAchieveTemplate(internalName);
+                if (template == null) {
+                    Bukkit.getLogger().warning("Skipping unknown achievement '" + internalName + "' for " + p.getName() + ", no template found. The lobby plugin may be out of date.");
+                    continue;
+                }
+                Achievement a = new Achievement(p, template, set.getInt("progress"), set.getInt("stage"), set.getInt("done") == 1, set.getInt("claimed") == 1);
                 list.add(a);
             }
             return list;
