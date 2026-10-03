@@ -193,7 +193,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 			if(message2.equals("leave")){
 				player.getInventory().remove(App.Unqueue.build());
 				inQueue.remove(player);
-				//if(passive_mode) player.getInventory().setItem(8, App.BackToHub.build());
+				if(passive_mode && player.getInventory().contains(App.Requeue.build())) player.getInventory().setItem(8, App.BackToHub.build());
 			}else if(message2.equals("enter")){
 				InventoryManager.giveUnqueueButton(player);
 				inQueue.add(player);
