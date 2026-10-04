@@ -72,6 +72,7 @@ public final class PlayerListener implements Listener {
 		new BukkitRunnable(){
 			public void run(){
 				if(p.isOnline()) Nametag.reloadNametag(p);
+				if(p.isOnline()) FloatingLogo.showAllLogos(p);
 			}
 		}.runTaskLater(Lobby_plugin.getInstance(), 20);
 		p.setCollidable(false);
