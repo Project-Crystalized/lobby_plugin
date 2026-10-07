@@ -17,7 +17,7 @@
   "HAMSTER": {"id": 39, "model": "cosmetic/head/hamster", "level": null, "price": 4000, "slot": "HEAD", "name": "crystalized.cosmetic/head/hamster"},
 
   "HANDBAG": {"id": 5, "model": "cosmetic/handheld/handbag", "level": null, "price": 2000, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/handbag"},
-  "US_FLAG": {"id": 23, "model": "cosmetic/handheld/merica_flag", "level": null, "price": 3000, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/merica_flag"},
+  "US_FLAG": {"id": 44, "model": "cosmetic/handheld/merica_flag", "level": null, "price": 3000, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/merica_flag"},
   "GOLF_CLUB": {"id": 18, "model": "cosmetic/handheld/golf_club", "level": null, "price": 2000, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/golf_club"},
   "LAPTOP": {"id": 19, "model": "cosmetic/handheld/laptop", "level": null, "price": 2000, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/laptop"},
   "PRIDE_FLAG": {"id": 20, "model": "cosmetic/handheld/pride_flag", "level": null, "price": 5000, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/pride_flag"},
@@ -41,6 +41,9 @@
   "LADYCAT1_SHARDCORE": {"id": 22, "model": "shardcorenexus3/ladycat1", "level": null, "price": 5000, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/ladycat1"},
   "MITEDA_SHARDCORE": {"id": 37, "model": "shardcorenexus3/mite", "level": null, "price": 5000, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/mite"},
   "LITESTRIKE_SHARDCORE": {"id": 38, "model": "shardcorenexus3/ls", "level": null, "price": 5000, "slot": "HAND", "name": "crystalized.cosmetic.shardcorenexus3/ls"},
-  "MEDUSA": {"id": 40, "model": "cosmetic/head/medusa", "level": null, "price": 3000, "slot": "HEAD", "name": "Medusa"}
+  "MEDUSA": {"id": 40, "model": "cosmetic/head/medusa", "level": null, "price": 3000, "slot": "HEAD", "name": "Medusa"},
+  "WOLF_MASK": {"id": 41, "model": "cosmetic/head/wolf_mask", "level": null, "price": 4000, "slot": "HEAD", "name": "Wolf Mask"},
+  "CRICKET_HAT": {"id": 42, "model": "cosmetic/head/cricket_hat", "level": null, "price": 3000, "slot": "HEAD", "name": "Cricket Hat"},
+  "MOLE_RAT_HAT": {"id": 43, "model": "cosmetic/head/mole_rat_hat", "level": null, "price": 5000, "slot": "HEAD", "name": "Mole Rat Hat"}
 
 }
