@@ -44,6 +44,7 @@
   "MEDUSA": {"id": 40, "model": "cosmetic/head/medusa", "level": null, "price": 3000, "slot": "HEAD", "name": "Medusa"},
   "WOLF_MASK": {"id": 41, "model": "cosmetic/head/wolf_mask", "level": null, "price": 4000, "slot": "HEAD", "name": "Wolf Mask"},
   "CRICKET_HAT": {"id": 42, "model": "cosmetic/head/cricket_hat", "level": null, "price": 3000, "slot": "HEAD", "name": "Cricket Hat"},
-  "MOLE_RAT_HAT": {"id": 43, "model": "cosmetic/head/mole_rat_hat", "level": null, "price": 5000, "slot": "HEAD", "name": "Mole Rat Hat"}
+  "MOLE_RAT_HAT": {"id": 43, "model": "cosmetic/head/mole_rat_hat", "level": null, "price": 5000, "slot": "HEAD", "name": "Mole Rat Hat"},
+  "PUMPKIN_BASKET": {"id": 45, "model": "cosmetic/handheld/pumpkin_basket", "level": null, "price": 5000, "slot": "OFF_HAND", "name": "Pumpkin Basket"}
 
 }
