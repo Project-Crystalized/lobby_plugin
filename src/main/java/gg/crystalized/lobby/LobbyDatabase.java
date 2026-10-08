@@ -871,6 +871,32 @@ public class LobbyDatabase {
         }
     }
 
+    public static void addAchievements(OfflinePlayer p, List<Achievement> list){
+        if(list.isEmpty()){
+            return;
+        }
+        try (Connection conn = DriverManager.getConnection(URL)) {
+            conn.setAutoCommit(false);
+            try {
+                PreparedStatement prep = conn.prepareStatement("INSERT OR IGNORE INTO Achievements(player_uuid, internal_name, progress, stage, done, claimed) VALUES (?, ?, ?, 0, 0, 0);");
+                byte[] uuid = uuid_to_bytes(p);
+                for(Achievement a : list){
+                    prep.setBytes(1, uuid);
+                    prep.setString(2, a.temp.internalName);
+                    prep.setInt(3, a.progress);
+                    prep.executeUpdate();
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                try { conn.rollback(); } catch (SQLException ignored) {}
+                throw e;
+            }
+        }catch(SQLException e){
+            Bukkit.getLogger().warning(e.getMessage());
+            Bukkit.getLogger().warning("couldn't add achievements");
+        }
+    }
+
     public static void progressStage(Achievement a){
         try (Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET stage = ? WHERE player_uuid = ? AND internal_name = ?;");

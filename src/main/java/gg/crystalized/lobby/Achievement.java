@@ -81,9 +81,11 @@ public class Achievement{
     }
 
     public static void createNewAchievements(Player p){
+        ArrayList<Achievement> list = new ArrayList<>();
         for(AchieveTemplate temp : templates){
-            LobbyDatabase.addAchievement(p, new Achievement(p, temp, 0, 1, false, false));
+            list.add(new Achievement(p, temp, 0, 1, false, false));
         }
+        LobbyDatabase.addAchievements(p, list);
     }
 
     //can confuse devs for other plugins, making this a private method
@@ -124,9 +126,11 @@ public class Achievement{
             }
         }
 
+        ArrayList<Achievement> missing = new ArrayList<>();
         for(AchieveTemplate t : a){
-            LobbyDatabase.addAchievement(p, new Achievement(p, t, 0, 1, false, false));
+            missing.add(new Achievement(p, t, 0, 1, false, false));
         }
+        LobbyDatabase.addAchievements(p, missing);
         achievements.put(p.getUniqueId(), LobbyDatabase.getAchievements(p));
     }
 
