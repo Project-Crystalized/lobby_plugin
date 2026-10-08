@@ -96,20 +96,13 @@ public class LevelManager implements Listener {
     }
 
     public static void giveMoney(Player p, int amount){
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(LobbyDatabase.URL, sqlprop);
-            conn.setAutoCommit(false);
-            String insertData = "UPDATE LobbyPlayers SET money = ? WHERE player_uuid = ?;";
+        try (Connection conn = DriverManager.getConnection(LobbyDatabase.URL)) {
+            String insertData = "UPDATE LobbyPlayers SET money = money + ? WHERE player_uuid = ?;";
             PreparedStatement prep = conn.prepareStatement(insertData);
-            int newMoney = getMoney(p) + amount;
-            prep.setInt(1, newMoney);
+            prep.setInt(1, amount);
             prep.setBytes(2, LobbyDatabase.uuid_to_bytes(p));
             prep.executeUpdate();
-            conn.commit();
-            conn.close();
-            moneyCache.put(p.getUniqueId(), newMoney);
+            moneyCache.remove(p.getUniqueId());
             Nametag.reloadNametag(p);
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());

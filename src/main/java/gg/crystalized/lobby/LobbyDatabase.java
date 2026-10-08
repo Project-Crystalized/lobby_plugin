@@ -462,11 +462,7 @@ public class LobbyDatabase {
     }
 
     public static void updatePlayerData(Player p){
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
-            conn.setAutoCommit(false);
+        try (Connection conn = DriverManager.getConnection(URL)) {
             String makeNewEntry = "UPDATE LobbyPlayers SET player_name = ?, skin_url = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setString(1, p.getName());
@@ -475,8 +471,6 @@ public class LobbyDatabase {
             prepared.setString(2, skin == null ? "" : skin.toString());
             prepared.setBytes(3, uuid_to_bytes(p));
             prepared.executeUpdate();
-            conn.commit();
-            conn.close();
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("update player data entry for " + p.getName() + " UUID: " + p.getUniqueId());
@@ -499,18 +493,12 @@ public class LobbyDatabase {
     }
 
     public static void setRank(OfflinePlayer p, int rankID){
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
-            conn.setAutoCommit(false);
+        try (Connection conn = DriverManager.getConnection(URL)) {
             String makeNewEntry = "UPDATE LobbyPlayers SET rank_id = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setInt(1, rankID);
             prepared.setBytes(2, uuid_to_bytes(p));
             prepared.executeUpdate();
-            conn.commit();
-            conn.close();
             Ranks.rankCache.remove(p.getUniqueId());
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
@@ -520,18 +508,12 @@ public class LobbyDatabase {
 
     public static void setPayedRank(OfflinePlayer p, int rankID){
         //if the rank is already there it will remove it
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
-            conn.setAutoCommit(false);
+        try (Connection conn = DriverManager.getConnection(URL)) {
             String makeNewEntry = "UPDATE LobbyPlayers SET pay_rank_id = ? WHERE player_uuid = ?";
             PreparedStatement prepared = conn.prepareStatement(makeNewEntry);
             prepared.setBytes(1, rankID == -1 ? new byte[]{} : shortToBytes(Ranks.addOrRemovePayedRank(p, rankID)));
             prepared.setBytes(2, uuid_to_bytes(p));
             prepared.executeUpdate();
-            conn.commit();
-            conn.close();
             Ranks.rankCache.remove(p.getUniqueId());
         }catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
@@ -682,15 +664,15 @@ public class LobbyDatabase {
             LocalDate lastRoll = LocalDate.parse(new Date(Long.parseLong("" + seconds) * 1000).toString(), formatter);
             LocalDate currentDate = LocalDate.now();
             if(currentDate.getDayOfYear() - lastRoll.getDayOfYear() >= 7 || currentDate.getYear() != lastRoll.getYear()){
-                Properties sqlprop = new Properties();
-                sqlprop.put("transaction_mode", "IMMEDIATE");
-                Connection conn2 = DriverManager.getConnection(URL, sqlprop);
-                conn2.setAutoCommit(false);
-                PreparedStatement pr = conn2.prepareStatement("UPDATE LobbyPlayers SET last_quest_roll = unixepoch() WHERE player_uuid = ?;");
-                pr.setBytes(1, uuid_to_bytes(p));
-                pr.executeUpdate();
-                conn2.commit();
-                conn2.close();
+                try (Connection conn2 = DriverManager.getConnection(URL)) {
+                    PreparedStatement pr = conn2.prepareStatement("UPDATE LobbyPlayers SET last_quest_roll = unixepoch() WHERE player_uuid = ?;");
+                    pr.setBytes(1, uuid_to_bytes(p));
+                    pr.executeUpdate();
+                } catch (SQLException ex) {
+                    Bukkit.getLogger().warning(ex.getMessage());
+                    Bukkit.getLogger().warning("couldn't update last quest roll");
+                    return;
+                }
                 rollQuests(p);
                 return;
             }
@@ -702,52 +684,41 @@ public class LobbyDatabase {
     }
 
     public static void rollQuests(Player p){
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
-            conn.setAutoCommit(false);
+        try (Connection conn = DriverManager.getConnection(URL)) {
             Quest.allQuests.remove(p.getUniqueId());
             PreparedStatement prep = conn.prepareStatement("DELETE FROM Quests WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.executeUpdate();
-            conn.commit();
-            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't roll quests (1)");
         }
 
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
+        try (Connection conn = DriverManager.getConnection(URL)) {
             conn.setAutoCommit(false);
-            Quest[] quests = Quest.rollQuests(p);
-            PreparedStatement pr = conn.prepareStatement("INSERT INTO Quests(player_uuid, quest, done, claimed) VALUES (?, ?, 0, 0);");
-            for(Quest q : quests){
-                pr.setBytes(1, uuid_to_bytes(p));
-                pr.setString(2, q.questNumber);
-                pr.executeUpdate();
+            try {
+                Quest[] quests = Quest.rollQuests(p);
+                PreparedStatement pr = conn.prepareStatement("INSERT INTO Quests(player_uuid, quest, done, claimed) VALUES (?, ?, 0, 0);");
+                for(Quest q : quests){
+                    pr.setBytes(1, uuid_to_bytes(p));
+                    pr.setString(2, q.questNumber);
+                    pr.executeUpdate();
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                try { conn.rollback(); } catch (SQLException ignored) {}
+                throw e;
             }
-            conn.commit();
-            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't roll quests (2)");
         }
 
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
-            conn.setAutoCommit(false);
+        try (Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement pre = conn.prepareStatement("UPDATE LobbyPlayers SET quest_rerolls = ? WHERE player_uuid = ?;");
             pre.setInt(1, Ranks.getPayRank(p) == 6 ? 1 : Ranks.getPayRank(p) == 7 ? 2 : 0);
             pre.setBytes(2, uuid_to_bytes(p));
             pre.executeUpdate();
-            conn.commit();
-            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't roll quests (3)");
@@ -773,18 +744,12 @@ public class LobbyDatabase {
     }
 
     public static void replaceQuest(OfflinePlayer p, Quest old, Quest nevv){
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
-            conn.setAutoCommit(false);
+        try (Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("UPDATE Quests SET quest = ? WHERE player_uuid = ? AND quest = ?;");
             prep.setString(1, nevv.questNumber);
             prep.setBytes(2, uuid_to_bytes(p));
             prep.setString(3, old.questNumber);
             prep.executeUpdate();
-            conn.commit();
-            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't replace quest");
@@ -827,16 +792,10 @@ public class LobbyDatabase {
     }
 
     public static void rerollReduce(OfflinePlayer p){
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
-            conn.setAutoCommit(false);
+        try (Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET quest_rerolls = quest_rerolls -1 WHERE player_uuid = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.executeUpdate();
-            conn.commit();
-            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't reroll reduce");
@@ -844,17 +803,11 @@ public class LobbyDatabase {
     }
 
     public static void setQuestRerolls(OfflinePlayer p){
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
-            conn.setAutoCommit(false);
+        try (Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("UPDATE LobbyPlayers SET quest_rerolls = ? WHERE player_uuid = ?;");
             prep.setInt(1, Ranks.getPayRank(p) == 6 ? 1 : Ranks.getPayRank(p) == 7 ? 2 : 0);
             prep.setBytes(2, uuid_to_bytes(p));
             prep.executeUpdate();
-            conn.commit();
-            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't get rerolls");
@@ -862,17 +815,11 @@ public class LobbyDatabase {
     }
 
     public static void questCompleted(OfflinePlayer p, String quest){
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
-            conn.setAutoCommit(false);
+        try (Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("UPDATE Quests SET done = 1 WHERE player_uuid = ? AND quest = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setString(2, quest);
             prep.executeUpdate();
-            conn.commit();
-            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't complete quest");
@@ -880,17 +827,11 @@ public class LobbyDatabase {
     }
 
     public static void questClaimed(OfflinePlayer p, String quest){
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
-            conn.setAutoCommit(false);
+        try (Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("UPDATE Quests SET claimed = 1 WHERE player_uuid = ? AND quest = ?;");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setString(2, quest);
             prep.executeUpdate();
-            conn.commit();
-            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't claim quest");
@@ -918,18 +859,12 @@ public class LobbyDatabase {
     }
 
     public static void addAchievement(OfflinePlayer p, Achievement a){
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
-            conn.setAutoCommit(false);
+        try (Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("INSERT OR IGNORE INTO Achievements(player_uuid, internal_name, progress, stage, done, claimed) VALUES (?, ?, ?, 0, 0, 0);");
             prep.setBytes(1, uuid_to_bytes(p));
             prep.setString(2, a.temp.internalName);
             prep.setInt(3, a.progress);
             prep.executeUpdate();
-            conn.commit();
-            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't add achievement");
@@ -937,18 +872,12 @@ public class LobbyDatabase {
     }
 
     public static void progressStage(Achievement a){
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
-            conn.setAutoCommit(false);
+        try (Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET stage = ? WHERE player_uuid = ? AND internal_name = ?;");
             prep.setInt(1, a.stage);
             prep.setBytes(2, uuid_to_bytes(a.player));
             prep.setString(3, a.temp.internalName);
             prep.executeUpdate();
-            conn.commit();
-            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't progess achievement stage");
@@ -980,18 +909,12 @@ public class LobbyDatabase {
     }
 
     public static void setAchievementDone(Achievement a){
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
-            conn.setAutoCommit(false);
+        try (Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET done = ? WHERE player_uuid = ? AND internal_name = ?;");
             prep.setInt(1, a.done ? 1 : 0);
             prep.setBytes(2, uuid_to_bytes(a.player));
             prep.setString(3, a.temp.internalName);
             prep.executeUpdate();
-            conn.commit();
-            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't set achievement done");
@@ -1012,18 +935,12 @@ public class LobbyDatabase {
     }
 
     public static void setAchievementClaimed(Achievement a){
-        try{
-            Properties sqlprop = new Properties();
-            sqlprop.put("transaction_mode", "IMMEDIATE");
-            Connection conn = DriverManager.getConnection(URL, sqlprop);
-            conn.setAutoCommit(false);
+        try (Connection conn = DriverManager.getConnection(URL)) {
             PreparedStatement prep = conn.prepareStatement("UPDATE Achievements SET claimed = ? WHERE player_uuid = ? AND internal_name = ?;");
             prep.setInt(1, a.claimed ? 1 : 0);
             prep.setBytes(2, uuid_to_bytes(a.player));
             prep.setString(3, a.temp.internalName);
             prep.executeUpdate();
-            conn.commit();
-            conn.close();
         }catch(SQLException e){
             Bukkit.getLogger().warning(e.getMessage());
             Bukkit.getLogger().warning("couldn't set achievement done");
