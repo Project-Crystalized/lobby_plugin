@@ -203,6 +203,17 @@ public class Achievement{
         App.Achieve.deactivateApps(player);
         deactivateIconsBlink(player, this);
         LobbyDatabase.setAchievementClaimed(this);
+        if (claimed) {
+            Player claimer = player.getPlayer();
+            if (claimer != null) {
+                for (Cosmetic c : Cosmetic.cosmetics) {
+                    if (temp.internalName.equals(c.requiredAchievement) && !LobbyDatabase.ownsCosmetic(claimer, c)) {
+                        LobbyDatabase.addCosmetic(claimer, c, false);
+                        claimer.sendMessage(Component.text("You have unlocked the cosmetic: ").append(c.name));
+                    }
+                }
+            }
+        }
         for(Achievement a : getAchievements(player)){
             if(a.done && !a.claimed) return;
         }

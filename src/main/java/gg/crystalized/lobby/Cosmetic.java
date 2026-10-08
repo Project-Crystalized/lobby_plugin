@@ -47,14 +47,16 @@ public class Cosmetic{
     final String itemModel;
     final Integer obtainableLevel;
     final Integer price;
+    final String requiredAchievement;
     final EquipmentSlot slot;
     final Component name;
 
-    Cosmetic(int id, String itemModel, Integer obtainableLevel, Integer price, EquipmentSlot slot, Component name) {
+    Cosmetic(int id, String itemModel, Integer obtainableLevel, Integer price, EquipmentSlot slot, Component name, String requiredAchievement) {
         this.id = id;
         this.itemModel = itemModel;
         this.obtainableLevel = obtainableLevel;
         this.price = price;
+        this.requiredAchievement = requiredAchievement;
         this.slot = slot;
         this.name = name;
     }
@@ -66,7 +68,11 @@ public class Cosmetic{
             Map<String, JsonElement> map = json.asMap();
             for (String s : map.keySet()) {
                 JsonObject j = map.get(s).getAsJsonObject();
-                Cosmetic c = new Cosmetic(j.get("id").getAsInt(), j.get("model").getAsString(), getInt(j.get("level")), getInt(j.get("price")), getSlot(j.get("slot")), Component.translatable(j.get("name").getAsString()));
+                String requiredAchievement = null;
+                if (j.has("achievement") && !j.get("achievement").isJsonNull()) {
+                    requiredAchievement = j.get("achievement").getAsString();
+                }
+                Cosmetic c = new Cosmetic(j.get("id").getAsInt(), j.get("model").getAsString(), getInt(j.get("level")), getInt(j.get("price")), getSlot(j.get("slot")), Component.translatable(j.get("name").getAsString()), requiredAchievement);
                 cosmetics.add(c);
             }
         }catch(IOException e){

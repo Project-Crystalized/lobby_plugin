@@ -20,6 +20,7 @@
 			{"name": "ko_deflector", "difficulty": "MEDIUM"},
 			{"name": "ko_grapplekill", "difficulty": "MEDIUM"},
 			{"name": "ko_flawlesswin", "difficulty": "HARD"},
+			{"name": "ko_metaldeer", "difficulty": "MEDIUM"},
 			{"name": "ko_pacifist", "difficulty": "HARD"}
 		],
 		"crystalblitz": [
