@@ -153,13 +153,6 @@ public class FriendsMenu {
         }
     }
 
-    public static String removeRank(String name){
-        if(!Ranks.isRankSymbol(name.charAt(0))){
-            return name;
-        }
-        return name.substring(2);
-    }
-
     public static void checkOnline(Player player, OfflinePlayer p){
         if(p == null) return;
         ByteArrayDataOutput out = ByteStreams.newDataOutput();

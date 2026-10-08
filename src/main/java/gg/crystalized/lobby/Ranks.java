@@ -98,17 +98,6 @@ public enum Ranks {
     }
 
 
-    public static boolean isRankSymbol(char c){
-        String s = "\\uE30";
-        for(int i = 0; i <= 9; i++){
-            String f = s + i;
-            if(String.valueOf(c).equals(f)){
-                return true;
-            }
-        }
-        return false;
-    }
-
     public static Component getJoinMessage(Player p){
         if(getRank(p) == rankless){
             return Component.text("");

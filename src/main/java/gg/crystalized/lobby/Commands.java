@@ -130,15 +130,18 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
         int previous = Ranks.getPayRank(p);
         if(args[1].equals("clear")){
             List<Quest> quests = Quest.getQuests(p);
-            if(previous == 8){
+            int expectedRemovals = previous == 8 ? 1 : previous == 7 ? 2 : 0;
+            int removed = 0;
+            while (removed < expectedRemovals && !quests.isEmpty()) {
                 quests.removeFirst();
-            }else if(previous == 7){
-                quests.removeFirst();
-                quests.removeFirst();
+                removed++;
             }
+            if (removed < expectedRemovals) {
+                Bukkit.getLogger().warning("[Lobby_plugin] set_rank clear: expected " + expectedRemovals + " rank quest(s) to remove for " + args[0] + " but found " + removed + ".");
             Quest.setQuests(p, quests);
             LobbyDatabase.setRank(p, 0);
             LobbyDatabase.setPayedRank(p, -1);
+        }
         }
 
         Ranks rank = Ranks.rankless;

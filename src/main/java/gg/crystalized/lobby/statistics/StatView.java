@@ -115,7 +115,16 @@ public class StatView implements Listener {
         }
         Inventory inv = Bukkit.createInventory(viewer, 54, Component.text("\uA000\uA006").color(WHITE));
         Statistics sta = Statistics.stats.get(alias);
+        if (sta == null) {
+            Bukkit.getLogger().warning("[Lobby_plugin] No statistics registered for alias '" + alias + "'.");
+            return;
+        }
         ArrayList<PlayerItem> stats = sta.getGameStats(page);
+        if (stats == null || stats.isEmpty()) {
+            viewer.sendMessage(Component.text("Couldn't load game stats, please try again."));
+            Bukkit.getLogger().warning("[Lobby_plugin] No game stats available for alias '" + alias + "' page " + page + ".");
+            return;
+        }
         int teamNumber = getTeamNumber(stats);
         ArrayList<ArrayList<PlayerItem>> teams = separateItems(stats, teamNumber);
         int[] middle = {4, 13, 22, 31, 40, 49};
