@@ -146,7 +146,7 @@ public class Achievement{
         ItemMeta meta = item.getItemMeta();
         //meta.displayName(temp.name.color(temp.difficulty.color));
         meta.displayName(temp.name.color(difficulty.color).append(Component.text(" | " + toRomanNumeral(stage))));
-        if (showIcon && !done) {
+        if (done || showIcon) {
             meta.setItemModel(new NamespacedKey("crystalized", "ui/scn3/achivements/" + temp.internalName));
         } else {
             meta.setItemModel(new NamespacedKey("crystalized", difficulty.lockedModel));
