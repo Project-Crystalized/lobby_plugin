@@ -89,8 +89,14 @@ public class Quest {
         }
     }
 
-    public static Quest[] rollQuests(Player p){
-        allQuests.remove(p.getUniqueId());
+		// how much do week long quests get multiplied compared to singel game quests
+    static final int MULTI_GAME_MULTIPLIER = 5;
+
+    static boolean isValidScope(boolean forSeveral, Category category) {
+        return forSeveral || category.forOneGame;
+    }
+
+    public static Quest[] rollQuests(Player p){        allQuests.remove(p.getUniqueId());
         int questAmount = 7;
         if(Ranks.getPayRank(p) == Ranks.sun_sub.ordinal()){
             questAmount = 9;
@@ -110,7 +116,7 @@ public class Quest {
             Category category = Category.getCategories(game).get(c);
             int amount = (int) Math.floor(Math.random() * (category.max - category.min + 1) + category.min);
             Difficulty diff = Difficulty.getDifficulty(category.min, category.max, amount, category.baseDiff);
-            while (alreadyRolled.contains(category) || (forSeveral && !category.forOneGame) || isDifficultyFull(diff, easy, medium, hard, expert)) {
+            while (alreadyRolled.contains(category) || !isValidScope(forSeveral, category) || isDifficultyFull(diff, easy, medium, hard, expert)) {
                 game = Game.values()[(int) Math.floor(Math.random() * (Game.values().length))];
                 forSeveral = Math.floor(Math.random() * 2) == 1;
                 c = (int) Math.floor(Math.random() * Category.getCategories(game).size());
@@ -121,7 +127,7 @@ public class Quest {
 
             alreadyRolled.add(category);
             if(forSeveral){
-                amount = amount * 3;
+                amount = amount * MULTI_GAME_MULTIPLIER;
             }
             Quest quest = new Quest(p, game, forSeveral, category, amount, diff);
             quests[i] = quest;
@@ -167,13 +173,17 @@ public class Quest {
         Category category = Category.getCategories(game).get(c);
         int amount = (int) Math.floor(Math.random() * (category.max - category.min + 1) + category.min);
         Difficulty diff = Difficulty.getDifficulty(category.min, category.max, amount, category.baseDiff);
-        while (this.category == category || (!forSeveral && !category.forOneGame) || this.difficulty != diff) {
+        while (this.category == category || !isValidScope(forSeveral, category) || this.difficulty != diff) {
             game = Game.values()[(int) Math.floor(Math.random() * (Game.values().length))];
             forSeveral = Math.floor(Math.random() * 2) == 1;
             c = (int) Math.floor(Math.random() * Category.getCategories(game).size());
             category = Category.getCategories(game).get(c);
             amount = (int) Math.floor(Math.random() * (category.max - category.min + 1) + category.min);
             diff = Difficulty.getDifficulty(category.min, category.max, amount, category.baseDiff);
+        }
+
+        if(forSeveral){
+            amount = amount * MULTI_GAME_MULTIPLIER;
         }
 
         Quest quest = new Quest(player, game, forSeveral, category, amount, diff);
@@ -192,13 +202,16 @@ public class Quest {
         Difficulty diff = Difficulty.getDifficulty(category.min, category.max, amount, category.baseDiff);
         ArrayList<Category> alreadyRolled = getQuests(player).stream().map(Quest::getCategory).collect(Collectors.toCollection(ArrayList::new));
 
-        while (alreadyRolled.contains(category) || (!forSeveral && !category.forOneGame)) {
+        while (alreadyRolled.contains(category) || !isValidScope(forSeveral, category)) {
             game = Game.values()[(int) Math.floor(Math.random() * (Game.values().length))];
             forSeveral = Math.floor(Math.random() * 2) == 1;
             c = (int) Math.floor(Math.random() * Category.getCategories(game).size());
             category = Category.getCategories(game).get(c);
             amount = (int) Math.floor(Math.random() * (category.max - category.min + 1) + category.min);
             diff = Difficulty.getDifficulty(category.min, category.max, amount, category.baseDiff);
+        }
+        if(forSeveral){
+            amount = amount * MULTI_GAME_MULTIPLIER;
         }
         return new Quest(player, game, forSeveral, category, amount, diff);
     }
@@ -423,20 +436,20 @@ public class Quest {
         //IMPORTANT: the order of the categories mustn't change
         empty("empty", null, 0, 0, false, Difficulty.EXPERT, ""),
         ls_was_winner("was_winner", Game.ls, 1, 15, false, Difficulty.MEDIUM, "crystalized.shardcore.quests.category.wins"),
-        bombs_placed("placed_bombs", Game.ls, 3,16, false, Difficulty.EASY , "crystalized.shardcore.quests.catagory.bombs_placed"),
-        bombs_broken("broken_bombs", Game.ls, 2, 12, false, Difficulty.EASY, "crystalized.shardcore.quests.category.bombs_broken"),
-        ls_kills("kills", Game.ls, 3, 40, false, Difficulty.EASY, "crystalized.shardcore.quests.category.kills"),
-        ls_assists("assists", Game.ls, 3, 20, false, Difficulty.EASY, "crystalized.shardcore.quests.category.assists"),
+        bombs_placed("placed_bombs", Game.ls, 2,4, true, Difficulty.EASY , "crystalized.shardcore.quests.catagory.bombs_placed"),
+        bombs_broken("broken_bombs", Game.ls, 3, 4, true, Difficulty.EASY, "crystalized.shardcore.quests.category.bombs_broken"),
+        ls_kills("kills", Game.ls, 6, 11, true, Difficulty.EASY, "crystalized.shardcore.quests.category.kills"),
+        ls_assists("assists", Game.ls, 8, 20, true, Difficulty.EASY, "crystalized.shardcore.quests.category.assists"),
         //ls_hits_dealt("hits_dealt", Game.ls, 20, 45, false, Difficulty.EASY, "crystalized.shardcore.quests.category.hits_dealt"),
-        ls_damage_dealt("damage_dealt", Game.ls, 80, 1000, false, Difficulty.EASY, "crystalized.shardcore.quests.category.damage_dealt"),
+        ls_damage_dealt("damage_dealt", Game.ls, 80, 200, true, Difficulty.EASY, "crystalized.shardcore.quests.category.damage_dealt"),
         ko_games_won("games_won", Game.ko, 3, 10, false, Difficulty.EASY, "crystalized.shardcore.quests.category.wins"),
-        ko_kills("kills", Game.ko, 6, 40, false, Difficulty.EASY, "crystalized.shardcore.quests.category.kills"),
-        ko_items_used("items_used", Game.ko, 4, 20, false, Difficulty.EASY, "crystalized.shardcore.quests.category.items_used"),
-        ko_blocks_placed("blocks_placed", Game.ko, 50, 800, false, Difficulty.EASY, "crystalized.shardcore.quests.category.blocks_placed"),
-        ko_blocks_broken("blocks_broken", Game.ko, 20, 200, false, Difficulty.EASY, "crystalized.shardcore.quests.category.blocks_broken"),
+        ko_kills("kills", Game.ko, 6, 15, true, Difficulty.EASY, "crystalized.shardcore.quests.category.kills"),
+        ko_items_used("items_used", Game.ko, 6, 15, true, Difficulty.EASY, "crystalized.shardcore.quests.category.items_used"),
+        ko_blocks_placed("blocks_placed", Game.ko, 50, 700, true, Difficulty.EASY, "crystalized.shardcore.quests.category.blocks_placed"),
+        ko_blocks_broken("blocks_broken", Game.ko, 20, 200, true, Difficulty.EASY, "crystalized.shardcore.quests.category.blocks_broken"),
         cb_games_won("games_won", Game.cb, 1, 10, false, Difficulty.MEDIUM, "crystalized.shardcore.quests.category.wins"),
-        cb_kills("kills", Game.cb, 6, 60, false, Difficulty.EASY, "crystalized.shardcore.quests.category.kills"),
-        nexus_kills("nexus_kills", Game.cb, 2, 20, false, Difficulty.MEDIUM, "crystalized.shardcore.quests.category.nexus_kills");
+        cb_kills("kills", Game.cb, 6, 60, true, Difficulty.EASY, "crystalized.shardcore.quests.category.kills"),
+        nexus_kills("nexus_kills", Game.cb, 2, 20, true, Difficulty.MEDIUM, "crystalized.shardcore.quests.category.nexus_kills");
 
         final String columnName;
         final Game game;

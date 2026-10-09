@@ -41,6 +41,11 @@ dependencies {
     compileOnly ("com.github.bhlangonijr:chesslib:1.3.4")
 
     compileOnly("com.github.retrooper:packetevents-spigot:2.13.0")
+    testImplementation(platform("org.junit:junit-bom:6.1.3"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("net.kyori:adventure-api:4.26.1")
+    testImplementation("io.papermc.paper:paper-api:26.2.build.121-stable")
 }
 
 
@@ -57,6 +62,9 @@ java {
 tasks {
     shadowJar {
         archiveClassifier.set("")
+    }
+    test {
+        useJUnitPlatform()
     }
 }
 tasks {
