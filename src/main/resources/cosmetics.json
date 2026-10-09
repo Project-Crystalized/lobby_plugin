@@ -52,6 +52,8 @@
   "WOLF_HAT": {"id": 49, "model": "cosmetic/head/wolf_hat", "level": 70, "price": null, "slot": "HEAD", "name": "Wolf Hat"},
   "FOX_HAT": {"id": 50, "model": "cosmetic/head/fox_hat", "level": 85, "price": null, "slot": "HEAD", "name": "Fox Hat"},
   "SKELETON_DOG_HAT": {"id": 51, "model": "cosmetic/head/skeleton_dog_hat", "level": 95, "price": null, "slot": "HEAD", "name": "Skeleton Dog Hat"},
-  "ANGEL_WINGS": {"id": 52, "model": "cosmetic/head/angel_wings", "level": null, "price": null, "slot": "OFF_HAND", "name": "Angel Wings", "achievement": "cb_clutch"}
+  "ANGEL_WINGS": {"id": 52, "model": "cosmetic/head/angel_wings", "level": null, "price": null, "slot": "OFF_HAND", "name": "Angel Wings", "achievement": "cb_clutch"},
+  "BOW_ACCESSORY": {"id": 53, "model": "cosmetic/head/bow_accessory", "level": 60, "price": null, "slot": "HEAD", "name": "Bow Accessory"},
+  "CAT_EARS": {"id": 54, "model": "cosmetic/head/cat_ears", "level": null, "price": 3000, "slot": "HEAD", "name": "Cat Ears"}
 
 }
