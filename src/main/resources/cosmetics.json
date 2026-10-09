@@ -51,6 +51,7 @@
   "DEER_HAT": {"id": 48, "model": "cosmetic/head/mini_deer_hat", "level": null, "price": null, "slot": "HEAD", "name": "Mini Deer Hat", "achievement": "ko_metaldeer"},
   "WOLF_HAT": {"id": 49, "model": "cosmetic/head/wolf_hat", "level": 70, "price": null, "slot": "HEAD", "name": "Wolf Hat"},
   "FOX_HAT": {"id": 50, "model": "cosmetic/head/fox_hat", "level": 85, "price": null, "slot": "HEAD", "name": "Fox Hat"},
-  "SKELETON_DOG_HAT": {"id": 51, "model": "cosmetic/head/skeleton_dog_hat", "level": 95, "price": null, "slot": "HEAD", "name": "Skeleton Dog Hat"}
+  "SKELETON_DOG_HAT": {"id": 51, "model": "cosmetic/head/skeleton_dog_hat", "level": 95, "price": null, "slot": "HEAD", "name": "Skeleton Dog Hat"},
+  "ANGEL_WINGS": {"id": 52, "model": "cosmetic/head/angel_wings", "level": null, "price": null, "slot": "OFF_HAND", "name": "Angel Wings", "achievement": "cb_clutch"}
 
 }
