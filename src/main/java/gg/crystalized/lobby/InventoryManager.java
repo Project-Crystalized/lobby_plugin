@@ -282,6 +282,9 @@ public class InventoryManager implements Listener {
         if(Ranks.getPayRank(p) == Ranks.moon_one.ordinal()){
             p.getInventory().setItem(8, App.ToggleAbility_true.build());
         }
+        if (Lobby_plugin.inQueue.contains(p)) {
+            giveUnqueueButton(p);
+        }
     }
 
     public static void doScrolling(App a, Player p, InventoryView view){
