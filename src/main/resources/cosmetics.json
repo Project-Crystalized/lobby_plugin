@@ -55,6 +55,8 @@
   "ANGEL_WINGS": {"id": 52, "model": "cosmetic/head/angel_wings", "level": null, "price": null, "slot": "OFF_HAND", "name": "Angel Wings", "achievement": "cb_clutch"},
   "BOW_ACCESSORY": {"id": 53, "model": "cosmetic/head/bow_accessory", "level": 60, "price": null, "slot": "HEAD", "name": "Bow Accessory"},
   "CAT_EARS": {"id": 54, "model": "cosmetic/head/cat_ears", "level": null, "price": 3000, "slot": "HEAD", "name": "Cat Ears"},
-  "DOG_BOWL": {"id": 55, "model": "cosmetic/head/dog_bowl", "level": null, "price": 2000, "slot": "HEAD", "name": "Dog Bowl"}
+  "DOG_BOWL": {"id": 55, "model": "cosmetic/head/dog_bowl", "level": null, "price": 2000, "slot": "HEAD", "name": "Dog Bowl"},
+  "THICC_LAPTOP": {"id": 56, "model": "cosmetic/handheld/thicc_laptop", "level": null, "price": 6000, "slot": "OFF_HAND", "name": "Thicc Old Ass Laptop"},
+  "CRYTRON_SHARDCORE": {"id": 57, "model": "shardcorenexus3/crytron", "level": null, "price": 5000, "slot": "HAND", "name": "CryTron Mine&Josh"}
 
 }
