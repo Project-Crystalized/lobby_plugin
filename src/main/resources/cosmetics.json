@@ -46,6 +46,7 @@
   "CRICKET_HAT": {"id": 42, "model": "cosmetic/head/cricket_hat", "level": null, "price": 3000, "slot": "HEAD", "name": "Cricket Hat"},
   "MOLE_RAT_HAT": {"id": 43, "model": "cosmetic/head/mole_rat_hat", "level": null, "price": 5000, "slot": "HEAD", "name": "Mole Rat Hat"},
   "PUMPKIN_BASKET": {"id": 45, "model": "cosmetic/handheld/pumpkin_basket", "level": null, "price": 5000, "slot": "OFF_HAND", "name": "Pumpkin Basket"},
+  "WITCH_HAT": {"id": 58, "model": "cosmetic/head/witch_hat", "level": null, "price": 4000, "slot": "HEAD", "name": "Witch Hat"},
   "CHICKEN_HAT": {"id": 46, "model": "cosmetic/head/chicken_hat", "level": 10, "price": null, "slot": "HEAD", "name": "Chicken Hat"},
   "BEE_HAT": {"id": 47, "model": "cosmetic/head/bee_hat", "level": 30, "price": null, "slot": "HEAD", "name": "Bee Hat"},
   "DEER_HAT": {"id": 48, "model": "cosmetic/head/mini_deer_hat", "level": null, "price": null, "slot": "HEAD", "name": "Mini Deer Hat", "achievement": "ko_metaldeer"},
