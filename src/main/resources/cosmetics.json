@@ -25,7 +25,7 @@
   "DISABILITY_FLAG": {"id": 28, "model": "cosmetic/handheld/disability_flag", "level": null, "price": 4000, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/disability_flag"},
   "PAN_FLAG": {"id": 29, "model": "cosmetic/handheld/frying_pan_flag", "level": null, "price": 4000, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/frying_pan_flag"},
   "KRIS_FLAG": {"id": 30, "model": "cosmetic/handheld/kris_flag", "level": null, "price": 4000, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/kris_flag"},
-  "GAY_FLAG": {"id": 31, "model": "cosmetic/handheld/miteda_flag", "level": null, "price": 4000, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/miteda_flag"},
+  "BI_FLAG": {"id": 31, "model": "cosmetic/handheld/bi_flag", "level": null, "price": 4000, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/bi_flag"},
   "NONBINARY_FLAG": {"id": 32, "model": "cosmetic/handheld/nonbinary_flag", "level": null, "price": 4000, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/nonbinary_flag"},
   "POW": {"id": 33, "model": "cosmetic/handheld/pow", "level": null, "price": 4000, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/pow"},
   "SHOPPING_BAG": {"id": 34, "model": "cosmetic/handheld/shopping_bag", "level": null, "price": 1000, "slot": "OFF_HAND", "name": "crystalized.cosmetic/handheld/shopping_bag"},
