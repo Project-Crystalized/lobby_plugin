@@ -74,6 +74,7 @@
   "CRYTRON_SHARDCORE": {"id": 57, "model": "shardcorenexus3/crytron", "level": null, "price": 5000, "slot": "HAND", "name": "CryTron Mine&Josh"},
   "ANTLERS": {"id": 72, "model": "cosmetic/head/antlers", "level": null, "price": 5000, "slot": "HEAD", "name": "Antlers"},
   "BEAR_EARS": {"id": 73, "model": "cosmetic/head/bear_ears", "level": null, "price": 3000, "slot": "HEAD", "name": "Bear Ears"},
-  "DEVIL_HORNS": {"id": 74, "model": "cosmetic/head/devil_horns", "level": null, "price": 4000, "slot": "HEAD", "name": "Devil Horns"}
+  "DEVIL_HORNS": {"id": 74, "model": "cosmetic/head/devil_horns", "level": null, "price": 4000, "slot": "HEAD", "name": "Devil Horns"},
+  "ACHILLEAN_FLAG": {"id": 75, "model": "cosmetic/handheld/achillean_flag", "level": null, "price": 4000, "slot": "OFF_HAND", "name": "Achillean Flag"}
 
 }
