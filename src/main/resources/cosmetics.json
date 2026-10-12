@@ -76,6 +76,11 @@
   "BEAR_EARS": {"id": 73, "model": "cosmetic/head/bear_ears", "level": null, "price": 3000, "slot": "HEAD", "name": "Bear Ears"},
   "DEVIL_HORNS": {"id": 74, "model": "cosmetic/head/devil_horns", "level": null, "price": 4000, "slot": "HEAD", "name": "Devil Horns"},
   "ACHILLEAN_FLAG": {"id": 75, "model": "cosmetic/handheld/achillean_flag", "level": null, "price": 4000, "slot": "OFF_HAND", "name": "Achillean Flag"},
-  "YINYANG_SHARDCORE": {"id": 76, "model": "shardcorenexus3/yinyang", "level": null, "price": 5000, "slot": "HAND", "name": "Yin n Yang"}
+  "YINYANG_SHARDCORE": {"id": 76, "model": "shardcorenexus3/yinyang", "level": null, "price": 5000, "slot": "HAND", "name": "Yin n Yang"},
+  "MIRA_PLUSHY": {"id": 77, "model": "cosmetic/head/mira_plushy", "level": null, "price": 4000, "slot": "HEAD", "name": "Mira Plushy"},
+  "LADYCAT_PLUSHY": {"id": 78, "model": "cosmetic/head/ladycat_plushy", "level": null, "price": 4000, "slot": "HEAD", "name": "Lady Cat Plushy"},
+  "MISH_PLUSHY": {"id": 79, "model": "cosmetic/head/mish_plushy", "level": null, "price": 4000, "slot": "HEAD", "name": "Mish Plushy"},
+  "MRICKETS_PLUSHY": {"id": 80, "model": "cosmetic/head/mrickets_plushy", "level": null, "price": 4000, "slot": "HEAD", "name": "Mrickets Plushy"},
+  "ZANE_PLUSHY": {"id": 81, "model": "cosmetic/head/zane_plushy", "level": null, "price": 4000, "slot": "HEAD", "name": "Zane Plushy"}
 
 }
