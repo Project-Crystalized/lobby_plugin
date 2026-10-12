@@ -383,7 +383,11 @@ public class Statistics implements Methods{
         if(total < 10){
             return "crystalized.shardcore.stats.show_percentage";
         }
-        return ((won / total) * 100) + "%";
+        return formatPercent(won, total);
+    }
+
+    static String formatPercent(int won, int total){
+        return Math.round(won * 100.0 / total) + "%";
     }
 
     public Object newInst(){
