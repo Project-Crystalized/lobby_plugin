@@ -448,8 +448,8 @@ public class Quest {
         ko_blocks_placed("blocks_placed", Game.ko, 50, 700, true, Difficulty.EASY, "crystalized.shardcore.quests.category.blocks_placed"),
         ko_blocks_broken("blocks_broken", Game.ko, 20, 200, true, Difficulty.EASY, "crystalized.shardcore.quests.category.blocks_broken"),
         cb_games_won("games_won", Game.cb, 1, 10, false, Difficulty.MEDIUM, "crystalized.shardcore.quests.category.wins"),
-        cb_kills("kills", Game.cb, 6, 60, true, Difficulty.EASY, "crystalized.shardcore.quests.category.kills"),
-        nexus_kills("nexus_kills", Game.cb, 2, 20, true, Difficulty.MEDIUM, "crystalized.shardcore.quests.category.nexus_kills");
+        cb_kills("kills", Game.cb, 6, 20, true, Difficulty.EASY, "crystalized.shardcore.quests.category.kills"),
+        nexus_kills("nexus_kills", Game.cb, 2, 5, true, Difficulty.MEDIUM, "crystalized.shardcore.quests.category.nexus_kills");
 
         final String columnName;
         final Game game;
