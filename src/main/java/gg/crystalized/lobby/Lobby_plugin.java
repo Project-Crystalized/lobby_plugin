@@ -13,6 +13,7 @@ import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -163,7 +164,11 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		}
 		ByteArrayDataInput in = ByteStreams.newDataInput(message);
 		String message1 = in.readUTF();
-		if (message1.equals("Party")) {
+		if(message1.equals("Chat")){
+			in.readUTF(); // origin server, unused on this side
+			String line = in.readUTF();
+			player.sendMessage(LegacyComponentSerializer.legacySection().deserialize(line));
+		}else if(message1.equals("Party")) {
 			while(true){
 				try {
 					members.add(in.readUTF());
