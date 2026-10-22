@@ -1,7 +1,6 @@
 package gg.crystalized.lobby;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.*;
 import org.bukkit.entity.*;
@@ -104,22 +103,6 @@ public enum Ranks {
         }
 
         return getNameWithName(p).append(Component.translatable("crystalized.lobby.chat.message.player_join").color(GREEN));
-    }
-
-    public static void renderTabList(Player p){
-        p.sendPlayerListHeaderAndFooter(
-
-                // Header
-                text("\nProject Crystalized Lobby\n").
-
-                        color(LIGHT_PURPLE),
-
-                // Footer
-                        text("\ncrystalized.cc\n").
-
-                                color(NamedTextColor.DARK_GRAY));
-
-        p.playerListName(getName(p));
     }
 
     public static Player nextInLine(int i){

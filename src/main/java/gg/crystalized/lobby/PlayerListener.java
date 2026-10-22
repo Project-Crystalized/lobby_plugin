@@ -75,7 +75,6 @@ public final class PlayerListener implements Listener {
 			}
 		}.runTaskLater(Lobby_plugin.getInstance(), 20);
 		p.setCollidable(false);
-		Ranks.renderTabList(p);
 
 		HashMap<String, Object> settings = LobbyDatabase.fetchSettings(p);
 		Setting.updatePlayerVisibility(p, settings);

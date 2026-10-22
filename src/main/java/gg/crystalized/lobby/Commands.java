@@ -3,6 +3,7 @@ package gg.crystalized.lobby;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
@@ -10,12 +11,13 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 
-public class Commands implements CommandExecutor {
+public class Commands implements CommandExecutor, TabCompleter {
 
 public static List<Pig> pig_trackerA = new ArrayList<Pig>();
 public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Integer>();
@@ -47,6 +49,35 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
                 return false;
 
         }
+    }
+
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias,
+            @NotNull String[] args) {
+        if (!command.getName().equals("set_rank")) {
+            return null;
+        }
+        if (args.length == 1) {
+            String prefix = args[0].toLowerCase(Locale.ROOT);
+            return Bukkit.getOnlinePlayers().stream()
+                .filter(player -> !(sender instanceof Player viewer) || viewer.canSee(player))
+                .map(Player::getName)
+                .filter(name -> name.toLowerCase(Locale.ROOT).startsWith(prefix))
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
+        }
+        if (args.length == 2) {
+            String prefix = args[1].toLowerCase(Locale.ROOT);
+            List<String> ranks = new ArrayList<>();
+            ranks.add("clear");
+            for (Ranks rank : Ranks.values()) {
+                ranks.add(rank.name());
+            }
+            return ranks.stream()
+                .filter(rank -> rank.toLowerCase(Locale.ROOT).startsWith(prefix))
+                .toList();
+        }
+        return List.of();
     }
 
     private boolean run_pig_hunt(String[] args, CommandSender commandSender) {
@@ -159,7 +190,6 @@ public static Map<Player, Integer> player_pig_counters = new HashMap<Player, Int
         }
 
         if(p.isOnline() && !Lobby_plugin.getInstance().passive_mode) {
-            Ranks.renderTabList(p.getPlayer());
             Nametag.reloadNametag(p.getPlayer());
             p.getPlayer().getInventory().clear();
             InventoryManager.giveLobbyItems(p.getPlayer());
