@@ -76,7 +76,6 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		}
 
 		EntityRefresh.setupEntityRefresh();
-		FloatingLogo.startRefresh();
 		new ParkourConfig();
 		createStatistics();
 
