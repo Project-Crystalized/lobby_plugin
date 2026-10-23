@@ -43,7 +43,7 @@ public enum App {
             "\uA000\uA008"),
     Friends("ui/scn3/friends", useCases.Friends, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.translatable("crystalized.shardcore.party.name").color(WHITE).decoration(ITALIC, false), 30,
             "\uA000\uA005"),
-    Maps("ui/scn3/maps", useCases.Map, new useCases[]{useCases.Menu, useCases.Hotbar}, Component.translatable("crystalized.shardcore.maps.name").color(WHITE).decoration(ITALIC, false), 31,
+    Maps("ui/scn3/maps", useCases.Map, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.maps.name").color(WHITE).decoration(ITALIC, false), 31,
             "\uA000"), //TODO + inv
     Settings("ui/scn3/settings", useCases.Settings, new useCases[]{useCases.Menu}, Component.translatable("crystalized.shardcore.settings.name").color(WHITE).decoration(ITALIC, false), 20,
               "\uA000\uA009"),
@@ -73,9 +73,9 @@ public enum App {
     ScrollDown("ui/invisible", useCases.UI, Component.translatable("crystalized.shardcore.generic.scrolldown").color(WHITE).decoration(ITALIC, false), null),
     Back("ui/invisible", useCases.UI, Component.translatable("crystalized.shardcore.generic.back").color(WHITE).decoration(ITALIC, false), null),
     Home("ui/invisible", useCases.UI, Component.translatable("crystalized.shardcore.generic.home").color(WHITE).decoration(ITALIC, false), null),
-    Requeue("ui/replay", useCases.Demand, Component.translatable("crystalized.game.generic.requeue").color(WHITE).decoration(ITALIC, false), 7),
-    BackToHub("ui/leave", useCases.Demand, Component.translatable("crystalized.game.generic.to_lobby").color(WHITE).decoration(ITALIC, false), 8),
-    Unqueue("ui/leave", useCases.Demand, Component.translatable("crystalized.game.generic.queue.unqueue").color(WHITE).decoration(ITALIC, false), 8),
+    Requeue("ui/replay", useCases.Demand, Component.translatable("crystalized.game.generic.requeue").color(WHITE).decoration(ITALIC, false), HotbarSlots.REQUEUE),
+    BackToHub("ui/leave", useCases.Demand, Component.translatable("crystalized.game.generic.to_lobby").color(WHITE).decoration(ITALIC, false), HotbarSlots.BACK_TO_HUB),
+    Unqueue("ui/leave", useCases.Demand, Component.translatable("crystalized.game.generic.queue.unqueue").color(WHITE).decoration(ITALIC, false), HotbarSlots.UNQUEUE),
     //GameCompass("COMPASS", useCases.Demand, Component.translatable("item.minecraft.compass").color(WHITE).decoration(ITALIC, false), 6),
     MsgSetting("ui/scn3/settings/msg", useCases.Set, new useCases[]{useCases.Settings}, Component.translatable("crystalized.shardcore.settings.direct_messages").color(WHITE).decoration(ITALIC, false), 30, "dms"),
     FriendRequestSetting("ui/scn3/settings/friend_requests", useCases.Set, new useCases[]{useCases.Settings}, Component.translatable("crystalized.shardcore.settings.friend_requests").color(WHITE).decoration(ITALIC, false), 39, "friends_requests"),
@@ -321,11 +321,11 @@ public enum App {
     public void action(Player p, OfflinePlayer viewed){
         if(this.toString().contains("ToggleFlight")){
             p.setAllowFlight(!p.getAllowFlight());
-            p.getInventory().setItem(8, this == ToggleFlight_true ? ToggleFlight_false.build() : ToggleFlight_true.build());
+            p.getInventory().setItem(HotbarSlots.SUN_FLIGHT, this == ToggleFlight_true ? ToggleFlight_false.build() : ToggleFlight_true.build());
         }
         if(this.toString().contains("ToggleAbility")){
             doAbility(p);
-            p.getInventory().setItem(Ranks.getPayRank(p) == Ranks.sun_sub.ordinal() ? 7 : 8, this == ToggleAbility_true ? ToggleAbility_false.build() : ToggleAbility_true.build());
+            p.getInventory().setItem(Ranks.getPayRank(p) == Ranks.sun_sub.ordinal() ? HotbarSlots.SUN_ABILITY : HotbarSlots.MOON_ABILITY, this == ToggleAbility_true ? ToggleAbility_false.build() : ToggleAbility_true.build());
         }
         if(this == Requeue){
             ArrayList<String> plugins = new ArrayList<>();

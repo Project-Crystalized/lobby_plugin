@@ -1,7 +1,6 @@
 package gg.crystalized.lobby.parkour;
 
-import gg.crystalized.lobby.InventoryManager;
-import gg.crystalized.lobby.Lobby_plugin;
+import gg.crystalized.lobby.HotbarSlots;
 import io.papermc.paper.entity.LookAnchor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -32,7 +31,7 @@ public class ParkourListener implements Listener {
         ParkourRun run = ParkourRun.getRun(p);
         if(run == null) return;
 
-        if(p.getInventory().getItem(6) != null && p.getInventory().getItem(6).equals(item)){
+        if(p.getInventory().getItem(HotbarSlots.PARKOUR_CHECKPOINT) != null && p.getInventory().getItem(HotbarSlots.PARKOUR_CHECKPOINT).equals(item)){
             //return to checkpoint
             Location loc = run.course.checkpoints[run.lastCheckpoint].clone().toCenterLocation();
             loc.setY(loc.getBlockY());
@@ -42,7 +41,7 @@ public class ParkourListener implements Listener {
             //p.lookAt(run.course.checkpoints[run.lastCheckpoint+1].getX(), run.course.checkpoints[run.lastCheckpoint].getY(), run.course.checkpoints[run.lastCheckpoint].getZ(), LookAnchor.EYES);
         }
 
-        if(p.getInventory().getItem(7) != null && p.getInventory().getItem(7).equals(item)){
+        if(p.getInventory().getItem(HotbarSlots.PARKOUR_RESTART) != null && p.getInventory().getItem(HotbarSlots.PARKOUR_RESTART).equals(item)){
             //restart
             p.teleport(run.course.checkpoints[0]);
             p.lookAt(run.course.checkpoints[run.lastCheckpoint+1].getX(), run.course.checkpoints[run.lastCheckpoint].getY(), run.course.checkpoints[run.lastCheckpoint].getZ(), LookAnchor.EYES);
@@ -50,7 +49,7 @@ public class ParkourListener implements Listener {
             new ParkourRun(p, run.course);
         }
 
-        if(p.getInventory().getItem(8) != null && p.getInventory().getItem(8).equals(item)){
+        if(p.getInventory().getItem(HotbarSlots.PARKOUR_END) != null && p.getInventory().getItem(HotbarSlots.PARKOUR_END).equals(item)){
             run.stop(false);
             Location loc = run.course.checkpoints[0].clone().toCenterLocation();
             loc.setY(loc.getBlockY());
@@ -58,7 +57,6 @@ public class ParkourListener implements Listener {
             loc.setYaw(run.course.checkpoints[0].getYaw());
             loc.setPitch(run.course.checkpoints[0].getPitch());
             p.teleport(loc);
-            if(Lobby_plugin.inQueue.contains(p)) InventoryManager.giveUnqueueButton(p);
         }
     }
 

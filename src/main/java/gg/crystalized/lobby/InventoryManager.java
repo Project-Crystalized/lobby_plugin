@@ -263,7 +263,14 @@ public class InventoryManager implements Listener {
         }
         Cosmetic shardcore = Cosmetic.getShardcore(p);
         Inventory i = p.getInventory();
-        int in = 0;
+        // Clear any queue button from a previous render, including the old
+        // rank-dependent slots, so this method is idempotent.
+        for (int slot = HotbarSlots.PARKOUR_CHECKPOINT; slot <= HotbarSlots.UNQUEUE; slot++) {
+            if (App.Unqueue.build().equals(p.getInventory().getItem(slot))) {
+                p.getInventory().setItem(slot, null);
+            }
+        }
+        int in = HotbarSlots.NAVIGATOR;
         for(App a : App.values()){
             if(a.uses == null){
                 continue;
@@ -273,16 +280,14 @@ public class InventoryManager implements Listener {
                 in++;
             }
         }
-        p.getInventory().setItem(4, shardcore.build(p, true, false, CosmeticView.isViewing(p, shardcore)));
+        p.getInventory().setItem(HotbarSlots.SHARDCORE, shardcore.build(p, true, false, CosmeticView.isViewing(p, shardcore)));
         if(Ranks.getPayRank(p) == Ranks.sun_sub.ordinal()){
-            p.getInventory().setItem(8, App.ToggleFlight_true.build());
-            p.getInventory().setItem(7, App.ToggleAbility_true.build());
-            return;
+            p.getInventory().setItem(HotbarSlots.SUN_FLIGHT, App.ToggleFlight_true.build());
+            p.getInventory().setItem(HotbarSlots.SUN_ABILITY, App.ToggleAbility_true.build());
+        } else if(Ranks.getPayRank(p) == Ranks.moon_one.ordinal()){
+            p.getInventory().setItem(HotbarSlots.MOON_ABILITY, App.ToggleAbility_true.build());
         }
-        if(Ranks.getPayRank(p) == Ranks.moon_one.ordinal()){
-            p.getInventory().setItem(8, App.ToggleAbility_true.build());
-        }
-        if (Lobby_plugin.inQueue.contains(p)) {
+        if (Lobby_plugin.inQueue.contains(p.getUniqueId())) {
             giveUnqueueButton(p);
         }
     }
@@ -339,16 +344,7 @@ public class InventoryManager implements Listener {
     }
 
     public static void giveUnqueueButton(Player p){
-        if(Ranks.getPayRank(p) == Ranks.sun_sub.ordinal()){
-            p.getInventory().setItem(6, App.Unqueue.build());
-            return;
-        }
-        if(Ranks.getPayRank(p) == Ranks.moon_one.ordinal()){
-            p.getInventory().setItem(7, App.Unqueue.build());
-            return;
-        }
-
-        p.getInventory().setItem(8, App.Unqueue.build());
+        p.getInventory().setItem(HotbarSlots.UNQUEUE, App.Unqueue.build());
     }
 }
 

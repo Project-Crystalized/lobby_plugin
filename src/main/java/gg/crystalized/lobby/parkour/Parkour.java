@@ -9,6 +9,7 @@ import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
+import gg.crystalized.lobby.HotbarSlots;
 import gg.crystalized.lobby.InventoryManager;
 import gg.crystalized.lobby.Lobby_plugin;
 import gg.crystalized.lobby.Nametag;
@@ -128,9 +129,9 @@ class ParkourRun{
         restartData.displayName(Component.translatable("crystalized.lobby.parkour.restart").color(GREEN).decoration(ITALIC, false));
         restart.setItemMeta(restartData);
 
-        p.getInventory().setItem(8, end);
-        p.getInventory().setItem(7, restart);
-        p.getInventory().setItem(6, check);
+        p.getInventory().setItem(HotbarSlots.PARKOUR_END, end);
+        p.getInventory().setItem(HotbarSlots.PARKOUR_RESTART, restart);
+        p.getInventory().setItem(HotbarSlots.PARKOUR_CHECKPOINT, check);
 
         p.setAllowFlight(false);
         AttributeInstance bounce = p.getAttribute(BOUNCINESS);

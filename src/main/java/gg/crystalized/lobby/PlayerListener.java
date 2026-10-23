@@ -127,6 +127,7 @@ public final class PlayerListener implements Listener {
 		Achievement.achievements.remove(e.getPlayer().getUniqueId());
 		LevelManager.moneyCache.remove(e.getPlayer().getUniqueId());
 		Ranks.rankCache.remove(e.getPlayer().getUniqueId());
+		Lobby_plugin.inQueue.remove(e.getPlayer().getUniqueId());
 		Leaderboards.leaderboards.remove(e.getPlayer());
 		App.active.remove(e.getPlayer());
 		ScrollableView.removeView(e.getPlayer());

@@ -22,6 +22,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 import static gg.crystalized.lobby.statistics.Statistics.createStatistics;
@@ -34,7 +35,7 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 	List<CrystalizedChess> ChessGames = new ArrayList<>();
 	public boolean passive_mode = false;
 	public boolean doNametagsDespitePassive = false;
-	public static ArrayList<Player> inQueue = new ArrayList<>();
+	public static Set<UUID> inQueue = ConcurrentHashMap.newKeySet();
 
 
 	@Override
@@ -191,12 +192,15 @@ public final class Lobby_plugin extends JavaPlugin implements PluginMessageListe
 		}else if(message1.equals("queue")){
 			String message2 = in.readUTF();
 			if(message2.equals("leave")){
+				boolean hadUnqueue = player.getInventory().contains(App.Unqueue.build());
 				player.getInventory().remove(App.Unqueue.build());
-				inQueue.remove(player);
-				if(passive_mode && player.getInventory().contains(App.Requeue.build())) player.getInventory().setItem(8, App.BackToHub.build());
+				inQueue.remove(player.getUniqueId());
+				if(passive_mode && hadUnqueue && player.getInventory().contains(App.Requeue.build())) {
+					player.getInventory().setItem(HotbarSlots.BACK_TO_HUB, App.BackToHub.build());
+				}
 			}else if(message2.equals("enter")){
 				InventoryManager.giveUnqueueButton(player);
-				inQueue.add(player);
+				inQueue.add(player.getUniqueId());
 			}
 		}
 	}
