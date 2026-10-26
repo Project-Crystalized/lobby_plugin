@@ -2,6 +2,7 @@ package gg.crystalized.lobby;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import io.papermc.paper.scoreboard.numbers.NumberFormat;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -23,6 +24,7 @@ public class ScoreboardManager {
         Component title = text("Crystalized").color(NamedTextColor.LIGHT_PURPLE);
         Objective obj = s.registerNewObjective("main", Criteria.DUMMY, title);
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+        obj.numberFormat(NumberFormat.blank());
 
         obj.getScore("7").setScore(7);
         obj.getScore("7").customName(text("   "));
