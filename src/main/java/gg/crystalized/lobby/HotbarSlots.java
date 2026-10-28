@@ -11,6 +11,7 @@ public final class HotbarSlots {
     public static final int NAVIGATOR = 0;
     public static final int FRIENDS = 1;
     public static final int QUEST = 2;
+    public static final int ACHIEVEMENTS = 3;
     public static final int SHARDCORE = 4;
 
     // Lobby parkour slots.
